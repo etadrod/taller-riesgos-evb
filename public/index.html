@@ -129,7 +129,7 @@ legend{font-family:var(--f-display);font-weight:600;font-size:1.15rem;padding:0 
 table{border-collapse:collapse;width:100%;font-size:.94rem}
 th,td{text-align:left;padding:.45rem .55rem;border-bottom:1px solid var(--line);vertical-align:top}
 th{font-family:var(--f-display);font-weight:600;font-size:1rem;letter-spacing:.03em}
-td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+td.num{white-space:nowrap;font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
 .tbl{overflow-x:auto}
 
 pre.report{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1rem;font-family:var(--f-mono);font-size:.82rem;max-height:32rem;overflow:auto;margin:0}
@@ -460,6 +460,87 @@ function step4(b){
   card.querySelectorAll("[data-t]").forEach(c=>c.onchange=()=>{const a=S.med[id]||(S.med[id]=[]);const t=c.dataset.t;if(c.checked){if(!a.includes(t))a.push(t)}else S.med[id]=a.filter(x=>x!==t);S.ejemplo=false;save()});
   card.querySelector("[data-x]").oninput=e=>{(S.medx||(S.medx={}))[id]=e.target.value;save()}})}
 
+/* ---------- rúbrica de evaluación ---------- */
+const NIV=["Insuficiente","Básico","Adecuado","Excelente"],NIVF=[0,.5,.75,1];
+const RUB=[
+ {id:"amb",t:"Ámbito y vulnerabilidad",ce:"RA1·CE b, c, d · RA2·CE b",max:2,d:["Descripción ausente o sin datos de población ni elementos vulnerables.","Descripción general; población o elementos vulnerables incompletos.","Describe el ámbito y la población e identifica varios elementos vulnerables.","Descripción completa (medio físico, urbanismo, servicios), población cuantificada y vulnerabilidad justificada."]},
+ {id:"ide",t:"Identificación de riesgos",ce:"RA1·CE a · RA2·CE a · RA3·CE a",max:1.5,d:["Menos de dos riesgos o sin relación con el ámbito.","Varios riesgos de un único origen.","Riesgos de dos orígenes distintos.","Cuatro o más riesgos de origen natural, tecnológico y antrópico."]},
+ {id:"eva",t:"Evaluación y cálculo del riesgo",ce:"RA1·CE e · RA2·CE c · RA3·CE e",max:2,d:["Valores por defecto o sin justificación.","Valoración con justificaciones escasas.","Valoración diferenciada y justificada en la mayoría de riesgos.","Todos los riesgos valorados y justificados con antecedentes y elementos expuestos, coherentes con la vulnerabilidad."]},
+ {id:"pri",t:"Matriz y priorización",ce:"RA1·CE f · RA2·CE d",max:1,d:["Sin diferenciación entre riesgos.","Priorización con poca diferenciación.","Riesgos diferenciados por nivel.","Riesgos diferenciados y comparación entre métodos de evaluación."]},
+ {id:"med",t:"Medidas preventivas y de protección",ce:"RA4·CE a, b, c, d, e",max:2,d:["Sin medidas o medidas aisladas.","Medidas en pocos riesgos o de un solo tipo.","Medidas de varios tipos para cada riesgo.","Medidas estructurales, no estructurales y en emergencia, reforzadas en riesgos altos y con aportaciones propias."]},
+ {id:"vig",t:"Vigilancia, alerta e información",ce:"RA5·CE a, c, e",max:.5,d:["No contempla vigilancia ni alerta.","Vigilancia o alerta en algún riesgo.","Vigilancia o alerta en la mayoría de riesgos.","Vigilancia o alerta en todos los riesgos."]},
+ {id:"con",t:"Conclusiones",ce:"RA4·CE f, i",max:1,d:["Sin conclusiones.","Conclusiones breves sin análisis.","Prioridades y algún criterio de coste-beneficio o inspección.","Prioridades, relación coste-beneficio e inspecciones preventivas propuestas."]}];
+function nivelDe(r){return r<.35?0:r<.6?1:r<.85?2:3}
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+function ownLines(id){return((S.medx||{})[id]||"").split("\n").map(s=>s.trim()).filter(Boolean)}
+function evaluar(){const m=S.meta,n=S.sel.length,out=[];
+ // 1 ámbito
+ {const i=[Math.min(m.desc.trim().length/250,1),m.pob.trim().length>=10?1:0,Math.min(m.grupos.length/3,1),m.notas.trim().length>=30?1:m.notas.trim()?.5:0],mj=[];
+  if(i[0]<1)mj.push("amplía la descripción del ámbito con geomorfología, clima, usos del suelo, vías y servicios básicos");
+  if(!i[1])mj.push("cuantifica la población expuesta, su densidad y la variación estacional");
+  if(i[2]<1)mj.push("identifica más elementos vulnerables (grupos críticos, infraestructuras críticas, espacios protegidos)");
+  if(i[3]<1)mj.push("justifica en las observaciones por qué esos elementos son vulnerables");
+  out.push({r:i[0]<1?Math.min(avg(i),.84):avg(i),mj})}
+ // 2 identificación
+ {const orig=new Set(S.sel.map(id=>RX[id].g));const i=[Math.min(n/4,1),orig.size/3],mj=[];
+  if(n<4)mj.push("identifica al menos cuatro riesgos relevantes para el ámbito");
+  Object.keys(G).forEach(g=>{if(!orig.has(g))mj.push("valora si existen riesgos de origen "+G[g].toLowerCase()+" en la zona")});
+  out.push({r:n?avg(i):0,mj})}
+ // 3 evaluación
+ {const mj=[];let r=0;if(n){const just=S.sel.map(id=>Math.min(ev(id).just.trim().length/120,1));
+   const nd=S.sel.map(id=>{const e=ev(id);return(e.P===3&&e.dp===3&&e.db===3&&e.da===3&&e.S===3)?0:1});
+   const wn=S.sel.filter(id=>vulnWarn(ev(id))).length;
+   r=avg([avg(just),avg(nd),1-wn/n]);
+   const cortas=S.sel.filter(id=>ev(id).just.trim().length<120).map(id=>RX[id].n.toLowerCase());
+   if(cortas.length)mj.push("desarrolla la justificación (antecedentes, fuentes, elementos expuestos) de: "+cortas.join(", "));
+   if(avg(nd)<1)mj.push("revisa los riesgos que mantienen los valores por defecto");
+   if(cortas.length||wn)r=Math.min(r,.84);
+   if(wn)mj.push("corrige la incoherencia entre la vulnerabilidad descrita y los daños valorados en "+wn+" riesgo(s)")}
+  else mj.push("evalúa los riesgos identificados");out.push({r,mj})}
+ // 4 priorización
+ {const mj=[];let r=0;if(n){const lv=new Set(ranking().map(x=>S.metodo==="mx"?x.l2:x.l1));const vari=n<2?.5:Math.min((lv.size-1)/Math.min(n-1,2),1);
+   r=avg([vari,S.metodo==="ambos"?1:.5]);
+   if(vari<1)mj.push("diferencia mejor el nivel de los riesgos para que la priorización sea útil");
+   if(S.metodo!=="ambos")mj.push("compara el índice P × D con la matriz 5×5 y explica las diferencias")}
+  out.push({r,mj})}
+ // 5 medidas
+ {const mj=[];let r=0;if(n){const cnt=id=>(S.med[id]||[]).length+ownLines(id).length;
+   const cov=avg(S.sel.map(id=>Math.min(cnt(id)/3,1)));
+   const cats=new Set();S.sel.forEach(id=>{const ch=S.med[id]||[];["e","n","u"].forEach(c=>{if(RX[id].m[c].some(t=>ch.includes(t)))cats.add(c)})});
+   S.sel.forEach(id=>ownLines(id).forEach(l=>{if(/estructural\]/i.test(l)&&!/no estructural/i.test(l))cats.add("e");if(/no estructural/i.test(l))cats.add("n");if(/emergencia|evacua|confina/i.test(l))cats.add("u")}));
+   const altos=ranking().filter(x=>(S.metodo==="mx"?x.l2:x.l1)>=3);const refz=altos.length?avg(altos.map(x=>cnt(x.id)>=3?1:0)):1;
+   const propias=S.sel.some(id=>ownLines(id).length)?1:0;
+   r=avg([cov,cats.size/3,refz,propias]);
+   const pocas=S.sel.filter(id=>cnt(id)<3).map(id=>RX[id].n.toLowerCase());if(pocas.length)mj.push("propón al menos tres medidas para: "+pocas.join(", "));
+   ["e","n","u"].forEach(c=>{if(!cats.has(c))mj.push("incluye medidas "+MCAT[c].toLowerCase())});
+   if(refz<1)mj.push("refuerza las medidas de los riesgos de nivel alto o muy alto");
+   if(!propias)mj.push("añade medidas propias adaptadas al ámbito, no solo las propuestas por la app")}
+  out.push({r,mj})}
+ // 6 vigilancia
+ {const mj=[];let r=0;if(n){const has=id=>RX[id].m.v.some(t=>(S.med[id]||[]).includes(t))||ownLines(id).some(l=>/vigil|alerta|aviso|alarma|informaci/i.test(l));
+   r=avg(S.sel.map(id=>has(id)?1:0));const sin=S.sel.filter(id=>!has(id)).map(id=>RX[id].n.toLowerCase());
+   if(sin.length)mj.push("define sistemas de vigilancia, alerta o información a la población para: "+sin.join(", "))}
+  out.push({r,mj})}
+ // 7 conclusiones
+ {const c=S.conclu.trim(),kw=[/priori/i,/coste|benefici/i,/inspecci/i].map(x=>x.test(c)?1:0),mj=[];
+  const r=c?avg([Math.min(c.length/400,1),avg(kw)]):0;
+  if(c.length<400)mj.push("desarrolla más las conclusiones");
+  if(!kw[0])mj.push("indica en las conclusiones qué riesgos son prioritarios");
+  if(!kw[1])mj.push("valora la relación coste-beneficio de las medidas");
+  if(!kw[2])mj.push("propón inspecciones preventivas");
+  out.push({r,mj})}
+ const res=RUB.map((c,i)=>{const nv=nivelDe(out[i].r);return Object.assign({},c,{nivel:nv,pts:Math.round(c.max*NIVF[nv]*100)/100,mj:out[i].mj})});
+ const total=Math.round(res.reduce((s,x)=>s+x.pts,0)*10)/10;return{res,total}}
+function valoracionTxt(v){const fuertes=v.res.filter(x=>x.nivel===3).map(x=>x.t.toLowerCase());const mj=v.res.filter(x=>x.nivel<3).sort((a,b)=>(b.max-b.pts)-(a.max-a.pts)).flatMap(x=>x.mj).slice(0,6);
+ const cal=v.total<5?"no alcanza todavía los mínimos exigibles":v.total<7?"alcanza los mínimos con margen de mejora":v.total<9?"es un trabajo correcto y bien estructurado":"es un trabajo completo y riguroso";
+ let p1=`El análisis ${cal}.`+(fuertes.length?` Destaca en: ${fuertes.join(", ")}.`:"");
+ let p2=mj.length?`Para mejorar: ${mj.join("; ")}.`:"No se detectan carencias en los indicadores de la rúbrica; revisa la precisión técnica de las justificaciones.";
+ return p1+" "+p2.charAt(0).toUpperCase()+p2.slice(1)+` Nota propuesta: ${v.total.toFixed(1).replace(".",",")} / 10.`}
+function rubricaTxt(v){const L=[];const pad=(s,n)=>(s+" ".repeat(n)).slice(0,n);
+ L.push(pad("Criterio",38)+pad("Nivel",14)+"Puntos");
+ v.res.forEach(x=>L.push(pad(x.t,38)+pad(NIV[x.nivel],14)+x.pts.toFixed(2).replace(".",",")+" / "+String(x.max).replace(".",",")));
+ L.push(pad("TOTAL",52)+v.total.toFixed(1).replace(".",",")+" / 10");return L}
+
 function report(){const m=S.meta,L=[];const line="------------------------------------------------------------";
  L.push("INFORME DE ANÁLISIS DE RIESGOS","Módulo 1502 · Evaluación de riesgos y medidas preventivas",line);
  L.push("Alumno/a o grupo: "+(m.alumno||"[EDITABLE]"),"Ámbito: "+(m.ambito||"[EDITABLE]"),"Isla: "+(m.isla||"[EDITABLE]"),"Tipo de análisis: "+m.tipo,"Fecha: "+new Date().toLocaleDateString("es-ES"),"");
@@ -471,14 +552,20 @@ function report(){const m=S.meta,L=[];const line="------------------------------
  if(S.metodo!=="pd")L.push(`Método matriz 5x5: P x S. Umbrales: Bajo <= ${cfg.m2[0]}, Moderado <= ${cfg.m2[1]}, Alto <= ${cfg.m2[2]}, Muy alto > ${cfg.m2[2]}.`);
  L.push("");ranking().forEach((x,i)=>{const e=ev(x.id);L.push(`${i+1}. ${x.r.n}`);L.push(`   P = ${e.P}`+(S.metodo!=="mx"?` | Personas ${e.dp}, Bienes ${e.db}, Medio ambiente ${e.da} -> D = ${D(e)} | IR = ${x.v1} (${LV[x.l1-1]})`:"")+(S.metodo!=="pd"?` | S = ${e.S} -> ${x.v2} (${LV[x.l2-1]})`:""));L.push("   Justificación: "+(e.just||"[EDITABLE]"))});L.push("");
  L.push("5. MEDIDAS PREVENTIVAS Y DE PROTECCIÓN");ranking().forEach(x=>{const ch=S.med[x.id]||[];const ex=((S.medx||{})[x.id]||"").split("\n").map(s=>s.trim()).filter(Boolean);L.push(x.r.n+":");let any=false;Object.keys(MCAT).forEach(c=>{const it=x.r.m[c].filter(t=>ch.includes(t));if(it.length){any=true;L.push("  "+MCAT[c]+":");it.forEach(t=>L.push("  - "+t))}});if(ex.length){any=true;L.push("  Medidas propias:");ex.forEach(t=>L.push("  - "+t))}if(!any)L.push("  - Pendiente de definir");});L.push("");
- L.push("6. CONCLUSIONES",S.conclu||"[EDITABLE] Riesgos prioritarios, coste-beneficio de las medidas y propuesta de inspecciones preventivas.","",line,"Los niveles de riesgo son resultado de una metodología didáctica. Verificar con el plan territorial o municipal de referencia.");
+ L.push("6. CONCLUSIONES",S.conclu||"[EDITABLE] Riesgos prioritarios, coste-beneficio de las medidas y propuesta de inspecciones preventivas.","",line);
+ const v=evaluar();L.push("7. VALORACIÓN SEGÚN RÚBRICA (propuesta automática, pendiente de revisión docente)","");
+ L.push(...rubricaTxt(v),"","Valoración:",valoracionTxt(v),"",line,"Los niveles de riesgo son resultado de una metodología didáctica. Verificar con el plan territorial o municipal de referencia.");
  return L.join("\n")}
 function step5(b){
- b.innerHTML=`<div class="panel">${head(5,"Escribe tus conclusiones y genera el informe en texto plano, listo para copiar en tu documento de entrega.")}
+ b.innerHTML=`<div class="panel">${head(5,"Escribe tus conclusiones y genera el informe en texto plano, listo para copiar en tu documento de entrega. Al final se incluye la valoración según la rúbrica.")}
  <label class="f" for="conclu">Conclusiones <small>Riesgos prioritarios, relación coste-beneficio de las medidas, inspecciones preventivas propuestas.</small><textarea id="conclu" style="min-height:7rem">${esc(S.conclu)}</textarea></label>
  <div class="btns"><button class="btn" type="button" id="cp">Copiar informe</button><button class="btn ghost" type="button" id="dl">Descargar .txt</button></div>
- <pre class="report" id="rep" tabindex="0" aria-label="Informe generado"></pre></div>`;
- const upd=()=>$("#rep").textContent=report();upd();
+ <pre class="report" id="rep" tabindex="0" aria-label="Informe generado"></pre></div>
+ <div class="panel"><div class="intro"><p class="eyebrow">Autoevaluación</p><h3>Valoración según la rúbrica</h3><p class="muted small">Se recalcula al modificar el análisis. Es una propuesta orientativa basada en indicadores; la nota final la pone tu profesor.</p></div><div id="rubBox" aria-live="polite"></div></div>`;
+ const upd=()=>{$("#rep").textContent=report();const v=evaluar();
+  $("#rubBox").innerHTML=`<div class="tbl"><table><thead><tr><th>Criterio</th><th>Nivel</th><th style="text-align:right">Puntos</th></tr></thead><tbody>${v.res.map(x=>`<tr><td><b>${x.t}</b><br><span class="small muted">${x.d[x.nivel]}</span><div class="ra"><span>${x.ce}</span></div></td><td>${lvBadge(4-x.nivel)}</td><td class="num">${x.pts.toFixed(2).replace(".",",")} / ${String(x.max).replace(".",",")}</td></tr>`).join("")}</tbody></table></div>
+  <div class="total"><span>Nota propuesta</span><b>${v.total.toFixed(1).replace(".",",")} / 10</b></div><p class="fb">${esc(valoracionTxt(v))}</p>`;
+  $("#rubBox").querySelectorAll(".lvl").forEach((el,i)=>el.textContent=NIV[v.res[i].nivel])};upd();
  $("#conclu").oninput=e=>{S.conclu=e.target.value;save();upd()};
  $("#cp").onclick=()=>copy(report(),$("#rep"));
  $("#dl").onclick=()=>download("analisis-riesgos-"+(S.meta.ambito||"ambito").replace(/\W+/g,"-").toLowerCase()+".txt",report())}
@@ -590,6 +677,9 @@ function renderDoc(){const b=$("#docBody");
  <h3>Umbrales de la matriz 5×5</h3><div class="grid2">${["Bajo hasta","Moderado hasta","Alto hasta"].map((t,i)=>`<label class="f" for="m2-${i}">${t}<input type="number" min="1" max="25" id="m2-${i}" data-m2="${i}" value="${cfg.m2[i]}"></label>`).join("")}</div>
  <div class="btns"><button class="btn" type="button" id="cfgSave">Aplicar umbrales</button><button class="btn ghost" type="button" id="cfgDef">Valores por defecto</button></div>
  <p class="small muted">Los casos prácticos calculan el IR con D = valor máximo; los niveles mencionados en sus explicaciones usan los umbrales por defecto.</p>
+ <h3>Rúbrica del informe de análisis de riesgos</h3>
+ <p class="small muted">La app propone el nivel de cada criterio a partir de indicadores objetivos (extensión y contenido de descripciones y justificaciones, cobertura de orígenes y tipos de medidas, coherencia vulnerabilidad-daños). No valora la exactitud técnica del texto: esa revisión corresponde al docente.</p>
+ <div class="tbl"><table><thead><tr><th>Criterio (RA·CE)</th><th>Pts</th>${NIV.map((n,i)=>`<th>${n} (${NIVF[i]*100} %)</th>`).join("")}</tr></thead><tbody>${RUB.map(c=>`<tr><td><b>${c.t}</b><div class="ra"><span>${c.ce}</span></div></td><td class="num">${c.max}</td>${c.d.map(t=>`<td class="small">${t}</td>`).join("")}</tr>`).join("")}<tr><td><b>Total</b></td><td class="num">10</td><td colspan="4" class="small">Nota = suma de puntos de cada criterio (máximo × porcentaje del nivel).</td></tr></tbody></table></div>
  <h3>Correspondencia con el RD 906/2013</h3><div class="tbl"><table><tbody>${RA_TXT.map(r=>`<tr><td><b class="mono">${r[0]}</b></td><td>${r[1]}</td></tr>`).join("")}</tbody></table></div>
  <h3>Pautas DUA aplicadas</h3><ul class="small" style="margin:0;padding-left:1.1rem;display:grid;gap:.3rem">
   <li>Representación: información en texto, matriz de color con etiquetas de nivel y tablas de referencia.</li>
