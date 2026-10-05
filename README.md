@@ -6,4 +6,4 @@ App web para el alumnado del Módulo 1502 *Evaluación de riesgos y medidas prev
 - Casos prácticos autocorregibles.
 - Referencia rápida de escalas, fenómenos y planes canarios.
 
-Sitio estático: `public/index.html`. `app.html` es la fuente usada para la vista previa en Claude.
+Sitio estático: `public/index.html`. `app.html` es la fuente; `public/vendor` contiene jsPDF y jsPDF-AutoTable (licencia MIT) para generar el informe en PDF.

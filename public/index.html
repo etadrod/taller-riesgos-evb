@@ -556,10 +556,76 @@ function report(){const m=S.meta,L=[];const line="------------------------------
  const v=evaluar();L.push("7. VALORACIÓN SEGÚN RÚBRICA (propuesta automática, pendiente de revisión docente)","");
  L.push(...rubricaTxt(v),"","Valoración:",valoracionTxt(v),"",line,"Los niveles de riesgo son resultado de una metodología didáctica. Verificar con el plan territorial o municipal de referencia.");
  return L.join("\n")}
+/* ---------- informe PDF ---------- */
+function loadScript(src){return new Promise((ok,ko)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>ko(new Error(src));document.head.appendChild(s)})}
+let pdfLibs=null;
+function libsPDF(){if(window.jspdf&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API.autoTable)return Promise.resolve();
+ if(!pdfLibs)pdfLibs=loadScript("vendor/jspdf.umd.min.js").then(()=>loadScript("vendor/jspdf.plugin.autotable.min.js")).catch(e=>{pdfLibs=null;throw e});return pdfLibs}
+const pdfTxt=s=>String(s??"").replace(/₂/g,"2").replace(/≥/g,">=").replace(/≤/g,"<=").replace(/[^\u0000-ÿ–—‘’“”•…€]/g,"");
+const C={navy:[31,58,104],signal:[201,86,26],ink:[20,32,51],muted:[85,98,117],line:[211,218,228],sunk:[232,236,242],lv:[[47,125,79],[185,138,18],[210,96,28],[179,38,30]]};
+async function descargarPDF(btn){
+ const label=btn.textContent;btn.disabled=true;btn.textContent="Generando PDF…";
+ try{await libsPDF()}catch(e){btn.disabled=false;btn.textContent=label;toast("No se pudo cargar el generador de PDF. Revisa la conexión y vuelve a intentarlo.");return}
+ try{
+ const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:"mm",format:"a4"});const W=210,H=297,M=18,TW=W-2*M;let y=0;
+ const m=S.meta,v=evaluar(),rk=ranking();
+ const need=h=>{if(y+h>H-20){doc.addPage();y=M}};
+ const h2=(n,t)=>{need(16);y+=4;doc.setFont("helvetica","bold");doc.setFontSize(9);doc.setTextColor(...C.signal);doc.text(("APARTADO "+n).toUpperCase(),M,y);y+=5;doc.setFontSize(13);doc.setTextColor(...C.ink);doc.text(pdfTxt(t),M,y);y+=2;doc.setDrawColor(...C.line);doc.setLineWidth(.3);doc.line(M,y,W-M,y);y+=5};
+ const para=(t,o={})=>{doc.setFont("helvetica",o.bold?"bold":"normal");doc.setFontSize(o.size||10);doc.setTextColor(...(o.color||C.ink));const ls=doc.splitTextToSize(pdfTxt(t),o.w||TW);const lh=(o.size||10)*.45;ls.forEach(l=>{need(lh);doc.text(l,o.x||M,y);y+=lh});y+=o.after??2};
+ const bullets=a=>a.forEach(t=>{doc.setFont("helvetica","normal");doc.setFontSize(10);const ls=doc.splitTextToSize(pdfTxt(t),TW-5);need(ls.length*4.5);doc.setTextColor(...C.signal);doc.text("•",M+1,y);doc.setTextColor(...C.ink);ls.forEach(l=>{doc.text(l,M+5,y);y+=4.5})});
+ const table=o=>{doc.autoTable(Object.assign({startY:y,margin:{left:M,right:M,bottom:20},theme:"grid",styles:{font:"helvetica",fontSize:9,cellPadding:1.8,textColor:C.ink,lineColor:C.line,lineWidth:.2,overflow:"linebreak"},headStyles:{fillColor:C.navy,textColor:255,fontStyle:"bold"},alternateRowStyles:{fillColor:[247,248,251]}},o));y=doc.lastAutoTable.finalY+5};
+ const lvCell=(n,txt)=>({content:pdfTxt(txt),styles:{fillColor:C.lv[n-1],textColor:255,fontStyle:"bold",halign:"center"}});
+ // cabecera
+ doc.setFillColor(...C.navy);doc.rect(0,0,W,30,"F");doc.setFillColor(...C.signal);doc.rect(0,30,W,1.2,"F");
+ doc.setTextColor(255);doc.setFont("helvetica","bold");doc.setFontSize(18);doc.text("Informe de análisis de riesgos",M,14);
+ doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text(pdfTxt("Módulo 1502 · Evaluación de riesgos y medidas preventivas · CFGS Coordinación de Emergencias y Protección Civil"),M,21);
+ y=40;
+ const metodo=S.metodo==="pd"?"Índice P x D":S.metodo==="mx"?"Matriz 5x5 (P x S)":"Índice P x D y matriz 5x5 (comparación)";
+ table({theme:"plain",styles:{fontSize:10,cellPadding:1.2,textColor:C.ink},columnStyles:{0:{fontStyle:"bold",cellWidth:42,textColor:C.muted}},
+  body:[["Alumno/a o grupo",m.alumno||"[sin indicar]"],["Ámbito de estudio",m.ambito||"[sin indicar]"],["Isla",m.isla||"[sin indicar]"],["Tipo de análisis",m.tipo],["Método de evaluación",metodo],["Fecha",new Date().toLocaleDateString("es-ES")]].map(r=>r.map(pdfTxt))});
+ // resumen nota
+ need(16);doc.setDrawColor(...C.navy);doc.setLineWidth(.6);doc.rect(M,y,TW,13);doc.setFont("helvetica","bold");doc.setFontSize(10);doc.setTextColor(...C.muted);doc.text(pdfTxt("Nota propuesta según rúbrica (pendiente de revisión docente)"),M+4,y+8.2);doc.setFontSize(16);doc.setTextColor(...C.navy);doc.text(v.total.toFixed(1).replace(".",",")+" / 10",W-M-4,y+8.8,{align:"right"});y+=19;
+ // 1
+ h2(1,"Descripción del ámbito");para(m.desc||"[Pendiente de completar]");para("Población expuesta: "+(m.pob||"[pendiente]"),{bold:true});
+ // 2
+ h2(2,"Análisis de vulnerabilidad");const gs=GRUPOS.filter(g=>m.grupos.includes(g[0])).map(g=>g[1]);bullets(gs.length?gs:["No se han identificado elementos vulnerables específicos."]);y+=1;if(m.notas)para("Observaciones: "+m.notas);
+ // 3
+ h2(3,"Riesgos identificados");
+ if(S.sel.length)table({head:[["Origen","Riesgo","Plan o norma de referencia"]],body:Object.keys(G).flatMap(g=>S.sel.filter(id=>RX[id].g===g).map(id=>[G[g],RX[id].n,RX[id].plan].map(pdfTxt))),columnStyles:{0:{cellWidth:28}}});else para("No se han identificado riesgos.");
+ // 4
+ h2(4,"Evaluación del riesgo");
+ if(S.metodo!=="mx")para(`Índice P x D: IR = Probabilidad x Daños (1-25). D = ${cfg.dRule==="max"?"valor máximo":"media redondeada"} de los daños a personas, bienes y medio ambiente. Bajo hasta ${cfg.m1[0]}, Moderado hasta ${cfg.m1[1]}, Alto hasta ${cfg.m1[2]}, Muy alto por encima.`,{size:9,color:C.muted});
+ if(S.metodo!=="pd")para(`Matriz 5x5: Probabilidad x Severidad global. Bajo hasta ${cfg.m2[0]}, Moderado hasta ${cfg.m2[1]}, Alto hasta ${cfg.m2[2]}, Muy alto por encima.`,{size:9,color:C.muted});
+ if(rk.length){const hd=["#","Riesgo","P"];if(S.metodo!=="mx")hd.push("Pers.","Bienes","M.A.","D","IR P x D");if(S.metodo!=="pd")hd.push("S","Matriz");
+  table({head:[hd],body:rk.map((x,i)=>{const e=ev(x.id);const r=[String(i+1),pdfTxt(x.r.n),String(e.P)];if(S.metodo!=="mx")r.push(String(e.dp),String(e.db),String(e.da),String(D(e)),lvCell(x.l1,x.v1+" "+LV[x.l1-1]));if(S.metodo!=="pd")r.push(String(e.S),lvCell(x.l2,x.v2+" "+LV[x.l2-1]));return r}),columnStyles:{0:{cellWidth:7,halign:"center"}},styles:{halign:"center",fontSize:9,cellPadding:1.8,lineColor:C.line,lineWidth:.2},didParseCell:d=>{if(d.column.index===1)d.cell.styles.halign="left"}});
+  table({head:[["Riesgo","Justificación"]],body:rk.map(x=>[pdfTxt(x.r.n),pdfTxt(ev(x.id).just||"[Sin justificar]")]),columnStyles:{0:{cellWidth:45,fontStyle:"bold"}}})}
+ // 5
+ h2(5,"Medidas preventivas y de protección");
+ if(rk.length){const body=[];rk.forEach(x=>{const ch=S.med[x.id]||[];const rows=[];Object.keys(MCAT).forEach(c=>x.r.m[c].filter(t=>ch.includes(t)).forEach(t=>rows.push([MCAT[c],t])));ownLines(x.id).forEach(t=>rows.push(["Propia",t]));if(!rows.length)rows.push(["-","Pendiente de definir"]);
+   rows.forEach((r,i)=>body.push([i===0?{content:pdfTxt(x.r.n),rowSpan:rows.length,styles:{fontStyle:"bold",valign:"top"}}:null,pdfTxt(r[0]),pdfTxt(r[1])].filter(c=>c!==null)))});
+  table({head:[["Riesgo","Tipo","Medida"]],body,columnStyles:{0:{cellWidth:40},1:{cellWidth:32}}})}
+ // 6
+ h2(6,"Conclusiones");para(S.conclu||"[Pendiente de completar]");
+ // 7
+ h2(7,"Valoración según rúbrica");
+ table({head:[["Criterio","RA · CE","Nivel","Puntos"]],body:[...v.res.map(x=>[{content:pdfTxt(x.t+"\n"+x.d[x.nivel]),styles:{}},pdfTxt(x.ce),lvCell(4-x.nivel,NIV[x.nivel]),x.pts.toFixed(2).replace(".",",")+" / "+String(x.max).replace(".",",")]),[{content:"TOTAL",colSpan:3,styles:{fontStyle:"bold",halign:"right"}},{content:v.total.toFixed(1).replace(".",",")+" / 10",styles:{fontStyle:"bold"}}]],
+  columnStyles:{1:{cellWidth:32,fontSize:8,textColor:C.muted},2:{cellWidth:24},3:{cellWidth:22,halign:"right"}}});
+ const vt=doc.splitTextToSize(pdfTxt(valoracionTxt(v)),TW-8);need(vt.length*4.5+12);doc.setFillColor(...C.sunk);doc.rect(M,y,TW,vt.length*4.5+9,"F");doc.setFillColor(...C.navy);doc.rect(M,y,1.2,vt.length*4.5+9,"F");
+ doc.setFont("helvetica","bold");doc.setFontSize(10);doc.setTextColor(...C.ink);doc.text("Valoración",M+4,y+5.5);doc.setFont("helvetica","normal");let yy=y+10.5;vt.forEach(l=>{doc.text(l,M+4,yy);yy+=4.5});y=yy+4;
+ para("Propuesta generada automáticamente a partir de indicadores de la rúbrica. No valora la exactitud técnica del contenido; la calificación final corresponde al docente.",{size:8.5,color:C.muted});
+ // pies
+ const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setDrawColor(...C.line);doc.setLineWidth(.3);doc.line(M,H-13,W-M,H-13);doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(...C.muted);
+  doc.text(pdfTxt("Taller de Análisis de Riesgos · Módulo 1502 · "+(m.alumno||"Alumno/a sin indicar")),M,H-8.5);doc.text(`Página ${i} de ${n}`,W-M,H-8.5,{align:"right"})}
+ const name="informe-riesgos-"+((m.alumno||m.ambito||"alumno").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase()||"alumno")+".pdf";
+ doc.save(name);toast("PDF descargado: "+name)}
+ catch(e){console.error(e);toast("No se pudo generar el PDF")}
+ finally{btn.disabled=false;btn.textContent=label}}
+
 function step5(b){
  b.innerHTML=`<div class="panel">${head(5,"Escribe tus conclusiones y genera el informe en texto plano, listo para copiar en tu documento de entrega. Al final se incluye la valoración según la rúbrica.")}
  <label class="f" for="conclu">Conclusiones <small>Riesgos prioritarios, relación coste-beneficio de las medidas, inspecciones preventivas propuestas.</small><textarea id="conclu" style="min-height:7rem">${esc(S.conclu)}</textarea></label>
- <div class="btns"><button class="btn" type="button" id="cp">Copiar informe</button><button class="btn ghost" type="button" id="dl">Descargar .txt</button></div>
+ <div class="btns"><button class="btn" type="button" id="dl">Descargar informe PDF</button><button class="btn ghost" type="button" id="cp">Copiar como texto</button></div>
+ <p class="small muted">Rellena tu nombre en el paso 1 antes de descargar: aparece en la portada y en el nombre del archivo.</p>
  <pre class="report" id="rep" tabindex="0" aria-label="Informe generado"></pre></div>
  <div class="panel"><div class="intro"><p class="eyebrow">Autoevaluación</p><h3>Valoración según la rúbrica</h3><p class="muted small">Se recalcula al modificar el análisis. Es una propuesta orientativa basada en indicadores; la nota final la pone tu profesor.</p></div><div id="rubBox" aria-live="polite"></div></div>`;
  const upd=()=>{$("#rep").textContent=report();const v=evaluar();
@@ -568,7 +634,7 @@ function step5(b){
   $("#rubBox").querySelectorAll(".lvl").forEach((el,i)=>el.textContent=NIV[v.res[i].nivel])};upd();
  $("#conclu").oninput=e=>{S.conclu=e.target.value;save();upd()};
  $("#cp").onclick=()=>copy(report(),$("#rep"));
- $("#dl").onclick=()=>download("analisis-riesgos-"+(S.meta.ambito||"ambito").replace(/\W+/g,"-").toLowerCase()+".txt",report())}
+ $("#dl").onclick=e=>descargarPDF(e.currentTarget)}
 
 $("#exportJson").onclick=()=>download("analisis-riesgos.json",JSON.stringify(S,null,2),"application/json");
 $("#importJson").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o.meta||!Array.isArray(o.sel))throw 0;S=Object.assign(blank(),o);save();renderAsis();toast("Análisis abierto")}catch(x){toast("El archivo no es un análisis válido")}};rd.readAsText(f);e.target.value=""};
