@@ -612,18 +612,17 @@ async function descargarPDF(btn){
  finally{btn.disabled=false;btn.textContent=label}}
 
 function step5(b){
- b.innerHTML=`<div class="panel">${head(5,"Escribe tus conclusiones y genera el informe en texto plano, listo para copiar en tu documento de entrega. Al final se incluye la valoración según la rúbrica.")}
+ b.innerHTML=`<div class="panel">${head(5,"Escribe tus conclusiones y descarga el informe en PDF para entregarlo. Al final se incluye la valoración según la rúbrica.")}
  <label class="f" for="conclu">Conclusiones <small>Riesgos prioritarios, relación coste-beneficio de las medidas, inspecciones preventivas propuestas.</small><textarea id="conclu" style="min-height:7rem">${esc(S.conclu)}</textarea></label>
- <div class="btns"><button class="btn" type="button" id="dl">Descargar informe PDF</button><button class="btn ghost" type="button" id="cp">Copiar como texto</button></div>
+ <div class="btns"><button class="btn" type="button" id="dl">Descargar informe PDF</button></div>
  <p class="small muted">Rellena tu nombre en el paso 1 antes de descargar: aparece en la portada y en el nombre del archivo.</p>
- <pre class="report" id="rep" tabindex="0" aria-label="Informe generado"></pre></div>
+ </div>
  <div class="panel"><div class="intro"><p class="eyebrow">Autoevaluación</p><h3>Valoración según la rúbrica</h3><p class="muted small">Se recalcula al modificar el análisis. Es una propuesta orientativa basada en indicadores; la nota final la pone tu profesor.</p></div><div id="rubBox" aria-live="polite"></div></div>`;
- const upd=()=>{$("#rep").textContent=report();const v=evaluar();
+ const upd=()=>{const v=evaluar();
   $("#rubBox").innerHTML=`<div class="tbl"><table><thead><tr><th>Criterio</th><th>Nivel</th><th style="text-align:right">Puntos</th></tr></thead><tbody>${v.res.map(x=>`<tr><td><b>${x.t}</b><br><span class="small muted">${x.d[x.nivel]}</span><div class="ra"><span>${x.ce}</span></div></td><td>${lvBadge(4-x.nivel)}</td><td class="num">${x.pts.toFixed(2).replace(".",",")} / ${String(x.max).replace(".",",")}</td></tr>`).join("")}</tbody></table></div>
   <div class="total"><span>Nota propuesta</span><b>${v.total.toFixed(1).replace(".",",")} / 10</b></div><p class="fb">${esc(valoracionTxt(v))}</p>`;
   $("#rubBox").querySelectorAll(".lvl").forEach((el,i)=>el.textContent=NIV[v.res[i].nivel])};upd();
  $("#conclu").oninput=e=>{S.conclu=e.target.value;save();upd()};
- $("#cp").onclick=()=>copy(report(),$("#rep"));
  $("#dl").onclick=e=>descargarPDF(e.currentTarget)}
 
 $("#exportJson").onclick=()=>download("analisis-riesgos.json",JSON.stringify(S,null,2),"application/json");
