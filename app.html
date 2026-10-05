@@ -1,0 +1,598 @@
+<title>Taller de Análisis de Riesgos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: barra de mando superior + pestañas; contenido en una columna de trabajo (máx. 980px) con tarjetas solo para riesgos y casos. */
+:root{
+  --bg:#F2F4F7; --surface:#FFFFFF; --sunk:#E8ECF2; --ink:#142033; --muted:#556275; --line:#D3DAE4;
+  --navy:#1F3A68; --navy-ink:#FFFFFF; --signal:#C9561A; --signal-soft:#FBE7DA;
+  --l1:#2F7D4F; --l2:#B98A12; --l3:#D2601C; --l4:#B3261E; --on-l:#FFFFFF;
+  --ok:#2F7D4F; --ko:#B3261E;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --fs:1rem; --radius:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E1520; --surface:#162030; --sunk:#1C283A; --ink:#E5EBF3; --muted:#9BA8BA; --line:#2B384C;
+  --navy:#8EAEE6; --navy-ink:#0E1520; --signal:#F0894A; --signal-soft:#3A2416;
+  --l1:#3F9E66; --l2:#C99A22; --l3:#E3742E; --l4:#D2453C; --on-l:#0B0F16;
+  --ok:#55B77D; --ko:#E5675E; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1520; --surface:#162030; --sunk:#1C283A; --ink:#E5EBF3; --muted:#9BA8BA; --line:#2B384C;
+  --navy:#8EAEE6; --navy-ink:#0E1520; --signal:#F0894A; --signal-soft:#3A2416;
+  --l1:#3F9E66; --l2:#C99A22; --l3:#E3742E; --l4:#D2453C; --on-l:#0B0F16;
+  --ok:#55B77D; --ko:#E5675E; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+img{max-width:100%}
+html{font-size:calc(16px * var(--scale,1))}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:var(--fs);line-height:1.5;margin:0}
+h1,h2,h3{font-family:var(--f-display);letter-spacing:.01em;text-wrap:balance;margin:0;line-height:1.1}
+h2{font-size:1.9rem;font-weight:700}
+h3{font-size:1.35rem;font-weight:600}
+p{margin:0}
+a{color:var(--navy)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--signal);outline-offset:2px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-display);font-weight:600;text-transform:uppercase;letter-spacing:.12em;font-size:.85rem;color:var(--signal)}
+.muted{color:var(--muted)}
+.small{font-size:.9rem}
+
+/* barra superior */
+.top{background:var(--navy);color:var(--navy-ink);position:sticky;top:env(safe-area-inset-top,0px);z-index:10}
+.top-in{max-width:980px;margin:0 auto;padding:.7rem 16px .2rem;display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:.6rem;min-width:0}
+.brand svg{flex:none}
+.brand b{font-family:var(--f-display);font-size:1.45rem;font-weight:700;letter-spacing:.02em}
+.brand span{font-size:.8rem;opacity:.85;display:block;line-height:1.2}
+.tools{display:flex;gap:.35rem}
+.tools button{background:transparent;border:1px solid currentColor;color:var(--navy-ink);border-radius:4px;padding:.15rem .55rem;cursor:pointer;font-size:.85rem}
+.tabs{max-width:980px;margin:0 auto;padding:0 16px;display:flex;gap:.2rem;overflow-x:auto}
+.tabs button{background:none;border:0;color:var(--navy-ink);opacity:.75;padding:.55rem .8rem .6rem;font-family:var(--f-display);font-size:1.1rem;font-weight:600;letter-spacing:.03em;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+.tabs button[aria-selected="true"]{opacity:1;border-bottom-color:var(--signal)}
+
+main{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:1.4rem 3rem;display:grid;gap:1.4rem}
+section.view{display:grid;gap:1.2rem}
+
+/* pasos */
+.steps{display:flex;gap:.3rem;overflow-x:auto;padding-bottom:.2rem;list-style:none;margin:0;padding-left:0;counter-reset:s}
+.steps button{display:flex;align-items:center;gap:.45rem;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:.3rem .8rem .3rem .35rem;cursor:pointer;white-space:nowrap;font-weight:600;font-size:.92rem}
+.steps button i{font-style:normal;display:grid;place-items:center;width:1.6rem;height:1.6rem;border-radius:50%;background:var(--sunk);font-family:var(--f-mono);font-size:.8rem}
+.steps button[aria-current="step"]{border-color:var(--navy);color:var(--navy)}
+.steps button[aria-current="step"] i{background:var(--navy);color:var(--navy-ink)}
+.steps button.done i{background:var(--l1);color:var(--on-l)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1.2rem;display:grid;gap:1rem;min-width:0}
+.intro{display:grid;gap:.4rem;max-width:68ch}
+.ra{display:inline-flex;flex-wrap:wrap;gap:.3rem}
+.ra span{font-family:var(--f-mono);font-size:.75rem;background:var(--sunk);border-radius:3px;padding:.05rem .4rem;color:var(--muted)}
+
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:1rem}
+label.f{display:grid;gap:.25rem;font-weight:600;font-size:.95rem}
+label.f small{font-weight:400;color:var(--muted)}
+input[type=text],input[type=number],select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:.5rem .6rem}
+textarea{min-height:5rem;resize:vertical}
+fieldset{border:1px solid var(--line);border-radius:var(--radius);padding:.8rem 1rem 1rem;margin:0;min-width:0}
+legend{font-family:var(--f-display);font-weight:600;font-size:1.15rem;padding:0 .3rem}
+.checks{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:.45rem .9rem}
+.chk{display:flex;gap:.5rem;align-items:flex-start;cursor:pointer;line-height:1.35}
+.chk input{margin-top:.2rem;width:1.05rem;height:1.05rem;accent-color:var(--navy);flex:none}
+.chk em{display:block;font-style:normal;font-size:.82rem;color:var(--muted)}
+
+.btns{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+.btn{border:1px solid var(--navy);background:var(--navy);color:var(--navy-ink);border-radius:4px;padding:.5rem 1rem;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--navy)}
+.btn.warn{border-color:var(--signal);background:transparent;color:var(--signal)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.spacer{flex:1}
+
+/* método */
+.seg{display:inline-flex;border:1px solid var(--navy);border-radius:4px;overflow:hidden;flex-wrap:wrap}
+.seg button{background:transparent;border:0;padding:.4rem .8rem;cursor:pointer;color:var(--navy);font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--navy);color:var(--navy-ink)}
+
+/* tarjeta riesgo */
+.risk{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);display:grid;gap:.8rem;padding:1rem;min-width:0}
+.risk-h{display:flex;flex-wrap:wrap;gap:.4rem 1rem;align-items:baseline;justify-content:space-between}
+.tag{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.plan{font-family:var(--f-mono);font-size:.78rem;color:var(--navy)}
+.scales{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:.7rem}
+.lvl{display:inline-flex;align-items:center;gap:.4rem;border-radius:3px;padding:.15rem .55rem;font-weight:700;font-size:.85rem;color:var(--on-l)}
+.lvl.b1{background:var(--l1)}.lvl.b2{background:var(--l2)}.lvl.b3{background:var(--l3)}.lvl.b4{background:var(--l4)}
+.result{display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;align-items:center;background:var(--sunk);border-radius:4px;padding:.6rem .8rem}
+.result b.mono{font-size:1.25rem}
+.warnbox{border-left:4px solid var(--signal);background:var(--signal-soft);padding:.55rem .8rem;border-radius:0 4px 4px 0;font-size:.92rem}
+
+/* matriz */
+.mx-wrap{overflow-x:auto}
+.mx{display:grid;grid-template-columns:1.9rem repeat(5,minmax(0,1fr));gap:3px;min-width:17rem}
+.mx div{min-height:3.6rem;border-radius:3px;padding:.25rem;display:flex;flex-wrap:wrap;gap:3px;align-content:flex-start}
+.mx .ax{background:none;font-family:var(--f-mono);font-size:.8rem;color:var(--muted);align-items:center;justify-content:center;min-height:1.6rem}
+.mx .c1{background:color-mix(in srgb,var(--l1) 28%,var(--surface))}
+.mx .c2{background:color-mix(in srgb,var(--l2) 30%,var(--surface))}
+.mx .c3{background:color-mix(in srgb,var(--l3) 32%,var(--surface))}
+.mx .c4{background:color-mix(in srgb,var(--l4) 34%,var(--surface))}
+.mx .chip{font-family:var(--f-mono);font-size:.7rem;font-weight:600;background:var(--surface);color:var(--ink);border:1px solid var(--ink);border-radius:3px;padding:0 .3rem;height:1.25rem;line-height:1.15rem}
+.mx-legend{display:flex;flex-wrap:wrap;gap:.4rem}
+.axis-t{font-size:.85rem;color:var(--muted)}
+
+table{border-collapse:collapse;width:100%;font-size:.94rem}
+th,td{text-align:left;padding:.45rem .55rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-display);font-weight:600;font-size:1rem;letter-spacing:.03em}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
+.tbl{overflow-x:auto}
+
+pre.report{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1rem;font-family:var(--f-mono);font-size:.82rem;max-height:32rem;overflow:auto;margin:0}
+
+/* casos */
+.cases{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:1rem}
+.case-card{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:1rem;display:grid;gap:.5rem;cursor:pointer;align-content:start}
+.case-card:hover{border-color:var(--navy)}
+.case-card .row{display:flex;justify-content:space-between;gap:.5rem;align-items:baseline}
+.score{font-family:var(--f-mono);font-weight:600}
+.q{border-top:1px solid var(--line);padding-top:1rem;display:grid;gap:.6rem}
+.q-h{display:flex;gap:.6rem;align-items:baseline}
+.q-h .n{font-family:var(--f-mono);font-size:.8rem;color:var(--muted);flex:none}
+.opt{display:flex;gap:.5rem;align-items:flex-start;padding:.4rem .55rem;border:1px solid var(--line);border-radius:4px;cursor:pointer}
+.opt input{margin-top:.25rem;accent-color:var(--navy);flex:none}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--surface))}
+.opt.wrong{border-color:var(--ko);background:color-mix(in srgb,var(--ko) 12%,var(--surface))}
+.fb{font-size:.92rem;padding:.55rem .8rem;border-radius:4px;background:var(--sunk)}
+.fb.ok{border-left:4px solid var(--ok)}.fb.ko{border-left:4px solid var(--ko)}
+.scen{background:var(--sunk);border-radius:4px;padding:.9rem 1rem;display:grid;gap:.5rem;max-width:75ch}
+.scen ul{margin:0;padding-left:1.1rem}
+.total{display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;align-items:center;border:2px solid var(--navy);border-radius:var(--radius);padding:.8rem 1rem}
+.total b{font-family:var(--f-mono);font-size:1.6rem}
+
+/* referencia */
+.refgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:1rem}
+details{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:.7rem 1rem}
+summary{cursor:pointer;font-family:var(--f-display);font-weight:600;font-size:1.2rem}
+details[open] summary{margin-bottom:.6rem}
+dl{margin:0;display:grid;gap:.45rem}
+dt{font-weight:700}
+dd{margin:0 0 .2rem;color:var(--muted)}
+.sem{display:grid;gap:.35rem}
+.sem div{display:flex;gap:.6rem;align-items:flex-start}
+.sem i{flex:none;width:1.1rem;height:1.1rem;border-radius:50%;margin-top:.2rem;border:1px solid var(--line)}
+.toast{position:fixed;left:50%;bottom:calc(1rem + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:.5rem 1rem;border-radius:4px;font-weight:600;z-index:30}
+@media (prefers-reduced-motion:no-preference){.panel,.risk{transition:border-color .15s}}
+@media (max-width:600px){.top{position:static}.brand b{font-size:1.25rem}}
+@media print{.top,.steps,.btns{display:none}}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="16" fill="var(--signal)"/><path d="M17 6 L28 26 H6 Z" fill="var(--navy)" stroke="var(--navy-ink)" stroke-width="1.5"/></svg>
+      <div><b>Taller de Análisis de Riesgos</b><span>Módulo 1502 · Evaluación de riesgos y medidas preventivas · Canarias</span></div>
+    </div>
+    <div class="tools" role="group" aria-label="Tamaño de texto">
+      <button type="button" id="fsMinus" aria-label="Reducir texto">A−</button>
+      <button type="button" id="fsPlus" aria-label="Aumentar texto">A+</button>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Secciones">
+    <button role="tab" id="tab-asis" aria-controls="v-asis" aria-selected="true">Asistente</button>
+    <button role="tab" id="tab-casos" aria-controls="v-casos" aria-selected="false">Casos prácticos</button>
+    <button role="tab" id="tab-ref" aria-controls="v-ref" aria-selected="false">Referencia</button>
+    <button role="tab" id="tab-doc" aria-controls="v-doc" aria-selected="false">Docente</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ASISTENTE -->
+  <section class="view" id="v-asis" role="tabpanel" aria-labelledby="tab-asis">
+    <ol class="steps" id="steps" aria-label="Pasos del análisis"></ol>
+    <div id="stepBody"></div>
+    <div class="btns">
+      <button class="btn ghost" id="prev" type="button">← Anterior</button>
+      <button class="btn" id="next" type="button">Siguiente →</button>
+      <span class="spacer"></span>
+      <button class="btn ghost" id="exportJson" type="button">Guardar análisis (.json)</button>
+      <label class="btn ghost" for="importJson" style="cursor:pointer">Abrir análisis</label>
+      <input type="file" id="importJson" accept=".json,application/json" hidden>
+      <button class="btn warn" id="resetBtn" type="button">Empezar de cero</button>
+    </div>
+    <p class="small muted" id="saveNote">El trabajo se guarda en este navegador. Para entregarlo o cambiar de equipo, usa «Guardar análisis».</p>
+  </section>
+
+  <!-- CASOS -->
+  <section class="view" id="v-casos" role="tabpanel" aria-labelledby="tab-casos" hidden>
+    <div id="casosBody"></div>
+  </section>
+
+  <!-- REFERENCIA -->
+  <section class="view" id="v-ref" role="tabpanel" aria-labelledby="tab-ref" hidden>
+    <div class="intro">
+      <p class="eyebrow">Consulta rápida</p>
+      <h2>Escalas, fenómenos y planes</h2>
+      <p class="muted">Material de apoyo para el asistente y los casos. Ábrelo en otra ventana si lo necesitas mientras trabajas.</p>
+    </div>
+    <div class="refgrid" id="refBody"></div>
+  </section>
+
+  <!-- DOCENTE -->
+  <section class="view" id="v-doc" role="tabpanel" aria-labelledby="tab-doc" hidden>
+    <div class="intro">
+      <p class="eyebrow">Configuración</p>
+      <h2>Umbrales y correspondencia curricular</h2>
+      <p class="muted">Los umbrales se guardan solo en este navegador. Los valores por defecto son de referencia didáctica: ajústalos a la guía metodológica que uses en clase (pendiente de verificación frente al plan territorial o municipal de referencia).</p>
+    </div>
+    <div class="panel" id="docBody"></div>
+  </section>
+</main>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- utilidades ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>el.hidden=true,2200)}
+function download(name,text,type){try{const b=new Blob([text],{type:type||"text/plain;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}catch(e){toast("No se pudo descargar. Copia el texto.")}}
+async function copy(text,pre){try{await navigator.clipboard.writeText(text);toast("Copiado al portapapeles")}catch(e){if(pre){const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r)}toast("Texto seleccionado: pulsa Ctrl+C / Copiar")}}
+
+/* ---------- tamaño de texto (DUA) ---------- */
+let scale=store.get("evb_scale",1);
+function applyScale(){document.documentElement.style.setProperty("--scale",scale);store.set("evb_scale",scale)}
+$("#fsPlus").onclick=()=>{scale=Math.min(1.4,+(scale+.1).toFixed(2));applyScale()};
+$("#fsMinus").onclick=()=>{scale=Math.max(.9,+(scale-.1).toFixed(2));applyScale()};
+applyScale();
+
+/* ---------- configuración docente ---------- */
+const DEF_CFG={m1:[4,9,16],m2:[3,6,12],dRule:"max"};
+let cfg=Object.assign({},DEF_CFG,store.get("evb_cfg",{}));
+const LV=["Bajo","Moderado","Alto","Muy alto"];
+function level(v,th){return v<=th[0]?1:v<=th[1]?2:v<=th[2]?3:4}
+
+/* ---------- catálogo de riesgos ---------- */
+const G={nat:"Natural",tec:"Tecnológico",ant:"Antrópico"};
+const R=[
+ {id:"vol",g:"nat",n:"Erupción volcánica",ab:"VOL",plan:"PEVOLCA",d:"Coladas, piroclastos, gases (CO₂, SO₂), sismicidad asociada.",
+  m:{e:["Muros o barreras de desvío de coladas en puntos críticos","Refuerzo de cubiertas frente a carga de ceniza"],n:["Zonificación del peligro volcánico en el planeamiento","Divulgación del semáforo de información a la población","Ejercicios y simulacros de evacuación por sectores"],u:["Evacuación preventiva por sectores con prioridad a grupos críticos","Confinamiento ante episodios de gases o ceniza","Puntos de encuentro y albergue"],v:["Red de vigilancia volcánica (sismicidad, deformación, gases)","Comunicación de niveles del semáforo por canales accesibles"]}},
+ {id:"sis",g:"nat",n:"Terremoto",ab:"SIS",plan:"PESICAN",d:"Sacudida del suelo; intensidad evaluada con EMS-98 o Mercalli Modificada.",
+  m:{e:["Aplicación de normativa sismorresistente en edificación","Refuerzo estructural de edificios esenciales"],n:["Inventario de edificios vulnerables","Formación en autoprotección (agacharse, cubrirse, agarrarse)"],u:["Evacuación de edificios dañados y control de accesos","Habilitación de albergues"],v:["Red sísmica y comunicación de intensidades sentidas"]}},
+ {id:"tsu",g:"nat",n:"Maremoto (tsunami)",ab:"TSU",plan:"Plan Estatal ante maremotos",d:"Ondas de gran longitud por sismo, deslizamiento o erupción.",
+  m:{e:["Infraestructuras de refugio vertical en primera línea"],n:["Cartografía de zonas inundables por maremoto","Señalización de rutas de evacuación costera"],u:["Evacuación a cota segura o refugio vertical"],v:["Sistema de alerta de maremotos y avisos masivos"]}},
+ {id:"inu",g:"nat",n:"Inundación / avenida en barranco",ab:"INU",plan:"PEINCA",d:"Desbordamiento de cauces, escorrentía urbana, encharcamiento.",
+  m:{e:["Encauzamiento y mantenimiento de la sección del barranco","Presas o balsas de laminación","Redes de drenaje urbano dimensionadas"],n:["Delimitación de zonas inundables y limitación de usos","Corrección hidrológico-forestal de cuencas","Limpieza preventiva de cauces antes de la temporada de lluvias"],u:["Cierre preventivo de pasos, garajes y vías en cauce","Evacuación de plantas bajas en zonas inundables"],v:["Seguimiento de avisos meteorológicos y pluviómetros","Avisos a la población en zonas de riesgo"]}},
+ {id:"fma",g:"nat",n:"Fenómenos meteorológicos adversos",ab:"FMA",plan:"PEFMA",d:"Lluvias, viento (escala Beaufort), oleaje, calima, temperaturas extremas, ciclones (Saffir-Simpson).",
+  m:{e:["Anclaje de elementos expuestos al viento (cartelería, estructuras temporales)"],n:["Protocolos de suspensión de eventos al aire libre","Información sobre conducta ante viento, oleaje y calima"],u:["Cierre de accesos al litoral ante temporal","Atención a grupos sensibles en episodios de calor o calima"],v:["Avisos meteorológicos y difusión por niveles"]}},
+ {id:"iff",g:"nat",n:"Incendio forestal (interfaz)",ab:"IFF",plan:"INFOCA",d:"Fuego en monte que alcanza zonas habitadas de medianías.",
+  m:{e:["Fajas perimetrales de baja carga de combustible","Red de hidrantes y depósitos accesibles"],n:["Planificación urbano-forestal y limitación de edificación en interfaz","Planes de autoprotección de urbanizaciones","Campañas de prevención y quemas controladas"],u:["Evacuación anticipada o confinamiento en edificación preparada","Corte de vías y gestión de tráfico"],v:["Vigilancia fija y móvil, índices de peligro","Avisos de prohibición y alerta"]}},
+ {id:"lad",g:"nat",n:"Desprendimientos y deslizamientos",ab:"LAD",plan:"PLATECA / plan municipal",d:"Caída de rocas en taludes, laderas y acantilados; subsidencias.",
+  m:{e:["Mallas, anclajes y muros de contención","Consolidación de laderas inestables"],n:["Cartografía de zonas de desprendimiento","Restricción de usos al pie de taludes"],u:["Cierre de vías y senderos afectados","Desalojo de viviendas al pie del talud"],v:["Inspección periódica de taludes tras lluvias"]}},
+ {id:"met",g:"nat",n:"Impacto de meteoroides",ab:"MET",plan:"PLATECA",d:"Bólidos y meteoritos; muy baja probabilidad en la escala local.",
+  m:{e:[],n:["Información pública basada en fuentes científicas"],u:["Activación de protocolos generales del plan territorial"],v:["Seguimiento de avisos de organismos astronómicos"]}},
+ {id:"qui",g:"tec",n:"Accidente químico industrial",ab:"QUI",plan:"RISQCAN",d:"Fuga, incendio o explosión en establecimiento con sustancias peligrosas (DL50, CL50).",
+  m:{e:["Cubetos de retención, compartimentación y protección pasiva","Sistemas fijos de extinción y detección de fugas"],n:["Distancias de seguridad en el planeamiento","Plan de autoprotección e inspecciones periódicas","Información a la población del entorno"],u:["Confinamiento ante nube tóxica","Evacuación de zonas de intervención"],v:["Detectores y sirenas de aviso en el entorno"]}},
+ {id:"mmp",g:"tec",n:"Transporte de mercancías peligrosas",ab:"MMP",plan:"PEMERCA",d:"Cisternas por carretera, puerto y aeropuerto; BLEVE, pool-fire, fugas.",
+  m:{e:["Barreras de contención y drenajes en tramos críticos"],n:["Mapa de flujos de MMPP y rutas preferentes","Restricciones horarias y de itinerario"],u:["Perímetros de seguridad según la materia","Confinamiento o evacuación del entorno"],v:["Comunicación de incidentes con CECOES 1-1-2"]}},
+ {id:"rad",g:"tec",n:"Emergencia radiológica",ab:"RAD",plan:"RADICAN",d:"Fuentes radiactivas en hospitales, industria o transporte.",
+  m:{e:["Blindajes y almacenamiento seguro de fuentes"],n:["Inventario de instalaciones y control de fuentes"],u:["Confinamiento y control de accesos"],v:["Detección y medición radiológica"]}},
+ {id:"exp",g:"tec",n:"Explosivos",ab:"EXP",plan:"PEMEXCA",d:"Almacenamiento, transporte y uso de explosivos (canteras, pirotecnia).",
+  m:{e:["Distancias y protecciones en depósitos"],n:["Control de espectáculos pirotécnicos y zonas de seguridad"],u:["Perímetro de seguridad y evacuación"],v:["Inspección de depósitos y actividades"]}},
+ {id:"mar",g:"tec",n:"Contaminación marina",ab:"MAR",plan:"PECMAR",d:"Vertidos de hidrocarburos o sustancias en el litoral.",
+  m:{e:["Barreras flotantes y medios de recogida"],n:["Planes interiores de puertos e instalaciones","Inventario de zonas costeras sensibles"],u:["Cierre de playas y zonas de baño"],v:["Vigilancia del litoral y avisos"]}},
+ {id:"sum",g:"tec",n:"Fallo de servicios esenciales",ab:"SUM",plan:"PLATECA / PNPIC",d:"Cero eléctrico, desalación, telecomunicaciones; infraestructuras críticas.",
+  m:{e:["Redundancia de suministro y grupos electrógenos en servicios esenciales"],n:["Coordinación con operadores críticos (PSO, PPE)","Reservas estratégicas de agua"],u:["Priorización de suministro a hospitales y residencias"],v:["Comunicación con operadores y Planes de Apoyo Operativo (PAO)"]}},
+ {id:"con",g:"ant",n:"Grandes concentraciones humanas",ab:"CON",plan:"Ley 7/2011 · Decreto 86/2013 · PAU",d:"Fiestas, conciertos, eventos deportivos; densidad y evacuación.",
+  m:{e:["Vallado que no bloquee salidas, zonas de evacuación dimensionadas"],n:["Plan de autoprotección del evento","Control de aforo y densidad","Información a asistentes (megafonía, pantallas, señalización)"],u:["Evacuación por sectores y apertura de salidas","Corredor de servicios de emergencia"],v:["Vigilancia de densidad en tiempo real y coordinación con CECOES 1-1-2"]}},
+ {id:"tra",g:"ant",n:"Accidente de tráfico",ab:"TRA",plan:"PLATECA / plan municipal",d:"Colisiones múltiples, puntos negros, túneles.",
+  m:{e:["Corrección de trazados y barreras de seguridad"],n:["Análisis de siniestralidad y puntos críticos","Campañas de seguridad vial"],u:["Desvíos y gestión de tráfico"],v:["Paneles de mensaje variable"]}},
+ {id:"aer",g:"ant",n:"Accidente aéreo",ab:"AER",plan:"Plan de autoprotección aeroportuario / PLATECA",d:"Aeropuerto y trayectorias de aproximación.",
+  m:{e:[],n:["Plan de emergencia aeroportuario y coordinación exterior"],u:["Perímetro, triaje y evacuación sanitaria"],v:["Comunicación torre–CECOES 1-1-2"]}},
+ {id:"mrt",g:"ant",n:"Accidente marítimo",ab:"MRT",plan:"PECMAR / plan portuario",d:"Buques de pasaje, interislas, puertos.",
+  m:{e:[],n:["Planes de emergencia portuarios"],u:["Rescate, acogida de náufragos"],v:["Salvamento Marítimo y coordinación con CECOES 1-1-2"]}},
+ {id:"fer",g:"ant",n:"Accidente en tranvía o metro ligero",ab:"FER",plan:"PAU del operador / plan municipal",d:"Descarrilamiento, colisión, incendio en vehículo.",
+  m:{e:[],n:["Plan de autoprotección del operador"],u:["Evacuación de vehículos y corte de servicio"],v:["Centro de control del operador"]}},
+ {id:"van",g:"ant",n:"Vandalismo, sabotaje o terrorismo",ab:"VAN",plan:"Sistema PNPIC",d:"Actos intencionados contra personas o infraestructuras críticas.",
+  m:{e:["Control de accesos y protección física"],n:["Plan de Seguridad del Operador (PSO) y Planes de Protección Específicos (PPE)"],u:["Confinamiento o evacuación según amenaza"],v:["Coordinación con Fuerzas y Cuerpos de Seguridad"]}},
+ {id:"inc",g:"ant",n:"Incendio urbano o en edificio",ab:"INC",plan:"PAU / plan municipal",d:"Edificios de pública concurrencia, residencias, hoteles.",
+  m:{e:["Protección pasiva: compartimentación, tratamientos ignífugos","Protección activa: detección, alarma, extinción"],n:["Plan de autoprotección e implantación","Simulacros periódicos"],u:["Evacuación según plan, con apoyo a personas con movilidad reducida"],v:["Detección automática y conexión con central receptora"]}}
+];
+const RX=Object.fromEntries(R.map(r=>[r.id,r]));
+const MCAT={e:"Estructurales",n:"No estructurales",u:"En situación de emergencia",v:"Vigilancia y alerta"};
+const MCAT_CE={e:"RA4·CE a",n:"RA4·CE b",u:"RA4·CE d",v:"RA5"};
+
+const PDESC=["","Muy improbable: sin antecedentes conocidos","Improbable: antecedentes aislados","Posible: antecedentes en la zona","Probable: se repite cada pocos años","Muy probable: frecuente o en curso"];
+const DDESC={
+ p:["","Sin heridos","Heridos leves","Heridos graves o atención a muchas personas","Víctimas mortales aisladas","Múltiples víctimas mortales"],
+ b:["","Daños mínimos","Daños leves en bienes","Daños en viviendas o servicios","Daños graves en infraestructuras críticas","Destrucción extensa"],
+ a:["","Sin afección","Afección leve y reversible","Afección moderada","Afección grave a espacios protegidos","Daño irreversible"]};
+const SDESC=["","Insignificante","Menor","Moderada","Grave","Catastrófica"];
+
+const GRUPOS=[
+ ["men","Menores (centros educativos, guarderías)"],["may","Personas mayores (residencias, centros de día)"],
+ ["dis","Personas con discapacidad o dependencia"],["san","Pacientes en centros sanitarios"],
+ ["tur","Población flotante y turística (desconoce el entorno y el idioma)"],["ais","Núcleos aislados o con un único acceso"],
+ ["cri","Infraestructuras críticas en la zona (desaladora, central, puerto)"],["env","Espacios naturales protegidos o especies singulares"]];
+
+/* ---------- estado ---------- */
+const EXAMPLE={ejemplo:true,step:0,metodo:"ambos",
+ meta:{alumno:"",ambito:"Municipio costero de ejemplo",isla:"Gran Canaria",tipo:"Territorio municipal",
+  desc:"Núcleo urbano de unos 12.000 habitantes atravesado por un barranco canalizado. Autovía con tránsito de cisternas junto al polígono industrial. Recinto portuario donde se celebra un festival anual.",
+  pob:"12.000 habitantes; población flotante en verano [EDITABLE]", grupos:["may","men","tur","cri"],notas:"Residencia de mayores a 300 m del cauce [EDITABLE]."},
+ sel:["inu","mmp","con"],
+ ev:{inu:{P:3,dp:4,db:4,da:2,S:4,just:"Episodios de lluvia intensa registrados en la zona; viviendas en plantas bajas junto al cauce."},
+     mmp:{P:2,dp:5,db:4,da:3,S:5,just:"Paso diario de cisternas de GLP y combustibles junto a zona habitada."},
+     con:{P:3,dp:5,db:2,da:1,S:4,just:"Festival con aforo elevado en explanada con salidas limitadas."}},
+ med:{inu:["Delimitación de zonas inundables y limitación de usos","Cierre preventivo de pasos, garajes y vías en cauce"],mmp:["Mapa de flujos de MMPP y rutas preferentes"],con:["Plan de autoprotección del evento","Control de aforo y densidad"]},
+ medx:{},
+ conclu:""};
+function blank(){return {ejemplo:false,step:0,metodo:"ambos",meta:{alumno:"",ambito:"",isla:"",tipo:"Territorio municipal",desc:"",pob:"",grupos:[],notas:""},sel:[],ev:{},med:{},medx:{},conclu:""}}
+let S=store.get("evb_state",null)||JSON.parse(JSON.stringify(EXAMPLE));
+function save(){store.set("evb_state",S)}
+function ev(id){if(!S.ev[id])S.ev[id]={P:3,dp:3,db:3,da:3,S:3,just:""};return S.ev[id]}
+function D(e){return cfg.dRule==="media"?Math.round((e.dp+e.db+e.da)/3):Math.max(e.dp,e.db,e.da)}
+function ir1(e){return e.P*D(e)}
+function ir2(e){return e.P*e.S}
+
+/* ---------- pestañas ---------- */
+const TABS=["asis","casos","ref","doc"];
+function showTab(t){TABS.forEach(x=>{$("#tab-"+x).setAttribute("aria-selected",x===t);$("#v-"+x).hidden=x!==t});if(t==="casos")renderCasos();if(t==="doc")renderDoc();store.set("evb_tab",t);scrollTo({top:0})}
+TABS.forEach(x=>$("#tab-"+x).onclick=()=>showTab(x));
+
+/* ---------- asistente ---------- */
+const STEPS=[
+ {t:"Ámbito y vulnerabilidad",ra:["RA1·CE b","RA1·CE c","RA1·CE d","RA2·CE b"]},
+ {t:"Identificación",ra:["RA1·CE a","RA2·CE a","RA3·CE a"]},
+ {t:"Evaluación",ra:["RA1·CE e","RA2·CE c","RA3·CE e"]},
+ {t:"Mapa y prioridad",ra:["RA1·CE f","RA2·CE d"]},
+ {t:"Medidas",ra:["RA4·CE a–e","RA5·CE a–c, e"]},
+ {t:"Informe",ra:["RA4·CE i"]}];
+function renderSteps(){const ol=$("#steps");ol.innerHTML=STEPS.map((s,i)=>`<li><button type="button" data-s="${i}" ${i===S.step?'aria-current="step"':''} class="${i<S.step?'done':''}"><i>${i+1}</i>${s.t}</button></li>`).join("");ol.querySelectorAll("button").forEach(b=>b.onclick=()=>go(+b.dataset.s))}
+function go(i){S.step=Math.max(0,Math.min(STEPS.length-1,i));save();renderAsis();window.scrollTo({top:0})}
+$("#prev").onclick=()=>go(S.step-1);
+$("#next").onclick=()=>{if(S.step===1&&!S.sel.length){toast("Selecciona al menos un riesgo");return}go(S.step+1)};
+function head(i,txt){const s=STEPS[i];return `<div class="intro"><p class="eyebrow">Paso ${i+1} de ${STEPS.length}</p><h2>${s.t}</h2><p class="muted">${txt}</p><div class="ra" aria-label="Criterios de evaluación">${s.ra.map(r=>`<span>${r}</span>`).join("")}</div></div>`}
+function exampleBanner(){return S.ejemplo?`<div class="warnbox">Estás viendo un <b>análisis de ejemplo</b> con datos ficticios. Modifícalo para practicar o pulsa «Empezar de cero» para hacer el tuyo.</div>`:""}
+
+function renderAsis(){renderSteps();const b=$("#stepBody");
+ $("#prev").disabled=S.step===0;$("#next").hidden=S.step===STEPS.length-1;
+ [step0,step1,step2,step3,step4,step5][S.step](b)}
+
+function bindInputs(root){root.querySelectorAll("[data-k]").forEach(el=>{el.addEventListener("input",()=>{const path=el.dataset.k.split(".");let o=S;for(let i=0;i<path.length-1;i++)o=o[path[i]];o[path.at(-1)]=el.type==="number"?+el.value:el.value;S.ejemplo=false;save()})})}
+
+function step0(b){const m=S.meta;
+ b.innerHTML=`<div class="panel">${head(0,"Describe el territorio o la actividad. La vulnerabilidad depende de quién y qué está expuesto: población, urbanismo y medio ambiente.")}${exampleBanner()}
+ <div class="grid2">
+  <label class="f" for="m-alumno">Alumno/a o grupo<input type="text" id="m-alumno" data-k="meta.alumno" value="${esc(m.alumno)}" placeholder="Nombre y apellidos"></label>
+  <label class="f" for="m-ambito">Ámbito de estudio<input type="text" id="m-ambito" data-k="meta.ambito" value="${esc(m.ambito)}" placeholder="Municipio, polígono, recinto..."></label>
+  <label class="f" for="m-isla">Isla<select id="m-isla" data-k="meta.isla">${["","Lanzarote","Fuerteventura","Gran Canaria","Tenerife","La Gomera","La Palma","El Hierro","La Graciosa"].map(x=>`<option ${x===m.isla?"selected":""}>${x}</option>`).join("")}</select></label>
+  <label class="f" for="m-tipo">Tipo de análisis<select id="m-tipo" data-k="meta.tipo">${["Territorio municipal","Actividad o establecimiento","Evento o espectáculo público","Infraestructura o vía de comunicación"].map(x=>`<option ${x===m.tipo?"selected":""}>${x}</option>`).join("")}</select></label>
+ </div>
+ <label class="f" for="m-desc">Descripción del ámbito <small>Geomorfología, clima, usos, vías, servicios básicos, actividades peligrosas cercanas.</small><textarea id="m-desc" data-k="meta.desc">${esc(m.desc)}</textarea></label>
+ <label class="f" for="m-pob">Población expuesta <small>Número, densidad y variaciones estacionales.</small><input type="text" id="m-pob" data-k="meta.pob" value="${esc(m.pob)}"></label>
+ <fieldset><legend>Elementos vulnerables presentes</legend><div class="checks">${GRUPOS.map(([k,t])=>`<label class="chk"><input type="checkbox" data-g="${k}" ${m.grupos.includes(k)?"checked":""}><span>${t}</span></label>`).join("")}</div></fieldset>
+ <label class="f" for="m-notas">Observaciones de vulnerabilidad<textarea id="m-notas" data-k="meta.notas">${esc(m.notas)}</textarea></label>
+ </div>`;
+ bindInputs(b);
+ b.querySelectorAll("[data-g]").forEach(c=>c.onchange=()=>{const g=S.meta.grupos;const k=c.dataset.g;if(c.checked){if(!g.includes(k))g.push(k)}else S.meta.grupos=g.filter(x=>x!==k);S.ejemplo=false;save()})}
+
+function step1(b){
+ b.innerHTML=`<div class="panel">${head(1,"Marca los fenómenos peligrosos que pueden afectar al ámbito. Junto a cada uno aparece el plan especial o la norma de referencia en Canarias.")}
+ ${Object.keys(G).map(g=>`<fieldset><legend>Riesgos de origen ${G[g].toLowerCase()}</legend><div class="checks">${R.filter(r=>r.g===g).map(r=>`<label class="chk"><input type="checkbox" data-r="${r.id}" ${S.sel.includes(r.id)?"checked":""}><span>${r.n}<em>${r.plan} · ${r.d}</em></span></label>`).join("")}</div></fieldset>`).join("")}
+ <p class="small muted" id="selCount"></p></div>`;
+ const upd=()=>$("#selCount").textContent=`${S.sel.length} riesgo(s) seleccionado(s).`;upd();
+ b.querySelectorAll("[data-r]").forEach(c=>c.onchange=()=>{const k=c.dataset.r;if(c.checked){if(!S.sel.includes(k))S.sel.push(k);ev(k)}else S.sel=S.sel.filter(x=>x!==k);S.ejemplo=false;save();upd()})}
+
+function seg(){return `<div class="btns"><span class="small muted">Método:</span><div class="seg" role="group" aria-label="Método de evaluación">${[["pd","Índice P × D"],["mx","Matriz 5×5"],["ambos","Ambos (comparar)"]].map(([k,t])=>`<button type="button" data-m="${k}" aria-pressed="${S.metodo===k}">${t}</button>`).join("")}</div></div>`}
+function bindSeg(b,re){b.querySelectorAll("[data-m]").forEach(x=>x.onclick=()=>{S.metodo=x.dataset.m;save();re()})}
+function sel(id,val,desc,label,key){return `<label class="f" for="${id}">${label}<select id="${id}" data-e="${key}">${[1,2,3,4,5].map(v=>`<option value="${v}" ${v===val?"selected":""}>${v} · ${desc[v]}</option>`).join("")}</select></label>`}
+function lvBadge(n,v){return `<span class="lvl b${n}">${LV[n-1]}${v!=null?` <span class="mono">${v}</span>`:""}</span>`}
+
+function vulnWarn(e){const crit=S.meta.grupos.filter(g=>["men","may","dis","san"].includes(g)).length;
+ if(crit>=2&&e.dp<=2)return `<div class="warnbox">Has marcado ${crit} grupos críticos en el ámbito y valoras el daño a personas en ${e.dp}. Revisa si es coherente con la vulnerabilidad descrita en el paso 1.</div>`;
+ if(S.meta.grupos.includes("env")&&e.da<=1)return `<div class="warnbox">Hay espacios naturales protegidos en el ámbito y el daño ambiental está en 1. Justifica por qué no se verían afectados.</div>`;return ""}
+
+function step2(b){
+ if(!S.sel.length){b.innerHTML=`<div class="panel">${head(2,"")}<p>No hay riesgos seleccionados. Vuelve al paso 2.</p></div>`;return}
+ const show1=S.metodo!=="mx",show2=S.metodo!=="pd";
+ b.innerHTML=`<div class="panel">${head(2,"Valora cada riesgo. El índice P × D calcula el daño a partir de tres dimensiones; la matriz 5×5 usa una severidad global. Con «Ambos» puedes comparar los dos resultados.")}${seg()}
+ <details><summary>Cómo se calcula</summary><dl>
+  <dt>Índice P × D</dt><dd>IR = Probabilidad (1–5) × Daños (1–5). Daños = ${cfg.dRule==="max"?"valor máximo":"media redondeada"} de personas, bienes y medio ambiente. Rango 1–25. Niveles: Bajo ≤ ${cfg.m1[0]}, Moderado ≤ ${cfg.m1[1]}, Alto ≤ ${cfg.m1[2]}, Muy alto > ${cfg.m1[2]}.</dd>
+  <dt>Matriz 5×5</dt><dd>Nivel = Probabilidad × Severidad global. Niveles: Bajo ≤ ${cfg.m2[0]}, Moderado ≤ ${cfg.m2[1]}, Alto ≤ ${cfg.m2[2]}, Muy alto > ${cfg.m2[2]}.</dd>
+ </dl></details></div>
+ ${S.sel.map(id=>{const r=RX[id],e=ev(id);return `<article class="risk" data-id="${id}">
+  <div class="risk-h"><h3>${r.n}</h3><span class="plan">${r.plan}</span></div>
+  <p class="tag">${G[r.g]} · ${r.ab}</p>
+  <div class="scales">${sel(id+"-P",e.P,PDESC,"Probabilidad (P)","P")}</div>
+  ${show1?`<div class="scales">${sel(id+"-dp",e.dp,DDESC.p,"Daños a personas","dp")}${sel(id+"-db",e.db,DDESC.b,"Daños a bienes e infraestructuras","db")}${sel(id+"-da",e.da,DDESC.a,"Daños al medio ambiente","da")}</div>`:""}
+  ${show2?`<div class="scales">${sel(id+"-S",e.S,SDESC,"Severidad global (matriz)","S")}</div>`:""}
+  <div class="result" aria-live="polite"></div>
+  <div class="vw"></div>
+  <label class="f" for="${id}-just">Justificación <small>Antecedentes históricos, fuentes consultadas, elementos expuestos.</small><textarea id="${id}-just" data-j>${esc(e.just)}</textarea></label>
+ </article>`}).join("")}`;
+ bindSeg(b,()=>step2(b));
+ b.querySelectorAll(".risk").forEach(card=>{const id=card.dataset.id,e=ev(id);
+  const upd=()=>{const parts=[];if(show1){const v=ir1(e);parts.push(`<span>P × D = <b class="mono">${e.P} × ${D(e)} = ${v}</b></span>${lvBadge(level(v,cfg.m1))}`)}
+   if(show2){const v=ir2(e);parts.push(`<span>Matriz P × S = <b class="mono">${e.P} × ${e.S} = ${v}</b></span>${lvBadge(level(v,cfg.m2))}`)}
+   if(show1&&show2&&level(ir1(e),cfg.m1)!==level(ir2(e),cfg.m2))parts.push(`<span class="small">Los métodos dan niveles distintos: explica la diferencia en la justificación.</span>`);
+   card.querySelector(".result").innerHTML=parts.join("");card.querySelector(".vw").innerHTML=show1?vulnWarn(e):""};
+  upd();
+  card.querySelectorAll("[data-e]").forEach(s=>s.onchange=()=>{e[s.dataset.e]=+s.value;S.ejemplo=false;save();upd()});
+  card.querySelector("[data-j]").oninput=t=>{e.just=t.target.value;save()}})}
+
+function matrix(kind){const th=kind==="pd"?cfg.m1:cfg.m2;const ylab=kind==="pd"?"D":"S";
+ let h=`<div class="mx" role="table" aria-label="Matriz de riesgos ${kind==="pd"?"probabilidad por daños":"probabilidad por severidad"}">`;
+ for(let p=5;p>=1;p--){h+=`<div class="ax" role="rowheader">P${p}</div>`;
+  for(let d=1;d<=5;d++){const lv=level(p*d,th);const chips=S.sel.filter(id=>{const e=ev(id);return e.P===p&&(kind==="pd"?D(e):e.S)===d}).map(id=>`<span class="chip" title="${esc(RX[id].n)}">${RX[id].ab}</span>`).join("");
+   h+=`<div class="c${lv}" role="cell" aria-label="P${p} ${ylab}${d}: ${LV[lv-1]}${chips?", contiene riesgos":""}">${chips}</div>`}}
+ h+=`<div class="ax"></div>${[1,2,3,4,5].map(d=>`<div class="ax">${ylab}${d}</div>`).join("")}</div>`;return h}
+function ranking(){return S.sel.map(id=>{const e=ev(id);return {id,r:RX[id],v1:ir1(e),v2:ir2(e),l1:level(ir1(e),cfg.m1),l2:level(ir2(e),cfg.m2)}}).sort((a,b)=>S.metodo==="mx"?b.v2-a.v2:b.v1-a.v1)}
+function step3(b){
+ if(!S.sel.length){b.innerHTML=`<div class="panel">${head(3,"")}<p>No hay riesgos seleccionados.</p></div>`;return}
+ const kinds=S.metodo==="ambos"?["pd","mx"]:[S.metodo];
+ b.innerHTML=`<div class="panel">${head(3,"Representación de los riesgos en la matriz y orden de prioridad. Esta matriz es la base del mapa de riesgos; la cartografía se elabora después en SIG o CAD.")}${seg()}
+ <div class="grid2">${kinds.map(k=>`<div style="display:grid;gap:.5rem;min-width:0"><h3>${k==="pd"?"Índice P × D":"Matriz 5×5 (P × S)"}</h3><div class="mx-wrap">${matrix(k)}</div><p class="axis-t">Filas: probabilidad. Columnas: ${k==="pd"?"daños":"severidad"}.</p></div>`).join("")}</div>
+ <div class="mx-legend">${[1,2,3,4].map(n=>lvBadge(n)).join("")}</div>
+ <h3>Prioridad de actuación</h3>
+ <div class="tbl"><table><thead><tr><th>#</th><th>Riesgo</th><th>Plan</th>${S.metodo!=="mx"?"<th>IR P×D</th>":""}${S.metodo!=="pd"?"<th>Matriz</th>":""}</tr></thead><tbody>
+ ${ranking().map((x,i)=>`<tr><td class="num">${i+1}</td><td><b class="mono">${x.r.ab}</b> ${x.r.n}</td><td class="small">${x.r.plan}</td>${S.metodo!=="mx"?`<td>${lvBadge(x.l1,x.v1)}</td>`:""}${S.metodo!=="pd"?`<td>${lvBadge(x.l2,x.v2)}</td>`:""}</tr>`).join("")}
+ </tbody></table></div></div>`;bindSeg(b,()=>step3(b))}
+
+function step4(b){
+ if(!S.sel.length){b.innerHTML=`<div class="panel">${head(4,"")}<p>No hay riesgos seleccionados.</p></div>`;return}
+ b.innerHTML=`<div class="panel">${head(4,"Selecciona las medidas para cada riesgo, empezando por los de mayor nivel. Añade las tuyas propias. Las propuestas son orientativas: adáptalas al ámbito.")}</div>
+ ${ranking().map(x=>{const id=x.id,r=x.r,ch=S.med[id]||[];return `<article class="risk" data-id="${id}">
+  <div class="risk-h"><h3>${r.n}</h3>${lvBadge(S.metodo==="mx"?x.l2:x.l1,S.metodo==="mx"?x.v2:x.v1)}</div>
+  ${Object.keys(MCAT).map(c=>r.m[c].length?`<fieldset><legend>${MCAT[c]} <span class="ra"><span>${MCAT_CE[c]}</span></span></legend><div class="checks">${r.m[c].map(t=>`<label class="chk"><input type="checkbox" data-t="${esc(t)}" ${ch.includes(t)?"checked":""}><span>${esc(t)}</span></label>`).join("")}</div></fieldset>`:"").join("")}
+  <label class="f" for="${id}-mx">Otras medidas propias <small>Una por línea. Indica el tipo entre corchetes, por ejemplo: [No estructural] Señalización de rutas.</small><textarea id="${id}-mx" data-x>${esc((S.medx||{})[id]||"")}</textarea></label>
+ </article>`}).join("")}`;
+ b.querySelectorAll(".risk").forEach(card=>{const id=card.dataset.id;
+  card.querySelectorAll("[data-t]").forEach(c=>c.onchange=()=>{const a=S.med[id]||(S.med[id]=[]);const t=c.dataset.t;if(c.checked){if(!a.includes(t))a.push(t)}else S.med[id]=a.filter(x=>x!==t);S.ejemplo=false;save()});
+  card.querySelector("[data-x]").oninput=e=>{(S.medx||(S.medx={}))[id]=e.target.value;save()}})}
+
+function report(){const m=S.meta,L=[];const line="------------------------------------------------------------";
+ L.push("INFORME DE ANÁLISIS DE RIESGOS","Módulo 1502 · Evaluación de riesgos y medidas preventivas",line);
+ L.push("Alumno/a o grupo: "+(m.alumno||"[EDITABLE]"),"Ámbito: "+(m.ambito||"[EDITABLE]"),"Isla: "+(m.isla||"[EDITABLE]"),"Tipo de análisis: "+m.tipo,"Fecha: "+new Date().toLocaleDateString("es-ES"),"");
+ L.push("1. DESCRIPCIÓN DEL ÁMBITO",m.desc||"[EDITABLE]","","Población expuesta: "+(m.pob||"[EDITABLE]"),"");
+ L.push("2. ANÁLISIS DE VULNERABILIDAD");if(m.grupos.length)GRUPOS.filter(g=>m.grupos.includes(g[0])).forEach(g=>L.push("- "+g[1]));else L.push("- No se han identificado elementos vulnerables específicos [revisar]");if(m.notas)L.push("Observaciones: "+m.notas);L.push("");
+ L.push("3. RIESGOS IDENTIFICADOS");Object.keys(G).forEach(g=>{const rs=S.sel.filter(id=>RX[id].g===g);if(rs.length){L.push("Origen "+G[g].toLowerCase()+":");rs.forEach(id=>L.push("- "+RX[id].n+" (referencia: "+RX[id].plan+")"))}});L.push("");
+ L.push("4. EVALUACIÓN");
+ if(S.metodo!=="mx")L.push(`Método índice P x D: IR = P x D; D = ${cfg.dRule==="max"?"máximo":"media"} de daños a personas, bienes y medio ambiente. Umbrales: Bajo <= ${cfg.m1[0]}, Moderado <= ${cfg.m1[1]}, Alto <= ${cfg.m1[2]}, Muy alto > ${cfg.m1[2]}.`);
+ if(S.metodo!=="pd")L.push(`Método matriz 5x5: P x S. Umbrales: Bajo <= ${cfg.m2[0]}, Moderado <= ${cfg.m2[1]}, Alto <= ${cfg.m2[2]}, Muy alto > ${cfg.m2[2]}.`);
+ L.push("");ranking().forEach((x,i)=>{const e=ev(x.id);L.push(`${i+1}. ${x.r.n}`);L.push(`   P = ${e.P}`+(S.metodo!=="mx"?` | Personas ${e.dp}, Bienes ${e.db}, Medio ambiente ${e.da} -> D = ${D(e)} | IR = ${x.v1} (${LV[x.l1-1]})`:"")+(S.metodo!=="pd"?` | S = ${e.S} -> ${x.v2} (${LV[x.l2-1]})`:""));L.push("   Justificación: "+(e.just||"[EDITABLE]"))});L.push("");
+ L.push("5. MEDIDAS PREVENTIVAS Y DE PROTECCIÓN");ranking().forEach(x=>{const ch=S.med[x.id]||[];const ex=((S.medx||{})[x.id]||"").split("\n").map(s=>s.trim()).filter(Boolean);L.push(x.r.n+":");let any=false;Object.keys(MCAT).forEach(c=>{const it=x.r.m[c].filter(t=>ch.includes(t));if(it.length){any=true;L.push("  "+MCAT[c]+":");it.forEach(t=>L.push("  - "+t))}});if(ex.length){any=true;L.push("  Medidas propias:");ex.forEach(t=>L.push("  - "+t))}if(!any)L.push("  - Pendiente de definir");});L.push("");
+ L.push("6. CONCLUSIONES",S.conclu||"[EDITABLE] Riesgos prioritarios, coste-beneficio de las medidas y propuesta de inspecciones preventivas.","",line,"Los niveles de riesgo son resultado de una metodología didáctica. Verificar con el plan territorial o municipal de referencia.");
+ return L.join("\n")}
+function step5(b){
+ b.innerHTML=`<div class="panel">${head(5,"Escribe tus conclusiones y genera el informe en texto plano, listo para copiar en tu documento de entrega.")}
+ <label class="f" for="conclu">Conclusiones <small>Riesgos prioritarios, relación coste-beneficio de las medidas, inspecciones preventivas propuestas.</small><textarea id="conclu" style="min-height:7rem">${esc(S.conclu)}</textarea></label>
+ <div class="btns"><button class="btn" type="button" id="cp">Copiar informe</button><button class="btn ghost" type="button" id="dl">Descargar .txt</button></div>
+ <pre class="report" id="rep" tabindex="0" aria-label="Informe generado"></pre></div>`;
+ const upd=()=>$("#rep").textContent=report();upd();
+ $("#conclu").oninput=e=>{S.conclu=e.target.value;save();upd()};
+ $("#cp").onclick=()=>copy(report(),$("#rep"));
+ $("#dl").onclick=()=>download("analisis-riesgos-"+(S.meta.ambito||"ambito").replace(/\W+/g,"-").toLowerCase()+".txt",report())}
+
+$("#exportJson").onclick=()=>download("analisis-riesgos.json",JSON.stringify(S,null,2),"application/json");
+$("#importJson").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o.meta||!Array.isArray(o.sel))throw 0;S=Object.assign(blank(),o);save();renderAsis();toast("Análisis abierto")}catch(x){toast("El archivo no es un análisis válido")}};rd.readAsText(f);e.target.value=""};
+let resetArm=false;
+$("#resetBtn").onclick=function(){if(!resetArm){resetArm=true;this.textContent="Pulsa otra vez para borrar";setTimeout(()=>{resetArm=false;this.textContent="Empezar de cero"},3000);return}resetArm=false;this.textContent="Empezar de cero";S=blank();save();renderAsis();toast("Análisis vacío creado")};
+
+/* ---------- casos prácticos ---------- */
+const CASOS=[
+{id:"c1",t:"Reactivación volcánica en la dorsal",r:"Natural · PEVOLCA",ra:"RA1, RA4, RA5",
+ esc:["Isla occidental. Se registra un enjambre sísmico superficial, deformación del terreno y aumento de emisión de CO₂ en la dorsal.","Núcleo de 3.000 habitantes a 2 km del área de mayor deformación, con una residencia de mayores y un colegio.","Las erupciones históricas de la zona fueron basálticas fisurales, con conos de piroclastos y coladas de lava."],
+ q:[
+ {k:"s",t:"¿Qué plan especial autonómico regula la respuesta ante este riesgo?",o:["PESICAN","PEVOLCA","INFOCA","PEFMA"],a:1,f:"PEVOLCA es el Plan Especial de Protección Civil y Atención de Emergencias por riesgo volcánico de Canarias. La sismicidad aquí es precursora de la erupción, no un riesgo sísmico independiente.",ce:"RA1·CE a"},
+ {k:"s",t:"Se comunica a la población que debe estar preparada para una posible evacuación. ¿Qué color del semáforo volcánico corresponde?",o:["Verde","Amarillo","Naranja","Rojo"],a:2,f:"Naranja: prepararse para una posible evacuación. Amarillo es información y precaución; rojo implica evacuación.",ce:"RA5·CE e"},
+ {k:"s",t:"Por los antecedentes descritos, ¿qué tipo eruptivo es el más esperable?",o:["Pliniana","Peleana","Estromboliana","Hawaiana pura sin piroclastos"],a:2,f:"El vulcanismo basáltico fisural con conos de piroclastos y coladas corresponde al tipo estromboliano, con explosividad baja a moderada.",ce:"RA1·CE a"},
+ {k:"n",t:"Calcula el índice P × D con P = 4; personas 5, bienes 5, medio ambiente 4 (D = valor máximo).",a:20,f:"D = máx(5, 5, 4) = 5. IR = 4 × 5 = 20, nivel Muy alto con los umbrales por defecto.",ce:"RA1·CE e"},
+ {k:"m",t:"Selecciona las medidas NO estructurales.",o:["Zonificación del peligro volcánico en el planeamiento","Muro de desvío de coladas","Divulgación del semáforo a la población","Simulacros de evacuación por sectores"],a:[0,2,3],f:"Son no estructurales las que reducen la exposición o aumentan la resiliencia: zonificación, información y simulacros. El muro de desvío es una obra, por tanto estructural.",ce:"RA4·CE b"},
+ {k:"s",t:"¿Qué colectivo debe tener prioridad en la evacuación preventiva?",o:["Población residente en general","Residencia de mayores","Visitantes del mirador","Comercios del casco"],a:1,f:"Las personas mayores dependientes necesitan más tiempo y medios para evacuar. Se evacúan en primer lugar.",ce:"RA1·CE b"}]},
+{id:"c2",t:"Lluvias torrenciales en barranco urbano",r:"Natural · PEINCA / PEFMA",ra:"RA1, RA4",
+ esc:["Aviso por lluvias intensas y viento en Gran Canaria. El barranco atraviesa un casco urbano canalizado, con garajes subterráneos y dos pasos inferiores.","Hay viviendas en planta baja junto al cauce y un centro de salud a 200 m."],
+ q:[
+ {k:"s",t:"¿Qué plan especial autonómico se refiere específicamente al riesgo de inundaciones?",o:["PEINCA","PECMAR","PEMERCA","RADICAN"],a:0,f:"PEINCA es el plan especial ante el riesgo de inundaciones. PEFMA se activa por el fenómeno meteorológico que lo origina.",ce:"RA1·CE a"},
+ {k:"m",t:"Selecciona las medidas ESTRUCTURALES.",o:["Encauzamiento del barranco","Presa de laminación aguas arriba","Corrección hidrológico-forestal de la cuenca","Consolidación de laderas inestables"],a:[0,1,3],f:"El RD 906/2013 (RA4·CE b) incluye la corrección hidrológico-forestal de cauces entre las medidas no estructurales. Encauzamiento, presa de laminación y consolidación de laderas son estructurales (RA4·CE a).",ce:"RA4·CE a, b"},
+ {k:"s",t:"Se prevén vientos sostenidos de 95 km/h. ¿Qué fuerza Beaufort corresponde?",o:["Fuerza 6","Fuerza 8","Fuerza 10","Fuerza 12"],a:2,f:"Fuerza 10 (temporal duro): 89–102 km/h. La fuerza 12 empieza en 118 km/h.",ce:"RA1·CE a"},
+ {k:"n",t:"Calcula el índice P × D con P = 3; personas 4, bienes 4, medio ambiente 2 (D = valor máximo).",a:12,f:"D = 4. IR = 3 × 4 = 12, nivel Alto con los umbrales por defecto.",ce:"RA1·CE e"},
+ {k:"s",t:"¿Qué medida en emergencia reduce más el riesgo en los pasos inferiores y garajes?",o:["Confinar a los vecinos en los sótanos","Cierre preventivo de pasos y garajes en zona inundable","Abrir las compuertas de los garajes para desaguar","Esperar a que el agua alcance la calzada"],a:1,f:"El cierre preventivo evita que las personas queden atrapadas en zonas bajas. Nunca se confina en sótanos ante inundación.",ce:"RA4·CE d"}]},
+{id:"c3",t:"Cisterna de GLP volcada en la circunvalación",r:"Tecnológico · PEMERCA",ra:"RA2, RA4",
+ esc:["Una cisterna vuelca en una vía de circunvalación junto a un polígono industrial. Hay fuego en el neumático y en el motor.","Panel naranja: número superior 23, número inferior 1965.","A 250 m hay un colegio en horario lectivo y un centro de salud; a 100 m, una gasolinera."],
+ q:[
+ {k:"s",t:"¿Qué plan especial autonómico corresponde?",o:["PEMEXCA","PEMERCA","RISQCAN","PECMAR"],a:1,f:"PEMERCA regula el transporte de mercancías peligrosas por carretera y ferrocarril. RISQCAN se refiere a establecimientos fijos.",ce:"RA2·CE a"},
+ {k:"s",t:"¿Qué indica el número superior del panel naranja (23)?",o:["Número ONU de la materia","Número de identificación de peligro","Clase de embalaje","Teléfono de emergencia del transportista"],a:1,f:"El número superior es el de identificación de peligro (23: gas inflamable). El inferior (1965) es el número ONU de la materia.",ce:"RA2·CE a"},
+ {k:"s",t:"El fuego calienta el depósito de gas licuado. ¿Qué fenómeno peligroso es el principal a prever?",o:["Boilover","Pool fire","BLEVE con bola de fuego","Nube tóxica persistente"],a:2,f:"BLEVE: rotura del recipiente con líquido sobrecalentado que se vaporiza de golpe, con onda de presión, proyectiles y bola de fuego. El boilover afecta a tanques de hidrocarburos con agua en el fondo.",ce:"RA2·CE a"},
+ {k:"m",t:"Selecciona los elementos que aumentan la vulnerabilidad o el riesgo de efecto dominó.",o:["Colegio en horario lectivo","Centro de salud","Gasolinera próxima","Solar vacío sin uso"],a:[0,1,2],f:"Colegio y centro de salud concentran población vulnerable; la gasolinera puede generar efecto dominó. El solar vacío no añade exposición.",ce:"RA2·CE b"},
+ {k:"s",t:"En general, cuanto menor es la DL50 de una sustancia...",o:["...menor es su toxicidad","...mayor es su toxicidad","...más inflamable es","...más volátil es"],a:1,f:"La DL50 es la dosis que mata al 50 % de la población de ensayo. Una DL50 baja significa que basta poca cantidad: mayor toxicidad.",ce:"RA2·CE a"},
+ {k:"n",t:"Calcula el índice P × D con P = 2; personas 5, bienes 4, medio ambiente 3 (D = valor máximo).",a:10,f:"D = 5. IR = 2 × 5 = 10, nivel Alto con los umbrales por defecto.",ce:"RA2·CE c"}]},
+{id:"c4",t:"Festival en explanada portuaria",r:"Antrópico · Ley 7/2011 · PAU",ra:"RA3, RA4",
+ esc:["Festival de música en una explanada portuaria con aforo previsto de 15.000 personas.","El recinto tiene tres salidas, una de ellas junto a la zona de carga. El acceso de ambulancias coincide con la entrada de público.","Público joven, consumo de alcohol, final del concierto a la 01:00."],
+ q:[
+ {k:"s",t:"¿Qué normativa autonómica regula los espectáculos públicos y actividades clasificadas en Canarias?",o:["Ley 7/2011 y Decreto 86/2013","Solo el Código Técnico de la Edificación","PEFMA","Sistema PNPIC"],a:0,f:"La Ley 7/2011 y su reglamento (Decreto 86/2013) regulan actividades clasificadas y espectáculos públicos en Canarias.",ce:"RA3·CE b"},
+ {k:"m",t:"Selecciona los factores que determinan la vulnerabilidad del recinto.",o:["Densidad de ocupación","Número y anchura de salidas","Accesibilidad de los servicios de emergencia","Color del escenario"],a:[0,1,2],f:"El RD 906/2013 (RA3·CE b) cita densidad, medios de evacuación, protección contra incendios, comunicación y accesibilidad de los servicios de emergencia.",ce:"RA3·CE b"},
+ {k:"s",t:"¿Cuál es el mecanismo de daño más grave en una salida saturada?",o:["Pánico generalizado sin causa","Aplastamiento por sobredensidad en puntos de estrechamiento","Golpe de calor aislado","Robos"],a:1,f:"Las víctimas en grandes concentraciones suelen deberse a la sobredensidad y la presión en estrechamientos. El pánico generalizado es menos frecuente de lo que se cree.",ce:"RA3·CE d"},
+ {k:"n",t:"Calcula el índice P × D con P = 3; personas 5, bienes 2, medio ambiente 1 (D = valor máximo).",a:15,f:"D = 5. IR = 3 × 5 = 15, nivel Alto con los umbrales por defecto.",ce:"RA3·CE e"},
+ {k:"s",t:"¿Qué medida corrige el problema del acceso de ambulancias?",o:["Ampliar el aforo","Corredor de emergencia independiente de los flujos de público","Cerrar una salida para controlar mejor","Colocar más barras"],a:1,f:"Un corredor exclusivo permite la intervención sin cruzar flujos de público y sin bloquear la evacuación.",ce:"RA4·CE c"}]},
+{id:"c5",t:"Incendio en la interfaz urbano-forestal",r:"Natural · INFOCA",ra:"RA1, RA4",
+ esc:["Urbanización de medianías rodeada de pinar, con un único acceso rodado.","Verano, humedad relativa baja y viento racheado. Vegetación sin desbrozar junto a las viviendas."],
+ q:[
+ {k:"s",t:"¿Qué plan especial autonómico corresponde?",o:["INFOCA","PEINCA","PESICAN","RADICAN"],a:0,f:"INFOCA es el plan especial de protección civil ante incendios forestales en Canarias.",ce:"RA1·CE a"},
+ {k:"m",t:"Selecciona las medidas preventivas adecuadas para la urbanización.",o:["Faja perimetral de baja carga de combustible","Plan de autoprotección de la urbanización","Hidrantes accesibles y señalizados","Plantar pinar junto a las viviendas"],a:[0,1,2],f:"Reducir combustible en el perímetro, planificar la autoprotección y garantizar agua accesible. Plantar pinar junto a viviendas aumenta la carga de combustible.",ce:"RA4·CE a, b"},
+ {k:"s",t:"Un tratamiento ignífugo en la madera de las viviendas es una medida de protección...",o:["Activa","Pasiva","De vigilancia","De alerta"],a:1,f:"La protección pasiva actúa sin intervención (compartimentación, ignifugación). La activa detecta o extingue.",ce:"RA4·CE c"},
+ {k:"n",t:"Calcula el índice P × D con P = 4; personas 4, bienes 4, medio ambiente 5 (D = valor máximo).",a:20,f:"D = 5 (medio ambiente). IR = 4 × 5 = 20, nivel Muy alto con los umbrales por defecto.",ce:"RA1·CE e"},
+ {k:"s",t:"El fuego está próximo y el único acceso está comprometido. ¿Medida más segura?",o:["Evacuar en vehículo por el acceso afectado","Confinamiento en edificación preparada","Refugiarse en el pinar","Esperar en la carretera"],a:1,f:"Si la evacuación ya no es segura, el confinamiento en una edificación preparada protege mejor que salir por la vía afectada por el fuego.",ce:"RA4·CE d"}]}
+];
+let casoAct=null;const resp=store.get("evb_casos",{});
+function scoreCaso(c,ans){let pts=0;c.q.forEach((q,i)=>{const a=ans[i];if(a==null)return;
+ if(q.k==="s")pts+=a===q.a?1:0;
+ else if(q.k==="n")pts+=Number(a)===q.a?1:0;
+ else{const ok=a.filter(x=>q.a.includes(x)).length,bad=a.filter(x=>!q.a.includes(x)).length;pts+=Math.max(0,(ok-bad)/q.a.length)}});
+ return Math.round(pts/c.q.length*100)/10}
+function renderCasos(){const b=$("#casosBody");
+ if(!casoAct){b.innerHTML=`<div class="intro"><p class="eyebrow">Autoevaluación</p><h2>Casos prácticos</h2><p class="muted">Escenarios ficticios ambientados en Canarias. Cada caso se puntúa sobre 10 y muestra la explicación de cada respuesta. Puedes repetirlos cuantas veces quieras.</p></div>
+ <div class="cases">${CASOS.map(c=>{const r=resp[c.id];return `<button class="case-card" type="button" data-c="${c.id}"><span class="tag">${c.r}</span><h3>${c.t}</h3><span class="small muted">${c.q.length} preguntas · ${c.ra}</span><span class="row"><span class="small">${r&&r.done?"Última nota":"Sin hacer"}</span><span class="score">${r&&r.done?r.nota.toFixed(1)+" / 10":"—"}</span></span></button>`}).join("")}</div>`;
+  b.querySelectorAll("[data-c]").forEach(x=>x.onclick=()=>{casoAct=x.dataset.c;renderCasos();scrollTo({top:0})});return}
+ const c=CASOS.find(x=>x.id===casoAct);const st=resp[c.id]&&!resp[c.id].done?resp[c.id]:{ans:{},done:false};const done=resp[c.id]&&resp[c.id].done;const ans=done?resp[c.id].ans:st.ans;
+ b.innerHTML=`<div class="btns"><button class="btn ghost" type="button" id="back">← Todos los casos</button></div>
+ <div class="panel"><div class="intro"><p class="eyebrow">${c.r}</p><h2>${c.t}</h2></div>
+ <div class="scen"><b>Escenario</b><ul>${c.esc.map(e=>`<li>${esc(e)}</li>`).join("")}</ul></div>
+ ${c.q.map((q,i)=>{const a=ans[i];let body="";
+  if(q.k==="n")body=`<label class="f" for="q${i}" style="max-width:12rem">Resultado (IR)<input type="number" id="q${i}" data-q="${i}" min="1" max="25" value="${a??""}" ${done?"disabled":""}></label>`;
+  else body=q.o.map((o,j)=>{const chk=q.k==="s"?a===j:(a||[]).includes(j);let cls="";if(done){const corr=q.k==="s"?q.a===j:q.a.includes(j);if(corr)cls="right";else if(chk)cls="wrong"}
+   return `<label class="opt ${cls}"><input type="${q.k==="s"?"radio":"checkbox"}" name="q${i}" data-q="${i}" value="${j}" ${chk?"checked":""} ${done?"disabled":""}><span>${esc(o)}</span></label>`}).join("");
+  let fb="";if(done){let ok;if(q.k==="s")ok=a===q.a;else if(q.k==="n")ok=Number(a)===q.a;else ok=a&&a.length===q.a.length&&a.every(x=>q.a.includes(x));fb=`<div class="fb ${ok?"ok":"ko"}"><b>${ok?"Correcta":"Revisa"}.</b> ${q.k==="n"?`Valor correcto: <span class="mono">${q.a}</span>. `:""}${esc(q.f)} <span class="ra"><span>${q.ce}</span></span></div>`}
+  return `<div class="q"><div class="q-h"><span class="n">${i+1}/${c.q.length}</span><p><b>${esc(q.t)}</b>${q.k==="m"?' <span class="small muted">(varias respuestas)</span>':""}</p></div>${body}${fb}</div>`}).join("")}
+ ${done?`<div class="total"><span>Nota del caso</span><b>${resp[c.id].nota.toFixed(1)} / 10</b><span class="spacer"></span><button class="btn ghost" type="button" id="retry">Repetir caso</button></div>`:`<div class="btns"><button class="btn" type="button" id="corr">Corregir</button><span class="small muted" id="pend"></span></div>`}
+ </div>`;
+ $("#back").onclick=()=>{casoAct=null;renderCasos()};
+ if(done){$("#retry").onclick=()=>{delete resp[c.id];store.set("evb_casos",resp);renderCasos()};return}
+ const cur=resp[c.id]=st;const pend=()=>{const n=c.q.filter((q,i)=>cur.ans[i]==null||(Array.isArray(cur.ans[i])&&!cur.ans[i].length)||cur.ans[i]==="").length;$("#pend").textContent=n?`${n} pregunta(s) sin responder`:"Todas respondidas"};pend();
+ b.querySelectorAll("[data-q]").forEach(el=>el.addEventListener(el.type==="number"?"input":"change",()=>{const i=+el.dataset.q,q=c.q[i];
+  if(q.k==="s")cur.ans[i]=+el.value;else if(q.k==="n")cur.ans[i]=el.value===""?null:+el.value;else{const s=new Set(cur.ans[i]||[]);el.checked?s.add(+el.value):s.delete(+el.value);cur.ans[i]=[...s]}store.set("evb_casos",resp);pend()}));
+ $("#corr").onclick=()=>{cur.done=true;cur.nota=scoreCaso(c,cur.ans);store.set("evb_casos",resp);renderCasos();toast("Nota: "+cur.nota.toFixed(1)+" / 10")}}
+
+/* ---------- referencia ---------- */
+function renderRef(){const P=[["PLATECA","Plan territorial de la Comunidad Autónoma"],["PEVOLCA","Riesgo volcánico"],["PESICAN","Riesgo sísmico"],["INFOCA","Incendios forestales"],["PEINCA","Inundaciones"],["PEFMA","Fenómenos meteorológicos adversos"],["PEMERCA","Transporte de mercancías peligrosas"],["RISQCAN","Riesgo químico"],["RADICAN","Riesgo radiológico"],["PEMEXCA","Explosivos"],["PECMAR","Contaminación marina"]];
+ const bf=[[0,"Calma","< 1"],[1,"Ventolina","1–5"],[2,"Flojito","6–11"],[3,"Flojo","12–19"],[4,"Bonancible","20–28"],[5,"Fresquito","29–38"],[6,"Fresco","39–49"],[7,"Frescachón","50–61"],[8,"Temporal","62–74"],[9,"Temporal fuerte","75–88"],[10,"Temporal duro","89–102"],[11,"Temporal muy duro","103–117"],[12,"Temporal huracanado","≥ 118"]];
+ const ss=[[1,"119–153"],[2,"154–177"],[3,"178–208"],[4,"209–251"],[5,"≥ 252"]];
+ $("#refBody").innerHTML=`
+ <details open><summary>Planes de protección civil en Canarias</summary><div class="tbl"><table><tbody>${P.map(p=>`<tr><td><b class="mono">${p[0]}</b></td><td>${p[1]}</td></tr>`).join("")}</tbody></table></div><p class="small muted">Espectáculos públicos y actividades clasificadas: Ley 7/2011 y Decreto 86/2013.</p></details>
+ <details open><summary>Semáforo de información volcánica</summary><div class="sem">
+  <div><i style="background:var(--l1)"></i><span><b>Verde.</b> Normalidad. Seguir la información oficial.</span></div>
+  <div><i style="background:var(--l2)"></i><span><b>Amarillo.</b> Información y precaución; atender a las instrucciones.</span></div>
+  <div><i style="background:var(--l3)"></i><span><b>Naranja.</b> Prepararse para una posible evacuación.</span></div>
+  <div><i style="background:var(--l4)"></i><span><b>Rojo.</b> Evacuación o confinamiento según indiquen las autoridades.</span></div></div>
+  <p class="small muted">Es la información a la población; no confundir con los niveles científicos de alerta volcánica.</p></details>
+ <details><summary>Tipos de erupción</summary><dl><dt>Hawaiana</dt><dd>Lava muy fluida, fuentes de lava, explosividad muy baja.</dd><dt>Estromboliana</dt><dd>Explosiones rítmicas, conos de piroclastos y coladas. Habitual en Canarias.</dd><dt>Pliniana</dt><dd>Columna eruptiva de gran altura, magma viscoso, muy explosiva.</dd><dt>Peleana</dt><dd>Domos y nubes ardientes (flujos piroclásticos).</dd></dl></details>
+ <details><summary>Escalas sísmicas</summary><dl><dt>Magnitud</dt><dd>Energía liberada en el foco. Un valor por terremoto.</dd><dt>Intensidad (EMS-98, Mercalli Modificada)</dt><dd>Efectos observados en personas, edificios y terreno. Grados I a XII; varía con la distancia y el tipo de suelo. EMS-98 incorpora la vulnerabilidad de los edificios.</dd></dl></details>
+ <details><summary>Escala Beaufort (km/h)</summary><div class="tbl"><table><thead><tr><th>F</th><th>Denominación</th><th>km/h</th></tr></thead><tbody>${bf.map(x=>`<tr><td class="num">${x[0]}</td><td>${x[1]}</td><td class="num">${x[2]}</td></tr>`).join("")}</tbody></table></div></details>
+ <details><summary>Escala Saffir-Simpson</summary><div class="tbl"><table><thead><tr><th>Categoría</th><th>Viento sostenido (km/h)</th></tr></thead><tbody>${ss.map(x=>`<tr><td class="num">${x[0]}</td><td class="num">${x[1]}</td></tr>`).join("")}</tbody></table></div></details>
+ <details><summary>Fenómenos peligrosos tecnológicos</summary><dl><dt>BLEVE</dt><dd>Explosión por expansión del vapor de un líquido en ebullición tras rotura del recipiente; bola de fuego, onda de presión y proyectiles.</dd><dt>Boilover</dt><dd>Desbordamiento violento de un tanque de hidrocarburo incendiado al vaporizarse el agua del fondo.</dd><dt>Pool fire</dt><dd>Incendio de charco de líquido inflamable derramado; radiación térmica.</dd><dt>Fuga NRBQ</dt><dd>Liberación de agentes nucleares, radiológicos, biológicos o químicos; dispersión según meteorología.</dd><dt>DL50 / CL50</dt><dd>Dosis o concentración que causa la muerte del 50 % de la población de ensayo. Cuanto menor, más tóxica.</dd></dl></details>
+ <details><summary>Protección contra incendios</summary><dl><dt>Activa</dt><dd>Detecta, avisa o extingue: detectores, pulsadores, alarma, extintores, BIE, rociadores.</dd><dt>Pasiva</dt><dd>Actúa sin intervención: compartimentación, sectorización, tratamientos ignífugos, protección de estructura.</dd></dl></details>
+ <details><summary>Infraestructuras críticas (PNPIC)</summary><dl><dt>Planes Estratégicos Sectoriales</dt><dd>Análisis por sector estratégico.</dd><dt>PSO</dt><dd>Plan de Seguridad del Operador.</dd><dt>PPE</dt><dd>Plan de Protección Específico de cada infraestructura.</dd><dt>PAO</dt><dd>Plan de Apoyo Operativo de las Fuerzas y Cuerpos de Seguridad.</dd></dl></details>`}
+
+/* ---------- docente ---------- */
+const RA_TXT=[["RA1","Evalúa riesgos naturales: peligrosidad, vulnerabilidad (población, urbanismo, medio ambiente) y dimensión del riesgo."],["RA2","Evalúa riesgos tecnológicos: sustancias peligrosas, vulnerabilidad, gravedad y exposición, flujos de MMPP."],["RA3","Evalúa riesgos antrópicos: grandes concentraciones, rutas de tránsito, comportamiento social."],["RA4","Establece medidas preventivas estructurales, no estructurales, correctoras y en emergencia; coste-beneficio."],["RA5","Establece sistemas de vigilancia y alerta, y canales de información a la población."]];
+function renderDoc(){const b=$("#docBody");
+ b.innerHTML=`<h3>Umbrales del índice P × D</h3><div class="grid2">${["Bajo hasta","Moderado hasta","Alto hasta"].map((t,i)=>`<label class="f" for="m1-${i}">${t}<input type="number" min="1" max="25" id="m1-${i}" data-m1="${i}" value="${cfg.m1[i]}"></label>`).join("")}</div>
+ <label class="f" for="drule" style="max-width:24rem">Cálculo de D<select id="drule"><option value="max" ${cfg.dRule==="max"?"selected":""}>Valor máximo (criterio conservador)</option><option value="media" ${cfg.dRule==="media"?"selected":""}>Media redondeada</option></select></label>
+ <h3>Umbrales de la matriz 5×5</h3><div class="grid2">${["Bajo hasta","Moderado hasta","Alto hasta"].map((t,i)=>`<label class="f" for="m2-${i}">${t}<input type="number" min="1" max="25" id="m2-${i}" data-m2="${i}" value="${cfg.m2[i]}"></label>`).join("")}</div>
+ <div class="btns"><button class="btn" type="button" id="cfgSave">Aplicar umbrales</button><button class="btn ghost" type="button" id="cfgDef">Valores por defecto</button></div>
+ <p class="small muted">Los casos prácticos calculan el IR con D = valor máximo; los niveles mencionados en sus explicaciones usan los umbrales por defecto.</p>
+ <h3>Correspondencia con el RD 906/2013</h3><div class="tbl"><table><tbody>${RA_TXT.map(r=>`<tr><td><b class="mono">${r[0]}</b></td><td>${r[1]}</td></tr>`).join("")}</tbody></table></div>
+ <h3>Pautas DUA aplicadas</h3><ul class="small" style="margin:0;padding-left:1.1rem;display:grid;gap:.3rem">
+  <li>Representación: información en texto, matriz de color con etiquetas de nivel y tablas de referencia.</li>
+  <li>Acción y expresión: asistente por pasos, justificación libre, medidas propias e informe exportable.</li>
+  <li>Implicación: casos contextualizados en Canarias, retroalimentación inmediata y repetición sin penalización.</li>
+  <li>Accesibilidad: tamaño de texto ajustable, tema claro u oscuro según el dispositivo, navegación por teclado.</li></ul>`;
+ $("#cfgSave").onclick=()=>{const m1=[0,1,2].map(i=>+$("#m1-"+i).value),m2=[0,1,2].map(i=>+$("#m2-"+i).value);
+  if(!(m1[0]<m1[1]&&m1[1]<m1[2])||!(m2[0]<m2[1]&&m2[1]<m2[2])){toast("Los umbrales deben ir en orden creciente");return}
+  cfg={m1,m2,dRule:$("#drule").value};store.set("evb_cfg",cfg);toast("Umbrales aplicados")};
+ $("#cfgDef").onclick=()=>{cfg=JSON.parse(JSON.stringify(DEF_CFG));store.set("evb_cfg",cfg);renderDoc();toast("Valores por defecto restaurados")}}
+
+/* ---------- arranque ---------- */
+renderRef();renderAsis();
+const hashTab=(location.hash||"").slice(1);showTab(TABS.includes(hashTab)?hashTab:"asis");
+})();
+</script>
