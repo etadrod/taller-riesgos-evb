@@ -196,10 +196,10 @@ dd{margin:0 0 .2rem;color:var(--muted)}
     </div>
   </div>
   <nav class="tabs" role="tablist" aria-label="Secciones">
-    <button role="tab" id="tab-asis" aria-controls="v-asis" aria-selected="true">Asistente</button>
+    <button role="tab" id="tab-ref" aria-controls="v-ref" aria-selected="true">Referencia</button>
     <button role="tab" id="tab-casos" aria-controls="v-casos" aria-selected="false">Casos prácticos</button>
-    <button role="tab" id="tab-ref" aria-controls="v-ref" aria-selected="false">Referencia</button>
-    <button role="tab" id="tab-doc" aria-controls="v-doc" aria-selected="false">Docente</button>
+    <button role="tab" id="tab-doc" aria-controls="v-doc" aria-selected="false">Rúbrica</button>
+    <button role="tab" id="tab-asis" aria-controls="v-asis" aria-selected="false">Análisis de Riesgos</button>
   </nav>
 </header>
 
@@ -236,12 +236,12 @@ dd{margin:0 0 .2rem;color:var(--muted)}
     <div class="refgrid" id="refBody"></div>
   </section>
 
-  <!-- DOCENTE -->
+  <!-- RÚBRICA -->
   <section class="view" id="v-doc" role="tabpanel" aria-labelledby="tab-doc" hidden>
     <div class="intro">
-      <p class="eyebrow">Configuración</p>
-      <h2>Umbrales y correspondencia curricular</h2>
-      <p class="muted">Los umbrales se guardan solo en este navegador. Los valores por defecto son de referencia didáctica: ajústalos a la guía metodológica que uses en clase (pendiente de verificación frente al plan territorial o municipal de referencia).</p>
+      <p class="eyebrow">Evaluación</p>
+      <h2>Rúbrica del informe de análisis de riesgos</h2>
+      <p class="muted">Así se valora el informe que generas en «Análisis de Riesgos». La nota se calcula sobre 10 sumando los puntos de cada criterio.</p>
     </div>
     <div class="panel" id="docBody"></div>
   </section>
@@ -276,7 +276,7 @@ applyTheme();
 
 /* ---------- configuración docente ---------- */
 const DEF_CFG={m1:[4,9,16],m2:[3,6,12],dRule:"max"};
-let cfg=Object.assign({},DEF_CFG,store.get("evb_cfg",{}));
+const cfg=DEF_CFG;
 const LV=["Bajo","Moderado","Alto","Muy alto"];
 function level(v,th){return v<=th[0]?1:v<=th[1]?2:v<=th[2]?3:4}
 
@@ -794,6 +794,10 @@ async function descargarPDF(btn){
  const vt=doc.splitTextToSize(pdfTxt(valoracionTxt(v)),TW-8);need(vt.length*4.5+12);doc.setFillColor(...C.sunk);doc.rect(M,y,TW,vt.length*4.5+9,"F");doc.setFillColor(...C.navy);doc.rect(M,y,1.2,vt.length*4.5+9,"F");
  doc.setFont("helvetica","bold");doc.setFontSize(10);doc.setTextColor(...C.ink);doc.text("Valoración",M+4,y+5.5);doc.setFont("helvetica","normal");let yy=y+10.5;vt.forEach(l=>{doc.text(l,M+4,yy);yy+=4.5});y=yy+4;
  para("Propuesta generada automáticamente a partir de indicadores de la rúbrica. No valora la exactitud técnica del contenido; la calificación final corresponde al docente.",{size:8.5,color:C.muted});
+ const nc=notaCasos();
+ if(nc.h.length){h2(8,"Casos prácticos (nota paralela)");
+  para("Cuestionario opcional. Esta nota es independiente y no forma parte de la nota del análisis de riesgos.",{size:9,color:C.muted});
+  table({head:[["Caso práctico","Nota"]],body:[...nc.h.map(x=>[pdfTxt(x.t),x.nota.toFixed(1).replace(".",",")+" / 10"]),[{content:`Nota media (${nc.h.length} de ${CASOS.length} casos realizados)`,styles:{fontStyle:"bold",halign:"right"}},{content:nc.media.toFixed(1).replace(".",",")+" / 10",styles:{fontStyle:"bold"}}]],columnStyles:{1:{cellWidth:30,halign:"right"}}})}
  // pies
  const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setDrawColor(...C.line);doc.setLineWidth(.3);doc.line(M,H-13,W-M,H-13);doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(...C.muted);
   doc.text(pdfTxt("Taller de Análisis de Riesgos · Módulo 1502 · "+(m.alumno||"Alumno/a sin indicar")),M,H-8.5);doc.text(`Página ${i} de ${n}`,W-M,H-8.5,{align:"right"})}
@@ -810,14 +814,15 @@ function step5(b){
  <div class="panel"><div class="intro"><p class="eyebrow">Autoevaluación</p><h3>Valoración según la rúbrica</h3><p class="muted small">Se recalcula al modificar el análisis. Es una propuesta orientativa basada en indicadores; la nota final la pone tu profesor.</p></div><div id="rubBox" aria-live="polite"></div></div>`;
  const upd=()=>{const v=evaluar();
   $("#rubBox").innerHTML=`<div class="tbl"><table><thead><tr><th>Criterio</th><th>Nivel</th><th style="text-align:right">Puntos</th></tr></thead><tbody>${v.res.map(x=>`<tr><td><b>${x.t}</b><br><span class="small muted">${x.d[x.nivel]}</span><div class="ra"><span>${x.ce}</span></div></td><td>${lvBadge(4-x.nivel)}</td><td class="num">${x.pts.toFixed(2).replace(".",",")} / ${String(x.max).replace(".",",")}</td></tr>`).join("")}</tbody></table></div>
-  <div class="total"><span>Nota propuesta</span><b>${v.total.toFixed(1).replace(".",",")} / 10</b></div><p class="fb">${esc(valoracionTxt(v))}</p>`;
+  <div class="total"><span>Nota propuesta</span><b>${v.total.toFixed(1).replace(".",",")} / 10</b></div><p class="fb">${esc(valoracionTxt(v))}</p>
+  ${(()=>{const nc=notaCasos();return nc.h.length?`<p class="small">Casos prácticos (nota paralela, no suma): <b class="mono">${nc.media.toFixed(1).replace(".",",")} / 10</b> · ${nc.h.length} de ${CASOS.length} casos realizados.</p>`:`<p class="small muted">Casos prácticos: no has realizado ninguno. Son opcionales; si los haces, su nota aparecerá aquí y en el informe como nota aparte.</p>`})()}`;
   $("#rubBox").querySelectorAll(".lvl").forEach((el,i)=>el.textContent=NIV[v.res[i].nivel])};upd();
  $("#conclu").oninput=e=>{S.conclu=e.target.value;save();upd()};
 }
 $("#dl").onclick=e=>descargarPDF(e.currentTarget);
 
-$("#exportJson").onclick=()=>download("analisis-riesgos.json",JSON.stringify(S,null,2),"application/json");
-$("#importJson").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o.meta||!Array.isArray(o.sel))throw 0;if(o.v!==2){toast("El archivo es de una versión anterior de la app y no se puede cargar");return}S=Object.assign(blank(),o);save();renderAsis();toast("Análisis cargado")}catch(x){toast("El archivo no es un análisis válido")}};rd.readAsText(f);e.target.value=""};
+$("#exportJson").onclick=()=>download("analisis-riesgos.json",JSON.stringify(Object.assign({},S,{casos:resp}),null,2),"application/json");
+$("#importJson").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o.meta||!Array.isArray(o.sel))throw 0;if(o.v!==2){toast("El archivo es de una versión anterior de la app y no se puede cargar");return}const cs=o.casos;delete o.casos;if(cs&&typeof cs==="object"){resp=cs;store.set("evb_casos_v2",resp)}S=Object.assign(blank(),o);save();renderAsis();toast("Análisis cargado")}catch(x){toast("El archivo no es un análisis válido")}};rd.readAsText(f);e.target.value=""};
 let resetArm=false;
 $("#resetBtn").onclick=function(){if(!resetArm){resetArm=true;this.textContent="Pulsa otra vez para borrar";setTimeout(()=>{resetArm=false;this.textContent="Empezar de cero"},3000);return}resetArm=false;this.textContent="Empezar de cero";S=blank();save();renderAsis();toast("Análisis vacío creado")};
 
@@ -829,7 +834,6 @@ const CASOS=[
  {k:"s",t:"¿Qué plan especial autonómico regula la respuesta ante este riesgo?",o:["PESICAN","PEVOLCA","INFOCA","PEFMA"],a:1,f:"PEVOLCA es el Plan Especial de Protección Civil y Atención de Emergencias por riesgo volcánico de Canarias. La sismicidad aquí es precursora de la erupción, no un riesgo sísmico independiente.",ce:"RA1·CE a"},
  {k:"s",t:"Se comunica a la población que debe estar preparada para una posible evacuación. ¿Qué color del semáforo volcánico corresponde?",o:["Verde","Amarillo","Naranja","Rojo"],a:2,f:"Naranja: prepararse para una posible evacuación. Amarillo es información y precaución; rojo implica evacuación.",ce:"RA5·CE e"},
  {k:"s",t:"Por los antecedentes descritos, ¿qué tipo eruptivo es el más esperable?",o:["Pliniana","Peleana","Estromboliana","Hawaiana pura sin piroclastos"],a:2,f:"El vulcanismo basáltico fisural con conos de piroclastos y coladas corresponde al tipo estromboliano, con explosividad baja a moderada.",ce:"RA1·CE a"},
- {k:"n",t:"Calcula el índice P × D con P = 4; personas 5, bienes 5, medio ambiente 4 (D = valor máximo).",a:20,f:"D = máx(5, 5, 4) = 5. IR = 4 × 5 = 20, nivel Muy alto con los umbrales por defecto.",ce:"RA1·CE e"},
  {k:"m",t:"Selecciona las medidas NO estructurales.",o:["Zonificación del peligro volcánico en el planeamiento","Muro de desvío de coladas","Divulgación del semáforo a la población","Simulacros de evacuación por sectores"],a:[0,2,3],f:"Son no estructurales las que reducen la exposición o aumentan la resiliencia: zonificación, información y simulacros. El muro de desvío es una obra, por tanto estructural.",ce:"RA4·CE b"},
  {k:"s",t:"¿Qué colectivo debe tener prioridad en la evacuación preventiva?",o:["Población residente en general","Residencia de mayores","Visitantes del mirador","Comercios del casco"],a:1,f:"Las personas mayores dependientes necesitan más tiempo y medios para evacuar. Se evacúan en primer lugar.",ce:"RA1·CE b"}]},
 {id:"c2",t:"Lluvias torrenciales en barranco urbano",r:"Natural · PEINCA / PEFMA",ra:"RA1, RA4",
@@ -838,7 +842,7 @@ const CASOS=[
  {k:"s",t:"¿Qué plan especial autonómico se refiere específicamente al riesgo de inundaciones?",o:["PEINCA","PECMAR","PEMERCA","RADICAN"],a:0,f:"PEINCA es el plan especial ante el riesgo de inundaciones. PEFMA se activa por el fenómeno meteorológico que lo origina.",ce:"RA1·CE a"},
  {k:"m",t:"Selecciona las medidas ESTRUCTURALES.",o:["Encauzamiento del barranco","Presa de laminación aguas arriba","Corrección hidrológico-forestal de la cuenca","Consolidación de laderas inestables"],a:[0,1,3],f:"El RD 906/2013 (RA4·CE b) incluye la corrección hidrológico-forestal de cauces entre las medidas no estructurales. Encauzamiento, presa de laminación y consolidación de laderas son estructurales (RA4·CE a).",ce:"RA4·CE a, b"},
  {k:"s",t:"Se prevén vientos sostenidos de 95 km/h. ¿Qué fuerza Beaufort corresponde?",o:["Fuerza 6","Fuerza 8","Fuerza 10","Fuerza 12"],a:2,f:"Fuerza 10 (temporal duro): 89–102 km/h. La fuerza 12 empieza en 118 km/h.",ce:"RA1·CE a"},
- {k:"n",t:"Calcula el índice P × D con P = 3; personas 4, bienes 4, medio ambiente 2 (D = valor máximo).",a:12,f:"D = 4. IR = 3 × 4 = 12, nivel Alto con los umbrales por defecto.",ce:"RA1·CE e"},
+ {k:"s",t:"¿Qué medida NO estructural reduce el número de personas expuestas a la inundación?",o:["Delimitar las zonas inundables y limitar los usos en el planeamiento","Construir una presa de laminación aguas arriba","Encauzar el barranco con muros de hormigón","Ampliar la sección del paso inferior"],a:0,f:"La delimitación de zonas inundables evita que se construyan viviendas o garajes donde llega el agua. Las otras tres son obras, es decir, medidas estructurales.",ce:"RA4·CE b"},
  {k:"s",t:"¿Qué medida en emergencia reduce más el riesgo en los pasos inferiores y garajes?",o:["Confinar a los vecinos en los sótanos","Cierre preventivo de pasos y garajes en zona inundable","Abrir las compuertas de los garajes para desaguar","Esperar a que el agua alcance la calzada"],a:1,f:"El cierre preventivo evita que las personas queden atrapadas en zonas bajas. Nunca se confina en sótanos ante inundación.",ce:"RA4·CE d"}]},
 {id:"c3",t:"Cisterna de GLP volcada en la circunvalación",r:"Tecnológico · PEMERCA",ra:"RA2, RA4",
  esc:["Una cisterna vuelca en una vía de circunvalación junto a un polígono industrial. Hay fuego en el neumático y en el motor.","Panel naranja: número superior 23, número inferior 1965.","A 250 m hay un colegio en horario lectivo y un centro de salud; a 100 m, una gasolinera."],
@@ -847,15 +851,14 @@ const CASOS=[
  {k:"s",t:"¿Qué indica el número superior del panel naranja (23)?",o:["Número ONU de la materia","Número de identificación de peligro","Clase de embalaje","Teléfono de emergencia del transportista"],a:1,f:"El número superior es el de identificación de peligro (23: gas inflamable). El inferior (1965) es el número ONU de la materia.",ce:"RA2·CE a"},
  {k:"s",t:"El fuego calienta el depósito de gas licuado. ¿Qué fenómeno peligroso es el principal a prever?",o:["Boilover","Pool fire","BLEVE con bola de fuego","Nube tóxica persistente"],a:2,f:"BLEVE: rotura del recipiente con líquido sobrecalentado que se vaporiza de golpe, con onda de presión, proyectiles y bola de fuego. El boilover afecta a tanques de hidrocarburos con agua en el fondo.",ce:"RA2·CE a"},
  {k:"m",t:"Selecciona los elementos que aumentan la vulnerabilidad o el riesgo de efecto dominó.",o:["Colegio en horario lectivo","Centro de salud","Gasolinera próxima","Solar vacío sin uso"],a:[0,1,2],f:"Colegio y centro de salud concentran población vulnerable; la gasolinera puede generar efecto dominó. El solar vacío no añade exposición.",ce:"RA2·CE b"},
- {k:"s",t:"En general, cuanto menor es la DL50 de una sustancia...",o:["...menor es su toxicidad","...mayor es su toxicidad","...más inflamable es","...más volátil es"],a:1,f:"La DL50 es la dosis que mata al 50 % de la población de ensayo. Una DL50 baja significa que basta poca cantidad: mayor toxicidad.",ce:"RA2·CE a"},
- {k:"n",t:"Calcula el índice P × D con P = 2; personas 5, bienes 4, medio ambiente 3 (D = valor máximo).",a:10,f:"D = 5. IR = 2 × 5 = 10, nivel Alto con los umbrales por defecto.",ce:"RA2·CE c"}]},
+ {k:"s",t:"En general, cuanto menor es la DL50 de una sustancia...",o:["...menor es su toxicidad","...mayor es su toxicidad","...más inflamable es","...más volátil es"],a:1,f:"La DL50 es la dosis que mata al 50 % de la población de ensayo. Una DL50 baja significa que basta poca cantidad: mayor toxicidad.",ce:"RA2·CE a"}]},
 {id:"c4",t:"Festival en explanada portuaria",r:"Antrópico · Ley 7/2011 · PAU",ra:"RA3, RA4",
  esc:["Festival de música en una explanada portuaria con aforo previsto de 15.000 personas.","El recinto tiene tres salidas, una de ellas junto a la zona de carga. El acceso de ambulancias coincide con la entrada de público.","Público joven, consumo de alcohol, final del concierto a la 01:00."],
  q:[
  {k:"s",t:"¿Qué normativa autonómica regula los espectáculos públicos y actividades clasificadas en Canarias?",o:["Ley 7/2011 y Decreto 86/2013","Solo el Código Técnico de la Edificación","PEFMA","Sistema PNPIC"],a:0,f:"La Ley 7/2011 y su reglamento (Decreto 86/2013) regulan actividades clasificadas y espectáculos públicos en Canarias.",ce:"RA3·CE b"},
  {k:"m",t:"Selecciona los factores que determinan la vulnerabilidad del recinto.",o:["Densidad de ocupación","Número y anchura de salidas","Accesibilidad de los servicios de emergencia","Color del escenario"],a:[0,1,2],f:"El RD 906/2013 (RA3·CE b) cita densidad, medios de evacuación, protección contra incendios, comunicación y accesibilidad de los servicios de emergencia.",ce:"RA3·CE b"},
  {k:"s",t:"¿Cuál es el mecanismo de daño más grave en una salida saturada?",o:["Pánico generalizado sin causa","Aplastamiento por sobredensidad en puntos de estrechamiento","Golpe de calor aislado","Robos"],a:1,f:"Las víctimas en grandes concentraciones suelen deberse a la sobredensidad y la presión en estrechamientos. El pánico generalizado es menos frecuente de lo que se cree.",ce:"RA3·CE d"},
- {k:"n",t:"Calcula el índice P × D con P = 3; personas 5, bienes 2, medio ambiente 1 (D = valor máximo).",a:15,f:"D = 5. IR = 3 × 5 = 15, nivel Alto con los umbrales por defecto.",ce:"RA3·CE e"},
+ {k:"s",t:"Gran parte del público es extranjero. ¿Qué medida de información es más adecuada?",o:["Mensajes de megafonía y pantallas en varios idiomas, con las salidas bien señalizadas","Carteles solo en español en la entrada","Informar únicamente al personal de seguridad","No dar información para no alarmar al público"],a:0,f:"Si el público no entiende los mensajes, no sabrá cómo actuar. La información debe llegar a todos: varios idiomas, pantallas, megafonía y señalización clara.",ce:"RA5·CE e"},
  {k:"s",t:"¿Qué medida corrige el problema del acceso de ambulancias?",o:["Ampliar el aforo","Corredor de emergencia independiente de los flujos de público","Cerrar una salida para controlar mejor","Colocar más barras"],a:1,f:"Un corredor exclusivo permite la intervención sin cruzar flujos de público y sin bloquear la evacuación.",ce:"RA4·CE c"}]},
 {id:"c5",t:"Incendio en la interfaz urbano-forestal",r:"Natural · INFOCA",ra:"RA1, RA4",
  esc:["Urbanización de medianías rodeada de pinar, con un único acceso rodado.","Verano, humedad relativa baja y viento racheado. Vegetación sin desbrozar junto a las viviendas."],
@@ -863,18 +866,19 @@ const CASOS=[
  {k:"s",t:"¿Qué plan especial autonómico corresponde?",o:["INFOCA","PEINCA","PESICAN","RADICAN"],a:0,f:"INFOCA es el plan especial de protección civil ante incendios forestales en Canarias.",ce:"RA1·CE a"},
  {k:"m",t:"Selecciona las medidas preventivas adecuadas para la urbanización.",o:["Faja perimetral de baja carga de combustible","Plan de autoprotección de la urbanización","Hidrantes accesibles y señalizados","Plantar pinar junto a las viviendas"],a:[0,1,2],f:"Reducir combustible en el perímetro, planificar la autoprotección y garantizar agua accesible. Plantar pinar junto a viviendas aumenta la carga de combustible.",ce:"RA4·CE a, b"},
  {k:"s",t:"Un tratamiento ignífugo en la madera de las viviendas es una medida de protección...",o:["Activa","Pasiva","De vigilancia","De alerta"],a:1,f:"La protección pasiva actúa sin intervención (compartimentación, ignifugación). La activa detecta o extingue.",ce:"RA4·CE c"},
- {k:"n",t:"Calcula el índice P × D con P = 4; personas 4, bienes 4, medio ambiente 5 (D = valor máximo).",a:20,f:"D = 5 (medio ambiente). IR = 4 × 5 = 20, nivel Muy alto con los umbrales por defecto.",ce:"RA1·CE e"},
+ {k:"s",t:"De las condiciones del escenario, ¿cuál hace que el fuego avance más rápido hacia las viviendas?",o:["El viento racheado","Una humedad relativa alta","El cielo nublado","Una temperatura nocturna baja"],a:0,f:"El viento aporta oxígeno, inclina las llamas hacia el combustible y transporta pavesas que inician nuevos focos. La humedad alta y las temperaturas bajas frenan el fuego.",ce:"RA1·CE a"},
  {k:"s",t:"El fuego está próximo y el único acceso está comprometido. ¿Medida más segura?",o:["Evacuar en vehículo por el acceso afectado","Confinamiento en edificación preparada","Refugiarse en el pinar","Esperar en la carretera"],a:1,f:"Si la evacuación ya no es segura, el confinamiento en una edificación preparada protege mejor que salir por la vía afectada por el fuego.",ce:"RA4·CE d"}]}
 ];
-let casoAct=null;const resp=store.get("evb_casos",{});
+let casoAct=null;let resp=store.get("evb_casos_v2",{});
 function scoreCaso(c,ans){let pts=0;c.q.forEach((q,i)=>{const a=ans[i];if(a==null)return;
  if(q.k==="s")pts+=a===q.a?1:0;
  else if(q.k==="n")pts+=Number(a)===q.a?1:0;
  else{const ok=a.filter(x=>q.a.includes(x)).length,bad=a.filter(x=>!q.a.includes(x)).length;pts+=Math.max(0,(ok-bad)/q.a.length)}});
  return Math.round(pts/c.q.length*100)/10}
+function notaCasos(){const h=CASOS.filter(c=>resp[c.id]&&resp[c.id].done).map(c=>({t:c.t,nota:resp[c.id].nota}));return {h,media:h.length?Math.round(h.reduce((a,x)=>a+x.nota,0)/h.length*10)/10:null}}
 function renderCasos(){const b=$("#casosBody");
- if(!casoAct){b.innerHTML=`<div class="intro"><p class="eyebrow">Autoevaluación</p><h2>Casos prácticos</h2><p class="muted">Escenarios ficticios ambientados en Canarias. Cada caso se puntúa sobre 10 y muestra la explicación de cada respuesta. Puedes repetirlos cuantas veces quieras.</p></div>
- <div class="cases">${CASOS.map(c=>{const r=resp[c.id];return `<button class="case-card" type="button" data-c="${c.id}"><span class="tag">${c.r}</span><h3>${c.t}</h3><span class="small muted">${c.q.length} preguntas · ${c.ra}</span><span class="row"><span class="small">${r&&r.done?"Última nota":"Sin hacer"}</span><span class="score">${r&&r.done?r.nota.toFixed(1)+" / 10":"—"}</span></span></button>`}).join("")}</div>`;
+ if(!casoAct){b.innerHTML=`<div class="intro"><p class="eyebrow">Autoevaluación</p><h2>Casos prácticos</h2><p class="muted">Escenarios ficticios ambientados en Canarias. Son opcionales: cada caso tiene 5 preguntas, se puntúa sobre 10 y muestra la explicación de cada respuesta. Si los haces, tu nota media aparece en el informe final como nota aparte, sin afectar a la nota del análisis de riesgos.</p></div>
+ <div class="cases">${CASOS.map(c=>{const r=resp[c.id];return `<button class="case-card" type="button" data-c="${c.id}"><span class="tag">${c.r}</span><h3>${c.t}</h3><span class="small muted">${c.q.length} preguntas · ${c.ra}</span><span class="row"><span class="small">${r&&r.done?"Última nota":"Sin hacer"}</span><span class="score">${r&&r.done?r.nota.toFixed(1).replace(".",",")+" / 10":"—"}</span></span></button>`}).join("")}</div>`;
   b.querySelectorAll("[data-c]").forEach(x=>x.onclick=()=>{casoAct=x.dataset.c;renderCasos();scrollTo({top:0})});return}
  const c=CASOS.find(x=>x.id===casoAct);const st=resp[c.id]&&!resp[c.id].done?resp[c.id]:{ans:{},done:false};const done=resp[c.id]&&resp[c.id].done;const ans=done?resp[c.id].ans:st.ans;
  b.innerHTML=`<div class="btns"><button class="btn ghost" type="button" id="back">← Todos los casos</button></div>
@@ -886,14 +890,14 @@ function renderCasos(){const b=$("#casosBody");
    return `<label class="opt ${cls}"><input type="${q.k==="s"?"radio":"checkbox"}" name="q${i}" data-q="${i}" value="${j}" ${chk?"checked":""} ${done?"disabled":""}><span>${esc(o)}</span></label>`}).join("");
   let fb="";if(done){let ok;if(q.k==="s")ok=a===q.a;else if(q.k==="n")ok=Number(a)===q.a;else ok=a&&a.length===q.a.length&&a.every(x=>q.a.includes(x));fb=`<div class="fb ${ok?"ok":"ko"}"><b>${ok?"Correcta":"Revisa"}.</b> ${q.k==="n"?`Valor correcto: <span class="mono">${q.a}</span>. `:""}${esc(q.f)} <span class="ra"><span>${q.ce}</span></span></div>`}
   return `<div class="q"><div class="q-h"><span class="n">${i+1}/${c.q.length}</span><p><b>${esc(q.t)}</b>${q.k==="m"?' <span class="small muted">(varias respuestas)</span>':""}</p></div>${body}${fb}</div>`}).join("")}
- ${done?`<div class="total"><span>Nota del caso</span><b>${resp[c.id].nota.toFixed(1)} / 10</b><span class="spacer"></span><button class="btn ghost" type="button" id="retry">Repetir caso</button></div>`:`<div class="btns"><button class="btn" type="button" id="corr">Corregir</button><span class="small muted" id="pend"></span></div>`}
+ ${done?`<div class="total"><span>Nota del caso</span><b>${resp[c.id].nota.toFixed(1).replace(".",",")} / 10</b><span class="spacer"></span><button class="btn ghost" type="button" id="retry">Repetir caso</button></div>`:`<div class="btns"><button class="btn" type="button" id="corr">Corregir</button><span class="small muted" id="pend"></span></div>`}
  </div>`;
  $("#back").onclick=()=>{casoAct=null;renderCasos()};
- if(done){$("#retry").onclick=()=>{delete resp[c.id];store.set("evb_casos",resp);renderCasos()};return}
+ if(done){$("#retry").onclick=()=>{delete resp[c.id];store.set("evb_casos_v2",resp);renderCasos()};return}
  const cur=resp[c.id]=st;const pend=()=>{const n=c.q.filter((q,i)=>cur.ans[i]==null||(Array.isArray(cur.ans[i])&&!cur.ans[i].length)||cur.ans[i]==="").length;$("#pend").textContent=n?`${n} pregunta(s) sin responder`:"Todas respondidas"};pend();
  b.querySelectorAll("[data-q]").forEach(el=>el.addEventListener(el.type==="number"?"input":"change",()=>{const i=+el.dataset.q,q=c.q[i];
-  if(q.k==="s")cur.ans[i]=+el.value;else if(q.k==="n")cur.ans[i]=el.value===""?null:+el.value;else{const s=new Set(cur.ans[i]||[]);el.checked?s.add(+el.value):s.delete(+el.value);cur.ans[i]=[...s]}store.set("evb_casos",resp);pend()}));
- $("#corr").onclick=()=>{cur.done=true;cur.nota=scoreCaso(c,cur.ans);store.set("evb_casos",resp);renderCasos();toast("Nota: "+cur.nota.toFixed(1)+" / 10")}}
+  if(q.k==="s")cur.ans[i]=+el.value;else if(q.k==="n")cur.ans[i]=el.value===""?null:+el.value;else{const s=new Set(cur.ans[i]||[]);el.checked?s.add(+el.value):s.delete(+el.value);cur.ans[i]=[...s]}store.set("evb_casos_v2",resp);pend()}));
+ $("#corr").onclick=()=>{cur.done=true;cur.nota=scoreCaso(c,cur.ans);store.set("evb_casos_v2",resp);renderCasos();toast("Nota: "+cur.nota.toFixed(1).replace(".",",")+" / 10")}}
 
 /* ---------- referencia ---------- */
 function renderRef(){const P=[["PLATECA","Plan territorial de la Comunidad Autónoma"],["PEVOLCA","Riesgo volcánico"],["PESICAN","Riesgo sísmico"],["INFOCA","Incendios forestales"],["PEINCA","Inundaciones"],["PEFMA","Fenómenos meteorológicos adversos"],["PEMERCA","Transporte de mercancías peligrosas"],["RISQCAN","Riesgo químico"],["RADICAN","Riesgo radiológico"],["PEMEXCA","Explosivos"],["PECMAR","Contaminación marina"]];
@@ -915,31 +919,15 @@ function renderRef(){const P=[["PLATECA","Plan territorial de la Comunidad Autó
  <details><summary>Protección contra incendios</summary><dl><dt>Activa</dt><dd>Detecta, avisa o extingue: detectores, pulsadores, alarma, extintores, BIE, rociadores.</dd><dt>Pasiva</dt><dd>Actúa sin intervención: compartimentación, sectorización, tratamientos ignífugos, protección de estructura.</dd></dl></details>
  <details><summary>Infraestructuras críticas (PNPIC)</summary><dl><dt>Planes Estratégicos Sectoriales</dt><dd>Análisis por sector estratégico.</dd><dt>PSO</dt><dd>Plan de Seguridad del Operador.</dd><dt>PPE</dt><dd>Plan de Protección Específico de cada infraestructura.</dd><dt>PAO</dt><dd>Plan de Apoyo Operativo de las Fuerzas y Cuerpos de Seguridad.</dd></dl></details>`}
 
-/* ---------- docente ---------- */
-const RA_TXT=[["RA1","Evalúa riesgos naturales: peligrosidad, vulnerabilidad (población, urbanismo, medio ambiente) y dimensión del riesgo."],["RA2","Evalúa riesgos tecnológicos: sustancias peligrosas, vulnerabilidad, gravedad y exposición, flujos de MMPP."],["RA3","Evalúa riesgos antrópicos: grandes concentraciones, rutas de tránsito, comportamiento social."],["RA4","Establece medidas preventivas estructurales, no estructurales, correctoras y en emergencia; coste-beneficio."],["RA5","Establece sistemas de vigilancia y alerta, y canales de información a la población."]];
+/* ---------- rúbrica ---------- */
 function renderDoc(){const b=$("#docBody");
- b.innerHTML=`<h3>Umbrales del índice P × D</h3><div class="grid2">${["Bajo hasta","Moderado hasta","Alto hasta"].map((t,i)=>`<label class="f" for="m1-${i}">${t}<input type="number" min="1" max="25" id="m1-${i}" data-m1="${i}" value="${cfg.m1[i]}"></label>`).join("")}</div>
- <label class="f" for="drule" style="max-width:24rem">Cálculo de D<select id="drule"><option value="max" ${cfg.dRule==="max"?"selected":""}>Valor máximo (criterio conservador)</option><option value="media" ${cfg.dRule==="media"?"selected":""}>Media redondeada</option></select></label>
- <h3>Umbrales de la matriz 5×5</h3><div class="grid2">${["Bajo hasta","Moderado hasta","Alto hasta"].map((t,i)=>`<label class="f" for="m2-${i}">${t}<input type="number" min="1" max="25" id="m2-${i}" data-m2="${i}" value="${cfg.m2[i]}"></label>`).join("")}</div>
- <div class="btns"><button class="btn" type="button" id="cfgSave">Aplicar umbrales</button><button class="btn ghost" type="button" id="cfgDef">Valores por defecto</button></div>
- <p class="small muted">Los casos prácticos calculan el IR con D = valor máximo; los niveles mencionados en sus explicaciones usan los umbrales por defecto.</p>
- <h3>Rúbrica del informe de análisis de riesgos</h3>
- <p class="small muted">La app propone el nivel de cada criterio a partir de indicadores objetivos (extensión de descripciones y justificaciones, enlaces a fuentes, cobertura de orígenes, acierto en la selección de medidas y coherencia vulnerabilidad-daños). No valora la exactitud técnica del texto: esa revisión corresponde al docente.</p>
- <div class="tbl"><table><thead><tr><th>Criterio (RA·CE)</th><th>Pts</th>${NIV.map((n,i)=>`<th>${n} (${NIVF[i]*100} %)</th>`).join("")}</tr></thead><tbody>${RUB.map(c=>`<tr><td><b>${c.t}</b><div class="ra"><span>${c.ce}</span></div></td><td class="num">${String(c.max).replace(".",",")}</td>${c.d.map(t=>`<td class="small">${t}</td>`).join("")}</tr>`).join("")}<tr><td><b>Total</b></td><td class="num">10</td><td colspan="4" class="small">Nota = suma de puntos de cada criterio (máximo × porcentaje del nivel).</td></tr></tbody></table></div>
- <h3>Correspondencia con el RD 906/2013</h3><div class="tbl"><table><tbody>${RA_TXT.map(r=>`<tr><td><b class="mono">${r[0]}</b></td><td>${r[1]}</td></tr>`).join("")}</tbody></table></div>
- <h3>Pautas DUA aplicadas</h3><ul class="small" style="margin:0;padding-left:1.1rem;display:grid;gap:.3rem">
-  <li>Representación: información en texto, matriz de color con etiquetas de nivel y tablas de referencia.</li>
-  <li>Acción y expresión: asistente por pasos, justificación con fuentes enlazadas, medidas propias e informe en PDF.</li>
-  <li>Implicación: casos contextualizados en Canarias, retroalimentación inmediata y repetición sin penalización.</li>
-  <li>Accesibilidad: tamaño de texto ajustable, modo claro u oscuro seleccionable, navegación por teclado.</li></ul>`;
- $("#cfgSave").onclick=()=>{const m1=[0,1,2].map(i=>+$("#m1-"+i).value),m2=[0,1,2].map(i=>+$("#m2-"+i).value);
-  if(!(m1[0]<m1[1]&&m1[1]<m1[2])||!(m2[0]<m2[1]&&m2[1]<m2[2])){toast("Los umbrales deben ir en orden creciente");return}
-  cfg={m1,m2,dRule:$("#drule").value};store.set("evb_cfg",cfg);toast("Umbrales aplicados")};
- $("#cfgDef").onclick=()=>{cfg=JSON.parse(JSON.stringify(DEF_CFG));store.set("evb_cfg",cfg);renderDoc();toast("Valores por defecto restaurados")}}
+ b.innerHTML=`<div class="tbl"><table><thead><tr><th>Criterio (RA·CE)</th><th>Pts</th>${NIV.map((n,i)=>`<th>${n} (${NIVF[i]*100} %)</th>`).join("")}</tr></thead><tbody>${RUB.map(c=>`<tr><td><b>${c.t}</b><div class="ra"><span>${c.ce}</span></div></td><td class="num">${String(c.max).replace(".",",")}</td>${c.d.map(t=>`<td class="small">${t}</td>`).join("")}</tr>`).join("")}<tr><td><b>Total</b></td><td class="num">10</td><td colspan="4" class="small">Nota = suma de los puntos de cada criterio (puntos máximos × porcentaje del nivel alcanzado).</td></tr></tbody></table></div>
+ <p class="small muted">La app propone el nivel de cada criterio a partir de indicadores: extensión de la descripción y de las justificaciones, enlaces a fuentes, riesgos de cada origen, acierto al elegir las medidas y coherencia entre vulnerabilidad y daños. Tu profesor revisa después el contenido técnico y pone la nota final.</p>
+ <p class="small muted">Los casos prácticos son opcionales. Si los haces, su nota media aparece en el informe como nota aparte y no cambia esta nota.</p>`}
 
 /* ---------- arranque ---------- */
 renderRef();renderAsis();
-const hashTab=(location.hash||"").slice(1);showTab(TABS.includes(hashTab)?hashTab:"asis");
+const hashTab=(location.hash||"").slice(1),lastTab=store.get("evb_tab","ref");showTab(TABS.includes(hashTab)?hashTab:TABS.includes(lastTab)?lastTab:"ref");
 })();
 </script>
 
