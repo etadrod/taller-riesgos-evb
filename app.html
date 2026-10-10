@@ -183,6 +183,7 @@ dd{margin:0 0 .2rem;color:var(--muted)}
       <button type="button" id="fsMinus" aria-label="Reducir texto">A−</button>
       <button type="button" id="fsPlus" aria-label="Aumentar texto">A+</button>
       <button type="button" id="themeBtn"></button>
+      <button type="button" id="installBtn" hidden>⤓ Instalar app</button>
     </div>
   </div>
   <nav class="tabs" role="tablist" aria-label="Secciones">
@@ -245,7 +246,7 @@ dd{margin:0 0 .2rem;color:var(--muted)}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>el.hidden=true,2200)}
+function toast(t,ms){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>el.hidden=true,ms||2200)}
 function download(name,text,type){try{const b=new Blob([text],{type:type||"text/plain;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}catch(e){toast("No se pudo descargar. Copia el texto.")}}
 
 /* ---------- tamaño de texto (DUA) ---------- */
@@ -263,6 +264,18 @@ function applyTheme(){const root=document.documentElement;if(theme)root.setAttri
  const b=$("#themeBtn");b.textContent=dark?"☀ Modo claro":"☾ Modo oscuro";b.setAttribute("aria-label",dark?"Cambiar a modo claro":"Cambiar a modo oscuro")}
 $("#themeBtn").onclick=()=>{const root=document.documentElement;const dark=root.getAttribute("data-theme")==="dark"||(!root.getAttribute("data-theme")&&sysDark());theme=dark?"light":"dark";store.set("evb_theme",theme);applyTheme()};
 applyTheme();
+
+/* ---------- instalar como aplicación ---------- */
+let instPrompt=null;
+const enApp=()=>{try{return matchMedia("(display-mode: standalone)").matches||navigator.standalone===true}catch(e){return false}};
+const enFrame=()=>{try{return window.top!==window}catch(e){return true}};
+if(/^https?:$/.test(location.protocol)&&!enFrame()&&!enApp())$("#installBtn").hidden=false;
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();instPrompt=e;if(!enFrame())$("#installBtn").hidden=false});
+addEventListener("appinstalled",()=>{$("#installBtn").hidden=true;instPrompt=null;toast("App instalada")});
+$("#installBtn").onclick=async()=>{
+ if(instPrompt){instPrompt.prompt();try{await instPrompt.userChoice}catch(e){}instPrompt=null;return}
+ const ua=navigator.userAgent,ios=/iPad|iPhone|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1),safari=/Safari/.test(ua)&&!/Chrome|Chromium|Edg|OPR|Firefox/.test(ua);
+ toast(ios?"En iPhone o iPad: pulsa Compartir y después «Añadir a pantalla de inicio».":safari?"En Safari para Mac: menú Archivo → «Añadir al Dock».":/Firefox/.test(ua)?"Firefox no instala aplicaciones web. Abre esta página en Chrome, Edge o Safari para instalarla.":"Usa el icono de instalar de la barra de direcciones o el menú del navegador → «Instalar».",7000)};
 
 /* ---------- configuración docente ---------- */
 const DEF_CFG={m1:[4,9,16],m2:[3,6,12],dRule:"max"};
