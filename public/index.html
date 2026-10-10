@@ -513,7 +513,7 @@ function ir2(e){return e.P!=null&&e.S!=null?e.P*e.S:null}
 
 /* ---------- pestañas ---------- */
 const TABS=["asis","casos","ref","doc"];
-function showTab(t){TABS.forEach(x=>{$("#tab-"+x).setAttribute("aria-selected",x===t);$("#v-"+x).hidden=x!==t});if(t==="casos")renderCasos();if(t==="doc")renderDoc();store.set("evb_tab",t);scrollTo({top:0})}
+function showTab(t){TABS.forEach(x=>{$("#tab-"+x).setAttribute("aria-selected",x===t);$("#v-"+x).hidden=x!==t});if(t==="casos")renderCasos();if(t==="doc")renderDoc();if(t==="asis")renderAsis();store.set("evb_tab",t);scrollTo({top:0})}
 TABS.forEach(x=>$("#tab-"+x).onclick=()=>showTab(x));
 
 /* ---------- asistente ---------- */
