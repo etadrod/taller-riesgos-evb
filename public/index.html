@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
-/* Layout: barra de mando superior + pestañas; contenido en una columna de trabajo (máx. 980px) con tarjetas solo para riesgos y casos. */
+/* Layout: barra de mando superior + pestañas; contenido en una columna de trabajo amplia (máx. 1320px) con tarjetas solo para riesgos y casos. */
 :root{
   --bg:#F2F4F7; --surface:#FFFFFF; --sunk:#E8ECF2; --ink:#142033; --muted:#556275; --line:#D3DAE4;
   --navy:#1F3A68; --navy-ink:#FFFFFF; --signal:#C9561A; --signal-soft:#FBE7DA;
@@ -19,18 +19,18 @@
   --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
   --f-body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
-  --fs:1rem; --radius:6px;
+  --fs:1rem; --radius:6px; --maxw:1320px; --link:#1F5AAA;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0E1520; --surface:#162030; --sunk:#1C283A; --ink:#E5EBF3; --muted:#9BA8BA; --line:#2B384C;
   --navy:#8EAEE6; --navy-ink:#0E1520; --signal:#F0894A; --signal-soft:#3A2416;
   --l1:#3F9E66; --l2:#C99A22; --l3:#E3742E; --l4:#D2453C; --on-l:#0B0F16;
-  --ok:#55B77D; --ko:#E5675E; color-scheme:dark}}
+  --ok:#55B77D; --ko:#E5675E; --link:#9CC0FF; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0E1520; --surface:#162030; --sunk:#1C283A; --ink:#E5EBF3; --muted:#9BA8BA; --line:#2B384C;
   --navy:#8EAEE6; --navy-ink:#0E1520; --signal:#F0894A; --signal-soft:#3A2416;
   --l1:#3F9E66; --l2:#C99A22; --l3:#E3742E; --l4:#D2453C; --on-l:#0B0F16;
-  --ok:#55B77D; --ko:#E5675E; color-scheme:dark}
+  --ok:#55B77D; --ko:#E5675E; --link:#9CC0FF; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 img{max-width:100%}
@@ -50,18 +50,18 @@ button,input,select,textarea{font:inherit;color:inherit}
 
 /* barra superior */
 .top{background:var(--navy);color:var(--navy-ink);position:sticky;top:env(safe-area-inset-top,0px);z-index:10}
-.top-in{max-width:980px;margin:0 auto;padding:.7rem 16px .2rem;display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:center;justify-content:space-between}
+.top-in{max-width:var(--maxw);margin:0 auto;padding:.7rem 16px .2rem;display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:center;justify-content:space-between}
 .brand{display:flex;align-items:center;gap:.6rem;min-width:0}
-.brand svg{flex:none}
+.brand img{flex:none;width:34px;height:34px;border-radius:50%;background:#fff;object-fit:cover}
 .brand b{font-family:var(--f-display);font-size:1.45rem;font-weight:700;letter-spacing:.02em}
 .brand span{font-size:.8rem;opacity:.85;display:block;line-height:1.2}
-.tools{display:flex;gap:.35rem}
+.tools{display:flex;gap:.35rem;flex-wrap:wrap}
 .tools button{background:transparent;border:1px solid currentColor;color:var(--navy-ink);border-radius:4px;padding:.15rem .55rem;cursor:pointer;font-size:.85rem}
-.tabs{max-width:980px;margin:0 auto;padding:0 16px;display:flex;gap:.2rem;overflow-x:auto}
+.tabs{max-width:var(--maxw);margin:0 auto;padding:0 16px;display:flex;gap:.2rem;overflow-x:auto}
 .tabs button{background:none;border:0;color:var(--navy-ink);opacity:.75;padding:.55rem .8rem .6rem;font-family:var(--f-display);font-size:1.1rem;font-weight:600;letter-spacing:.03em;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
 .tabs button[aria-selected="true"]{opacity:1;border-bottom-color:var(--signal)}
 
-main{max-width:980px;margin:0 auto;padding-inline:16px;padding-block:1.4rem 3rem;display:grid;gap:1.4rem}
+main{max-width:var(--maxw);margin:0 auto;padding-inline:16px;padding-block:1.4rem 3rem;display:grid;gap:1.4rem}
 section.view{display:grid;gap:1.2rem}
 
 /* pasos */
@@ -132,7 +132,16 @@ th{font-family:var(--f-display);font-weight:600;font-size:1rem;letter-spacing:.0
 td.num{white-space:nowrap;font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
 .tbl{overflow-x:auto}
 
-pre.report{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1rem;font-family:var(--f-mono);font-size:.82rem;max-height:32rem;overflow:auto;margin:0}
+.cnt{font-family:var(--f-mono);font-size:.8rem;font-weight:600;color:var(--muted);margin-left:.3rem}
+.pill{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:.05rem .55rem;background:var(--sunk);color:var(--muted)}
+.pill.pok{background:color-mix(in srgb,var(--ok) 18%,var(--surface));color:var(--ok)}
+.pill.pko{background:color-mix(in srgb,var(--signal) 18%,var(--surface));color:var(--signal)}
+.wc{font-size:.85rem;color:var(--muted);margin-top:-.4rem}
+.wc.ok{color:var(--ok)}.wc.ko{color:var(--signal)}
+.def{font-size:.88rem;color:var(--muted);max-width:90ch}
+fieldset .ra{margin:.35rem 0 .6rem}
+.chk.off{opacity:.45;cursor:not-allowed}
+select.pend{border-color:var(--signal);border-style:dashed}
 
 /* casos */
 .cases{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:1rem}
@@ -177,12 +186,13 @@ dd{margin:0 0 .2rem;color:var(--muted)}
 <header class="top">
   <div class="top-in">
     <div class="brand">
-      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="16" fill="var(--signal)"/><path d="M17 6 L28 26 H6 Z" fill="var(--navy)" stroke="var(--navy-ink)" stroke-width="1.5"/></svg>
+      <img src="img/logo-centro.jpg" width="34" height="34" alt="CIFP Tony Gallardo">
       <div><b>Taller de Análisis de Riesgos</b><span>Módulo 1502 · Evaluación de riesgos y medidas preventivas · Canarias</span></div>
     </div>
-    <div class="tools" role="group" aria-label="Tamaño de texto">
+    <div class="tools" role="group" aria-label="Accesibilidad">
       <button type="button" id="fsMinus" aria-label="Reducir texto">A−</button>
       <button type="button" id="fsPlus" aria-label="Aumentar texto">A+</button>
+      <button type="button" id="themeBtn"></button>
     </div>
   </div>
   <nav class="tabs" role="tablist" aria-label="Secciones">
@@ -203,11 +213,11 @@ dd{margin:0 0 .2rem;color:var(--muted)}
       <button class="btn" id="next" type="button">Siguiente →</button>
       <span class="spacer"></span>
       <button class="btn ghost" id="exportJson" type="button">Guardar análisis (.json)</button>
-      <label class="btn ghost" for="importJson" style="cursor:pointer">Abrir análisis</label>
+      <label class="btn ghost" for="importJson" style="cursor:pointer">Subir análisis</label>
       <input type="file" id="importJson" accept=".json,application/json" hidden>
       <button class="btn warn" id="resetBtn" type="button">Empezar de cero</button>
     </div>
-    <p class="small muted" id="saveNote">El trabajo se guarda en este navegador. Para entregarlo o cambiar de equipo, usa «Guardar análisis».</p>
+    <p class="small muted" id="saveNote">El trabajo se guarda en este navegador. Para continuar en otro equipo, usa «Guardar análisis» y después «Subir análisis».</p>
   </section>
 
   <!-- CASOS -->
@@ -246,7 +256,6 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>el.hidden=true,2200)}
 function download(name,text,type){try{const b=new Blob([text],{type:type||"text/plain;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}catch(e){toast("No se pudo descargar. Copia el texto.")}}
-async function copy(text,pre){try{await navigator.clipboard.writeText(text);toast("Copiado al portapapeles")}catch(e){if(pre){const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r)}toast("Texto seleccionado: pulsa Ctrl+C / Copiar")}}
 
 /* ---------- tamaño de texto (DUA) ---------- */
 let scale=store.get("evb_scale",1);
@@ -255,61 +264,192 @@ $("#fsPlus").onclick=()=>{scale=Math.min(1.4,+(scale+.1).toFixed(2));applyScale(
 $("#fsMinus").onclick=()=>{scale=Math.max(.9,+(scale-.1).toFixed(2));applyScale()};
 applyScale();
 
+/* ---------- modo claro / oscuro ---------- */
+let theme=store.get("evb_theme",null);
+const sysDark=()=>{try{return matchMedia("(prefers-color-scheme: dark)").matches}catch(e){return false}};
+function applyTheme(){const root=document.documentElement;if(theme)root.setAttribute("data-theme",theme);
+ const dark=theme?theme==="dark":(root.getAttribute("data-theme")==="dark"||(!root.getAttribute("data-theme")&&sysDark()));
+ const b=$("#themeBtn");b.textContent=dark?"☀ Modo claro":"☾ Modo oscuro";b.setAttribute("aria-label",dark?"Cambiar a modo claro":"Cambiar a modo oscuro")}
+$("#themeBtn").onclick=()=>{const root=document.documentElement;const dark=root.getAttribute("data-theme")==="dark"||(!root.getAttribute("data-theme")&&sysDark());theme=dark?"light":"dark";store.set("evb_theme",theme);applyTheme()};
+applyTheme();
+
 /* ---------- configuración docente ---------- */
 const DEF_CFG={m1:[4,9,16],m2:[3,6,12],dRule:"max"};
 let cfg=Object.assign({},DEF_CFG,store.get("evb_cfg",{}));
 const LV=["Bajo","Moderado","Alto","Muy alto"];
 function level(v,th){return v<=th[0]?1:v<=th[1]?2:v<=th[2]?3:4}
 
-/* ---------- catálogo de riesgos ---------- */
+/* ---------- catálogo por tipo de análisis ---------- */
 const G={nat:"Natural",tec:"Tecnológico",ant:"Antrópico"};
-const R=[
- {id:"vol",g:"nat",n:"Erupción volcánica",ab:"VOL",plan:"PEVOLCA",d:"Coladas, piroclastos, gases (CO₂, SO₂), sismicidad asociada.",
-  m:{e:["Muros o barreras de desvío de coladas en puntos críticos","Refuerzo de cubiertas frente a carga de ceniza"],n:["Zonificación del peligro volcánico en el planeamiento","Divulgación del semáforo de información a la población","Ejercicios y simulacros de evacuación por sectores"],u:["Evacuación preventiva por sectores con prioridad a grupos críticos","Confinamiento ante episodios de gases o ceniza","Puntos de encuentro y albergue"],v:["Red de vigilancia volcánica (sismicidad, deformación, gases)","Comunicación de niveles del semáforo por canales accesibles"]}},
- {id:"sis",g:"nat",n:"Terremoto",ab:"SIS",plan:"PESICAN",d:"Sacudida del suelo; intensidad evaluada con EMS-98 o Mercalli Modificada.",
-  m:{e:["Aplicación de normativa sismorresistente en edificación","Refuerzo estructural de edificios esenciales"],n:["Inventario de edificios vulnerables","Formación en autoprotección (agacharse, cubrirse, agarrarse)"],u:["Evacuación de edificios dañados y control de accesos","Habilitación de albergues"],v:["Red sísmica y comunicación de intensidades sentidas"]}},
- {id:"tsu",g:"nat",n:"Maremoto (tsunami)",ab:"TSU",plan:"Plan Estatal ante maremotos",d:"Ondas de gran longitud por sismo, deslizamiento o erupción.",
-  m:{e:["Infraestructuras de refugio vertical en primera línea"],n:["Cartografía de zonas inundables por maremoto","Señalización de rutas de evacuación costera"],u:["Evacuación a cota segura o refugio vertical"],v:["Sistema de alerta de maremotos y avisos masivos"]}},
- {id:"inu",g:"nat",n:"Inundación / avenida en barranco",ab:"INU",plan:"PEINCA",d:"Desbordamiento de cauces, escorrentía urbana, encharcamiento.",
-  m:{e:["Encauzamiento y mantenimiento de la sección del barranco","Presas o balsas de laminación","Redes de drenaje urbano dimensionadas"],n:["Delimitación de zonas inundables y limitación de usos","Corrección hidrológico-forestal de cuencas","Limpieza preventiva de cauces antes de la temporada de lluvias"],u:["Cierre preventivo de pasos, garajes y vías en cauce","Evacuación de plantas bajas en zonas inundables"],v:["Seguimiento de avisos meteorológicos y pluviómetros","Avisos a la población en zonas de riesgo"]}},
- {id:"fma",g:"nat",n:"Fenómenos meteorológicos adversos",ab:"FMA",plan:"PEFMA",d:"Lluvias, viento (escala Beaufort), oleaje, calima, temperaturas extremas, ciclones (Saffir-Simpson).",
-  m:{e:["Anclaje de elementos expuestos al viento (cartelería, estructuras temporales)"],n:["Protocolos de suspensión de eventos al aire libre","Información sobre conducta ante viento, oleaje y calima"],u:["Cierre de accesos al litoral ante temporal","Atención a grupos sensibles en episodios de calor o calima"],v:["Avisos meteorológicos y difusión por niveles"]}},
- {id:"iff",g:"nat",n:"Incendio forestal (interfaz)",ab:"IFF",plan:"INFOCA",d:"Fuego en monte que alcanza zonas habitadas de medianías.",
-  m:{e:["Fajas perimetrales de baja carga de combustible","Red de hidrantes y depósitos accesibles"],n:["Planificación urbano-forestal y limitación de edificación en interfaz","Planes de autoprotección de urbanizaciones","Campañas de prevención y quemas controladas"],u:["Evacuación anticipada o confinamiento en edificación preparada","Corte de vías y gestión de tráfico"],v:["Vigilancia fija y móvil, índices de peligro","Avisos de prohibición y alerta"]}},
- {id:"lad",g:"nat",n:"Desprendimientos y deslizamientos",ab:"LAD",plan:"PLATECA / plan municipal",d:"Caída de rocas en taludes, laderas y acantilados; subsidencias.",
-  m:{e:["Mallas, anclajes y muros de contención","Consolidación de laderas inestables"],n:["Cartografía de zonas de desprendimiento","Restricción de usos al pie de taludes"],u:["Cierre de vías y senderos afectados","Desalojo de viviendas al pie del talud"],v:["Inspección periódica de taludes tras lluvias"]}},
- {id:"met",g:"nat",n:"Impacto de meteoroides",ab:"MET",plan:"PLATECA",d:"Bólidos y meteoritos; muy baja probabilidad en la escala local.",
-  m:{e:[],n:["Información pública basada en fuentes científicas"],u:["Activación de protocolos generales del plan territorial"],v:["Seguimiento de avisos de organismos astronómicos"]}},
- {id:"qui",g:"tec",n:"Accidente químico industrial",ab:"QUI",plan:"RISQCAN",d:"Fuga, incendio o explosión en establecimiento con sustancias peligrosas (DL50, CL50).",
-  m:{e:["Cubetos de retención, compartimentación y protección pasiva","Sistemas fijos de extinción y detección de fugas"],n:["Distancias de seguridad en el planeamiento","Plan de autoprotección e inspecciones periódicas","Información a la población del entorno"],u:["Confinamiento ante nube tóxica","Evacuación de zonas de intervención"],v:["Detectores y sirenas de aviso en el entorno"]}},
- {id:"mmp",g:"tec",n:"Transporte de mercancías peligrosas",ab:"MMP",plan:"PEMERCA",d:"Cisternas por carretera, puerto y aeropuerto; BLEVE, pool-fire, fugas.",
-  m:{e:["Barreras de contención y drenajes en tramos críticos"],n:["Mapa de flujos de MMPP y rutas preferentes","Restricciones horarias y de itinerario"],u:["Perímetros de seguridad según la materia","Confinamiento o evacuación del entorno"],v:["Comunicación de incidentes con CECOES 1-1-2"]}},
- {id:"rad",g:"tec",n:"Emergencia radiológica",ab:"RAD",plan:"RADICAN",d:"Fuentes radiactivas en hospitales, industria o transporte.",
-  m:{e:["Blindajes y almacenamiento seguro de fuentes"],n:["Inventario de instalaciones y control de fuentes"],u:["Confinamiento y control de accesos"],v:["Detección y medición radiológica"]}},
- {id:"exp",g:"tec",n:"Explosivos",ab:"EXP",plan:"PEMEXCA",d:"Almacenamiento, transporte y uso de explosivos (canteras, pirotecnia).",
-  m:{e:["Distancias y protecciones en depósitos"],n:["Control de espectáculos pirotécnicos y zonas de seguridad"],u:["Perímetro de seguridad y evacuación"],v:["Inspección de depósitos y actividades"]}},
- {id:"mar",g:"tec",n:"Contaminación marina",ab:"MAR",plan:"PECMAR",d:"Vertidos de hidrocarburos o sustancias en el litoral.",
-  m:{e:["Barreras flotantes y medios de recogida"],n:["Planes interiores de puertos e instalaciones","Inventario de zonas costeras sensibles"],u:["Cierre de playas y zonas de baño"],v:["Vigilancia del litoral y avisos"]}},
- {id:"sum",g:"tec",n:"Fallo de servicios esenciales",ab:"SUM",plan:"PLATECA / PNPIC",d:"Cero eléctrico, desalación, telecomunicaciones; infraestructuras críticas.",
-  m:{e:["Redundancia de suministro y grupos electrógenos en servicios esenciales"],n:["Coordinación con operadores críticos (PSO, PPE)","Reservas estratégicas de agua"],u:["Priorización de suministro a hospitales y residencias"],v:["Comunicación con operadores y Planes de Apoyo Operativo (PAO)"]}},
- {id:"con",g:"ant",n:"Grandes concentraciones humanas",ab:"CON",plan:"Ley 7/2011 · Decreto 86/2013 · PAU",d:"Fiestas, conciertos, eventos deportivos; densidad y evacuación.",
-  m:{e:["Vallado que no bloquee salidas, zonas de evacuación dimensionadas"],n:["Plan de autoprotección del evento","Control de aforo y densidad","Información a asistentes (megafonía, pantallas, señalización)"],u:["Evacuación por sectores y apertura de salidas","Corredor de servicios de emergencia"],v:["Vigilancia de densidad en tiempo real y coordinación con CECOES 1-1-2"]}},
- {id:"tra",g:"ant",n:"Accidente de tráfico",ab:"TRA",plan:"PLATECA / plan municipal",d:"Colisiones múltiples, puntos negros, túneles.",
-  m:{e:["Corrección de trazados y barreras de seguridad"],n:["Análisis de siniestralidad y puntos críticos","Campañas de seguridad vial"],u:["Desvíos y gestión de tráfico"],v:["Paneles de mensaje variable"]}},
- {id:"aer",g:"ant",n:"Accidente aéreo",ab:"AER",plan:"Plan de autoprotección aeroportuario / PLATECA",d:"Aeropuerto y trayectorias de aproximación.",
-  m:{e:[],n:["Plan de emergencia aeroportuario y coordinación exterior"],u:["Perímetro, triaje y evacuación sanitaria"],v:["Comunicación torre–CECOES 1-1-2"]}},
- {id:"mrt",g:"ant",n:"Accidente marítimo",ab:"MRT",plan:"PECMAR / plan portuario",d:"Buques de pasaje, interislas, puertos.",
-  m:{e:[],n:["Planes de emergencia portuarios"],u:["Rescate, acogida de náufragos"],v:["Salvamento Marítimo y coordinación con CECOES 1-1-2"]}},
- {id:"fer",g:"ant",n:"Accidente en tranvía o metro ligero",ab:"FER",plan:"PAU del operador / plan municipal",d:"Descarrilamiento, colisión, incendio en vehículo.",
-  m:{e:[],n:["Plan de autoprotección del operador"],u:["Evacuación de vehículos y corte de servicio"],v:["Centro de control del operador"]}},
- {id:"van",g:"ant",n:"Vandalismo, sabotaje o terrorismo",ab:"VAN",plan:"Sistema PNPIC",d:"Actos intencionados contra personas o infraestructuras críticas.",
-  m:{e:["Control de accesos y protección física"],n:["Plan de Seguridad del Operador (PSO) y Planes de Protección Específicos (PPE)"],u:["Confinamiento o evacuación según amenaza"],v:["Coordinación con Fuerzas y Cuerpos de Seguridad"]}},
- {id:"inc",g:"ant",n:"Incendio urbano o en edificio",ab:"INC",plan:"PAU / plan municipal",d:"Edificios de pública concurrencia, residencias, hoteles.",
-  m:{e:["Protección pasiva: compartimentación, tratamientos ignífugos","Protección activa: detección, alarma, extinción"],n:["Plan de autoprotección e implantación","Simulacros periódicos"],u:["Evacuación según plan, con apoyo a personas con movilidad reducida"],v:["Detección automática y conexión con central receptora"]}}
-];
+const MAXORIG=3;
+const TIPOS=[["ter","Territorio municipal"],["act","Actividad o establecimiento"],["eve","Evento o espectáculo público"],["inf","Infraestructura o vía de comunicación"]];
+const TIPO=Object.fromEntries(TIPOS);
+/* Elementos vulnerables: [clave, texto, marca] · p = grupo de personas crítico · a = medio ambiente */
+const VULN={
+ ter:[["t01","Centros educativos (infantil, primaria y secundaria)","p"],["t02","Residencias y centros de día de personas mayores","p"],["t03","Centros sanitarios (hospital, centro de salud)","p"],["t04","Personas con discapacidad o dependencia en su domicilio","p"],["t05","Población turística y flotante en alojamientos turísticos"],["t06","Núcleos aislados o con un único acceso rodado"],["t07","Viviendas en cauces, zonas inundables o al pie de laderas"],["t08","Edificación antigua o autoconstrucción sin criterios sismorresistentes"],["t09","Urbanizaciones en la interfaz urbano-forestal"],["t10","Infraestructuras críticas (desaladora, central eléctrica, depósitos de agua)"],["t11","Puerto, aeropuerto o vías de comunicación principales"],["t12","Polígonos industriales próximos a zonas habitadas"],["t13","Espacios naturales protegidos o especies singulares","a"],["t14","Patrimonio histórico o cultural"],["t15","Servicios esenciales: telecomunicaciones, saneamiento y suministro eléctrico"]],
+ act:[["a01","Ocupantes que desconocen el edificio (clientes, visitantes)"],["a02","Personas con movilidad reducida o discapacidad sensorial","p"],["a03","Menores sin acompañamiento adulto (guardería, zona infantil)","p"],["a04","Personas mayores o pacientes encamados","p"],["a05","Trabajadores a turnos o en solitario (turno de noche)"],["a06","Personal de contratas sin formación en el plan de autoprotección"],["a07","Plantas bajo rasante (sótanos, aparcamiento)"],["a08","Edificio en altura con evacuación vertical"],["a09","Almacenamiento de sustancias peligrosas o inflamables"],["a10","Instalaciones de riesgo (cocinas, calderas, cuadros eléctricos, GLP)"],["a11","Recorridos de evacuación largos o con una sola salida"],["a12","Edificios colindantes o uso residencial adosado"],["a13","Acceso limitado para vehículos de bomberos"],["a14","Protección contra incendios sin mantenimiento acreditado"],["a15","Equipos o datos críticos para la continuidad de la actividad"]],
+ eve:[["e01","Público con alta densidad de ocupación (zona de pista o escenario)"],["e02","Público joven con consumo de alcohol"],["e03","Familias con menores y carritos","p"],["e04","Personas mayores o con movilidad reducida","p"],["e05","Público extranjero que no conoce el idioma"],["e06","Recinto al aire libre expuesto a meteorología adversa"],["e07","Estructuras temporales (escenarios, gradas, carpas, torres de sonido)"],["e08","Salidas de evacuación limitadas o de anchura insuficiente"],["e09","Vallados y cerramientos que pueden generar aprisionamiento"],["e10","Accesos compartidos entre público y servicios de emergencia"],["e11","Instalaciones eléctricas provisionales y grupos electrógenos"],["e12","Puestos de comida con cocinas o botellas de GLP"],["e13","Espectáculos pirotécnicos o efectos especiales"],["e14","Entorno sensible (playa, espacio natural protegido, casco histórico)","a"],["e15","Horario nocturno y salida simultánea del público"]],
+ inf:[["i01","Usuarios en tránsito con alta intensidad de tráfico"],["i02","Túneles o tramos sin vías de escape"],["i03","Viaductos y puentes"],["i04","Taludes y laderas inestables junto a la vía"],["i05","Tramos en cauce o con drenaje insuficiente"],["i06","Transporte habitual de mercancías peligrosas"],["i07","Estaciones, intercambiadores o terminales de pasajeros"],["i08","Pasajeros con movilidad reducida","p"],["i09","Tramos de alta siniestralidad (puntos negros)"],["i10","Itinerario único sin alternativa en la isla"],["i11","Centros de control y sistemas de señalización"],["i12","Suministro eléctrico de la infraestructura (tranvía, iluminación, ventilación)"],["i13","Zonas habitadas colindantes con la infraestructura"],["i14","Espacios naturales atravesados por la infraestructura","a"],["i15","Accesos limitados para los servicios de emergencia"]]};
+const VX={};Object.values(VULN).flat().forEach(v=>VX[v[0]]=v);
+/* Riesgos: me/mn = medidas estructurales y no estructurales adecuadas; mex/mnx = medidas inadecuadas o contraproducentes (distractores) */
+const RR={
+ter:[
+ {id:"ter_vol",g:"nat",ab:"VOL",n:"Erupción volcánica",plan:"PEVOLCA",d:"Coladas, piroclastos y gases que afectan a núcleos y servicios.",
+  me:["Diques o barreras de tierra para desviar coladas lejos de núcleos y servicios","Refuerzo de cubiertas de edificios esenciales frente a la carga de ceniza"],mex:["Construcción de nuevas viviendas junto a los conos eruptivos recientes","Sellado con hormigón de las fisuras de emisión de gases"],
+  mn:["Zonificación del peligro volcánico en el planeamiento urbanístico","Divulgación del semáforo volcánico y simulacros de evacuación por sectores"],mnx:["Retrasar la información a la población hasta confirmar la erupción","Suprimir los simulacros para no generar alarma social"]},
+ {id:"ter_sis",g:"nat",ab:"SIS",n:"Terremoto",plan:"PESICAN",d:"Sacudida sísmica con daños en edificación antigua.",
+  me:["Aplicación de la normativa sismorresistente en la nueva edificación","Refuerzo estructural de edificios esenciales (hospitales, centros educativos)"],mex:["Añadir plantas a edificios existentes sin reevaluar su estructura","Colocar cornisas y elementos ornamentales pesados en las fachadas"],
+  mn:["Inventario y evaluación de la vulnerabilidad sísmica de los edificios","Formación de la población en autoprotección: agacharse, cubrirse y agarrarse"],mnx:["Indicar a la población que salga corriendo a la calle durante la sacudida","Recomendar como norma general refugiarse bajo el dintel de las puertas"]},
+ {id:"ter_inu",g:"nat",ab:"INU",n:"Inundación por avenida en barranco",plan:"PEINCA",d:"Desbordamiento del cauce que atraviesa el núcleo urbano.",
+  me:["Encauzamiento y mantenimiento de la sección hidráulica del barranco","Presas o balsas de laminación aguas arriba del núcleo"],mex:["Cubrir el cauce con una losa para ganar aparcamiento","Estrechar el cauce para construir viales en sus márgenes"],
+  mn:["Delimitación de zonas inundables y limitación de usos en el planeamiento","Corrección hidrológico-forestal de la cuenca"],mnx:["Autorizar garajes y viviendas en planta baja dentro del cauce","Retirar la señalización de vados inundables para no alarmar"]},
+ {id:"ter_iff",g:"nat",ab:"IFF",n:"Incendio forestal en la interfaz urbano-forestal",plan:"INFOCA",d:"Fuego en el monte que alcanza urbanizaciones de medianías.",
+  me:["Fajas perimetrales de baja carga de combustible alrededor de los núcleos","Red de hidrantes y depósitos de agua accesibles para los medios de extinción"],mex:["Plantar especies muy inflamables como pantalla vegetal junto a las viviendas","Cerrar las pistas forestales con vallas fijas sin paso para vehículos de extinción"],
+  mn:["Planes de autoprotección de urbanizaciones en la interfaz urbano-forestal","Campañas de información sobre el uso del fuego en época de peligro"],mnx:["Permitir quemas agrícolas libres en verano","Autorizar nuevas urbanizaciones dispersas dentro del monte"]},
+ {id:"ter_qui",g:"tec",ab:"QUI",n:"Accidente en industria con sustancias peligrosas",plan:"RISQCAN",d:"Fuga, incendio o explosión en un establecimiento del polígono.",
+  me:["Cubetos de retención y sistemas fijos de extinción en los depósitos","Sectorización y protección pasiva de los almacenamientos"],mex:["Ampliar los depósitos de almacenamiento junto a las viviendas","Eliminar los cubetos de retención para ganar espacio de almacenaje"],
+  mn:["Distancias de seguridad entre la industria y los usos residenciales en el planeamiento","Información a la población del entorno sobre las señales de aviso y el confinamiento"],mnx:["Ubicar un nuevo centro educativo en la zona de intervención","No informar del riesgo para evitar alarma vecinal"]},
+ {id:"ter_mmp",g:"tec",ab:"MMP",n:"Transporte de mercancías peligrosas por carretera",plan:"PEMERCA",d:"Accidente de cisterna en la travesía o en la circunvalación.",
+  me:["Variante de circunvalación que evite el paso de cisternas por el casco urbano","Barreras de contención y drenaje separativo en los tramos críticos"],mex:["Retirar las barreras de seguridad del tramo para facilitar adelantamientos","Verter el drenaje de la calzada al barranco sin separador de hidrocarburos"],
+  mn:["Mapa de flujos de MMPP y rutas preferentes que eviten zonas pobladas","Restricciones horarias al paso de cisternas por el núcleo urbano"],mnx:["Desviar las cisternas por el centro urbano en horario escolar","Suprimir la señalización de la ruta de MMPP"]},
+ {id:"ter_sum",g:"tec",ab:"SUM",n:"Fallo de servicios esenciales (cero eléctrico, desalación)",plan:"PLATECA / PNPIC",d:"Interrupción prolongada de electricidad o agua potable.",
+  me:["Grupos electrógenos y redundancia de suministro en los servicios esenciales","Depósitos de reserva de agua potable para varios días"],mex:["Concentrar todo el suministro en una única línea eléctrica","Eliminar los depósitos de reserva para reducir costes de mantenimiento"],
+  mn:["Coordinación con los operadores críticos (Plan de Seguridad del Operador)","Protocolo de suministro prioritario a hospitales y residencias"],mnx:["Repartir el suministro restante por orden de llegada de las solicitudes","No coordinarse con los operadores hasta que se produzca el fallo"]},
+ {id:"ter_mar",g:"tec",ab:"MAR",n:"Contaminación marina por vertido",plan:"PECMAR",d:"Vertido de hidrocarburos que alcanza el litoral del municipio.",
+  me:["Barreras flotantes de contención preinstaladas en el puerto","Medios de recogida de hidrocarburos en las instalaciones portuarias"],mex:["Abrir bocanas en los diques para dispersar el vertido","Construir espigones improvisados con escombros en playas sensibles"],
+  mn:["Inventario de zonas costeras sensibles y prioridades de protección","Ejercicios de lucha contra la contaminación con el plan interior portuario"],mnx:["Mantener abiertas las zonas de baño afectadas","Usar dispersantes químicos sin autorización en zonas protegidas"]},
+ {id:"ter_con",g:"ant",ab:"CON",n:"Grandes concentraciones humanas (fiestas, carnaval)",plan:"Ley 7/2011 · Decreto 86/2013",d:"Aglomeraciones en calles y plazas durante fiestas populares.",
+  me:["Eliminación de estrechamientos y ampliación de salidas en los recorridos","Corredor de emergencia separado del flujo de público"],mex:["Cerrar calles laterales con vallas fijas sin apertura de emergencia","Instalar el escenario obstaculizando la vía principal de evacuación"],
+  mn:["Plan de autoprotección del evento y control de aforo","Información al público por megafonía y señalización de salidas"],mnx:["Permitir aforo libre sin control de densidad","No coordinar el dispositivo con el CECOES 1-1-2"]},
+ {id:"ter_tra",g:"ant",ab:"TRA",n:"Accidentes de tráfico en travesía urbana",plan:"Plan municipal",d:"Atropellos y colisiones en la carretera que cruza el núcleo.",
+  me:["Corrección del trazado y barreras de seguridad en los puntos negros","Pasos de peatones elevados e iluminados en la travesía"],mex:["Eliminar aceras para ensanchar la calzada","Retirar la iluminación de los pasos de peatones"],
+  mn:["Análisis de siniestralidad e identificación de tramos de concentración de accidentes","Educación vial en los centros educativos"],mnx:["Suprimir los controles de velocidad en la travesía","Aumentar el límite de velocidad en la zona escolar"]},
+ {id:"ter_inc",g:"ant",ab:"INC",n:"Incendio en edificio residencial",plan:"Plan municipal",d:"Incendio en viviendas del casco antiguo o en edificios en altura.",
+  me:["Sectorización y protección de escaleras en edificios residenciales","Hidrantes accesibles y viales con anchura suficiente para autobombas"],mex:["Revestir las fachadas con materiales combustibles","Ocupar los viales de acceso de bomberos con mobiliario urbano fijo"],
+  mn:["Inspección de las condiciones de seguridad de los edificios antiguos","Campañas de prevención de incendios domésticos"],mnx:["Recomendar el uso del ascensor para evacuar en caso de incendio","Permitir el almacenamiento de enseres en rellanos y escaleras"]},
+ {id:"ter_van",g:"ant",ab:"VAN",n:"Sabotaje o vandalismo en infraestructuras críticas",plan:"Sistema PNPIC",d:"Actos intencionados contra desaladoras, depósitos o centros de transformación.",
+  me:["Protección física perimetral y control de accesos en instalaciones críticas","Videovigilancia e iluminación perimetral"],mex:["Dejar sin cerramiento los depósitos de agua potable","Retirar las cerraduras de los centros de transformación"],
+  mn:["Planes de Protección Específicos (PPE) de las infraestructuras críticas","Coordinación con las Fuerzas y Cuerpos de Seguridad"],mnx:["Publicar en la web municipal los planos de seguridad de las instalaciones","Prescindir de los protocolos de aviso a las Fuerzas de Seguridad"]}],
+act:[
+ {id:"act_sis",g:"nat",ab:"SIS",n:"Terremoto en el establecimiento",plan:"PESICAN",d:"Caída de elementos no estructurales y daños en el edificio.",
+  me:["Anclaje de estanterías, falsos techos e instalaciones","Refuerzo estructural conforme a la normativa sismorresistente"],mex:["Almacenar material pesado en estanterías altas sin anclar","Colgar luminarias pesadas sin sujeción adicional"],
+  mn:["Inclusión del riesgo sísmico en el plan de autoprotección","Formación del personal en la actuación durante y después del sismo"],mnx:["Ordenar la evacuación por las escaleras durante la sacudida","Usar los ascensores para evacuar tras el sismo"]},
+ {id:"act_inu",g:"nat",ab:"INU",n:"Inundación del establecimiento",plan:"PEINCA",d:"Entrada de agua en sótanos, garajes y plantas bajas.",
+  me:["Barreras o compuertas estancas en los accesos a sótanos y garajes","Bombas de achique y válvulas antirretorno en el saneamiento"],mex:["Ubicar el cuadro eléctrico general en el sótano","Eliminar los sumideros del aparcamiento"],
+  mn:["Procedimiento de cierre de sótanos y garajes ante aviso de lluvias","Traslado preventivo de material sensible a plantas altas"],mnx:["Mantener abierto el aparcamiento subterráneo con aviso rojo","Indicar a los clientes que rescaten sus vehículos del sótano"]},
+ {id:"act_fma",g:"nat",ab:"FMA",n:"Viento fuerte y calima",plan:"PEFMA",d:"Caída de elementos exteriores y mala calidad del aire.",
+  me:["Anclaje de toldos, rótulos y elementos de cubierta","Ventilación con filtrado de partículas en espacios cerrados"],mex:["Instalar carteles de gran superficie sin cálculo frente al viento","Retirar los anclajes de las pérgolas para facilitar su desmontaje"],
+  mn:["Protocolo de recogida de elementos exteriores ante aviso de viento","Atención a trabajadores y clientes sensibles durante episodios de calima"],mnx:["Mantener la actividad en terrazas y cubiertas con aviso naranja por viento","Planificar la actividad exterior sin consultar los avisos meteorológicos"]},
+ {id:"act_iff",g:"nat",ab:"IFF",n:"Incendio forestal próximo a la instalación",plan:"INFOCA",d:"Establecimiento situado en medianías rodeado de vegetación.",
+  me:["Franja perimetral libre de vegetación alrededor del edificio","Hidrante o depósito de agua con conexión para bomberos"],mex:["Acopiar leña y palés junto a la fachada","Instalar cubiertas de materiales vegetales inflamables"],
+  mn:["Inclusión del riesgo de incendio forestal en el plan de autoprotección","Procedimiento de confinamiento o evacuación anticipada coordinado con el municipio"],mnx:["Evacuar a los ocupantes por la pista forestal afectada por el humo","Quemar restos de poda en época de peligro alto"]},
+ {id:"act_inc",g:"tec",ab:"INC",n:"Incendio en el establecimiento",plan:"Plan de autoprotección",d:"Incendio originado en cocinas, almacenes o instalaciones.",
+  me:["Sectorización y puertas cortafuegos en las zonas de riesgo","Detección automática, alarma y rociadores"],mex:["Revestimientos combustibles en las vías de evacuación","Calzar las puertas cortafuegos para mantenerlas abiertas"],
+  mn:["Implantación del plan de autoprotección con equipos de emergencia formados","Simulacros periódicos de evacuación"],mnx:["Almacenar mercancía en los pasillos de evacuación","Desconectar la alarma para evitar falsas alarmas"]},
+ {id:"act_qui",g:"tec",ab:"QUI",n:"Fuga o derrame de sustancias peligrosas",plan:"RISQCAN / Plan de autoprotección",d:"Derrame en almacén, laboratorio o zona de trasvase.",
+  me:["Cubetos de retención bajo los depósitos y las zonas de trasvase","Detectores de fugas con corte automático"],mex:["Conectar el drenaje de la zona de trasvase a la red de pluviales","Ubicar los depósitos de inflamables junto a la salida de emergencia"],
+  mn:["Fichas de datos de seguridad accesibles y formación en su uso","Procedimiento de actuación ante derrames con kit de absorción"],mnx:["Almacenar juntos productos químicos incompatibles","Diluir cualquier derrame con agua y verterlo al alcantarillado"]},
+ {id:"act_ele",g:"tec",ab:"ELE",n:"Fallo eléctrico o de las instalaciones",plan:"Plan de autoprotección",d:"Apagón, personas atrapadas en ascensores y pérdida de sistemas.",
+  me:["Alumbrado de emergencia y señalización fotoluminiscente","Grupo electrógeno para los servicios críticos (bombas, ascensor de emergencia)"],mex:["Sobrecargar los cuadros eléctricos con regletas en cascada","Eliminar el alumbrado de emergencia de las escaleras"],
+  mn:["Mantenimiento preventivo y revisiones reglamentarias de las instalaciones","Procedimiento de rescate de personas atrapadas en ascensores"],mnx:["Encargar las reparaciones eléctricas a personal no cualificado","Aplazar indefinidamente las revisiones reglamentarias"]},
+ {id:"act_glp",g:"tec",ab:"GAS",n:"Explosión de gas en cocinas o calderas",plan:"Plan de autoprotección",d:"Fuga de GLP o gas natural en cocina o sala de calderas.",
+  me:["Ventilación permanente y detectores de gas con corte automático","Botellas de GLP en el exterior o en un recinto ventilado"],mex:["Almacenar las botellas de GLP en el sótano","Tapar las rejillas de ventilación de la sala de calderas"],
+  mn:["Revisiones periódicas de la instalación de gas por empresa habilitada","Formación del personal de cocina en la actuación ante fugas"],mnx:["Buscar fugas con una llama","Accionar interruptores eléctricos al detectar olor a gas"]},
+ {id:"act_eva",g:"ant",ab:"AGL",n:"Aglomeración durante la evacuación",plan:"Plan de autoprotección",d:"Alta ocupación con salidas insuficientes o mal señalizadas.",
+  me:["Salidas de emergencia dimensionadas según la ocupación","Puertas con apertura en el sentido de la evacuación y barra antipánico"],mex:["Instalar tornos que no se liberan en caso de emergencia","Reducir la anchura de las salidas para colocar expositores"],
+  mn:["Control de aforo y equipos de alarma y evacuación asignados","Señalización y mensajes de megafonía en varios idiomas"],mnx:["Cerrar con llave las salidas de emergencia para evitar hurtos","Superar el aforo autorizado en temporada alta"]},
+ {id:"act_seg",g:"ant",ab:"INT",n:"Intrusión, robo o agresión",plan:"Plan de autoprotección / seguridad privada",d:"Actos delictivos contra personas o instalaciones.",
+  me:["Control de accesos y cerramiento de las zonas restringidas","Videovigilancia en accesos y aparcamientos"],mex:["Rejas fijas en las ventanas de las vías de evacuación","Cerrar con cadenas las salidas de emergencia durante la noche"],
+  mn:["Procedimiento de actuación ante amenaza o intrusión","Coordinación con seguridad privada y Fuerzas y Cuerpos de Seguridad"],mnx:["Enfrentarse al agresor sin formación","Difundir los códigos de acceso entre los clientes"]},
+ {id:"act_bom",g:"ant",ab:"AMB",n:"Amenaza de bomba o paquete sospechoso",plan:"Plan de autoprotección",d:"Aviso telefónico o hallazgo de un objeto sospechoso.",
+  me:["Recepción de paquetería en un punto aislado del edificio","Papeleras transparentes en las zonas públicas"],mex:["Situar la recepción de paquetería en el vestíbulo principal","Eliminar el registro de entrada de mercancías"],
+  mn:["Protocolo de recepción de amenazas telefónicas","Procedimiento de búsqueda y evacuación coordinado con los cuerpos de seguridad"],mnx:["Manipular o abrir el paquete sospechoso","Usar teléfonos móviles junto al objeto sospechoso"]},
+ {id:"act_tra",g:"ant",ab:"MUE",n:"Accidente en carga y descarga o aparcamiento",plan:"Plan de autoprotección",d:"Atropellos y golpes en muelles y aparcamientos.",
+  me:["Separación física entre la circulación de peatones y vehículos","Muelles de carga con topes y señalización"],mex:["Compartir el paso de peatones con la zona de maniobras sin separación","Retirar los espejos de visibilidad de las curvas del aparcamiento"],
+  mn:["Normas de circulación interna y formación de transportistas","Coordinación de actividades empresariales con las contratas"],mnx:["Permitir el manejo de carretillas a personal sin formación","Prescindir de la coordinación con los transportistas externos"]}],
+eve:[
+ {id:"eve_fma",g:"nat",ab:"VIE",n:"Viento fuerte o tormenta durante el evento",plan:"PEFMA",d:"Vuelco o caída de estructuras y descargas eléctricas.",
+  me:["Cálculo y lastrado de escenarios, carpas y torres según el viento previsto","Toma de tierra y protección frente a descargas en estructuras metálicas"],mex:["Montar carpas sin lastre ni vientos para agilizar el desmontaje","Colocar lonas publicitarias cerradas en los vallados con viento previsto"],
+  mn:["Umbrales de suspensión del evento por velocidad del viento fijados en el plan","Seguimiento de los avisos meteorológicos durante el evento"],mnx:["Mantener el concierto con aviso naranja por viento","Esperar a que caiga una estructura para decidir la suspensión"]},
+ {id:"eve_cal",g:"nat",ab:"CAL",n:"Calor extremo o calima",plan:"PEFMA",d:"Golpes de calor y problemas respiratorios en el público.",
+  me:["Zonas de sombra y puntos de agua potable en el recinto","Carpas sanitarias climatizadas"],mex:["Eliminar las zonas de sombra para aumentar el aforo","Cerrar los puntos de agua gratuita para vender más bebidas"],
+  mn:["Avisos al público sobre hidratación y protección solar","Refuerzo del dispositivo sanitario en las horas centrales"],mnx:["Prohibir la entrada de agua sin ofrecer una alternativa gratuita","Programar la actividad de mayor esfuerzo en las horas de más calor"]},
+ {id:"eve_ola",g:"nat",ab:"OLA",n:"Oleaje o temporal costero en evento de litoral",plan:"PEFMA",d:"Evento en playa, paseo marítimo o explanada portuaria.",
+  me:["Ubicación del escenario y las instalaciones fuera del alcance del oleaje","Vallado de protección en el borde del litoral"],mex:["Montar el escenario sobre la escollera expuesta al oleaje","Situar al público en la zona de rompientes"],
+  mn:["Consulta del aviso de fenómenos costeros y plan de suspensión","Restricción del acceso a la zona de baño durante el evento"],mnx:["Permitir baños nocturnos con bandera roja","Mantener el evento con aviso de fenómenos costeros sin valorarlo"]},
+ {id:"eve_lad",g:"nat",ab:"LAD",n:"Desprendimientos en recinto al pie de laderas",plan:"PLATECA / plan municipal",d:"Recinto situado bajo taludes o acantilados.",
+  me:["Mallas y barreras de protección en el talud","Escenario y público a distancia de seguridad del pie del talud"],mex:["Apoyar las gradas en el talud","Excavar el pie del talud para ampliar el recinto"],
+  mn:["Inspección geotécnica del talud antes del evento","Zonas de exclusión señalizadas al pie de las laderas"],mnx:["Permitir el acceso del público a la cornisa del acantilado","Celebrar el evento tras lluvias intensas sin inspeccionar el talud"]},
+ {id:"eve_est",g:"tec",ab:"EST",n:"Colapso de estructuras temporales",plan:"Decreto 86/2013",d:"Fallo de escenario, gradas o torres de sonido e iluminación.",
+  me:["Proyecto técnico y certificado de montaje de escenarios y gradas","Arriostramiento y apoyos adecuados de las estructuras"],mex:["Ampliar las gradas sin recalcular la carga","Apoyar las estructuras sobre terreno sin compactar"],
+  mn:["Inspección y certificado final antes de abrir al público","Control de aforo por sector de grada"],mnx:["Permitir que el público suba a las torres de sonido","Abrir al público antes de recibir el certificado de montaje"]},
+ {id:"eve_ele",g:"tec",ab:"ELE",n:"Incendio por instalación eléctrica provisional",plan:"Plan de autoprotección",d:"Sobrecarga en cuadros, cableado o grupos electrógenos.",
+  me:["Cuadros protegidos y cableado canalizado fuera del paso del público","Extintores adecuados junto a cuadros y grupos electrógenos"],mex:["Tender cables por las vías de evacuación sin protección","Situar el grupo electrógeno junto al acopio de combustible y al público"],
+  mn:["Revisión de la instalación por instalador autorizado antes del evento","Responsable técnico designado durante el evento"],mnx:["Conectar los puestos con alargadores en cascada","Mojar los cuadros eléctricos para refrigerarlos"]},
+ {id:"eve_glp",g:"tec",ab:"GAS",n:"Fuga o explosión de GLP en puestos de comida",plan:"Plan de autoprotección",d:"Cocinas con botellas de gas en la zona de restauración.",
+  me:["Botellas de GLP en el exterior, protegidas y alejadas del público","Separación de seguridad entre puestos con cocina"],mex:["Almacenar botellas de reserva bajo el mostrador","Agrupar todas las cocinas junto a la salida principal"],
+  mn:["Revisión de las instalaciones de gas de los puestos","Formación del personal de los puestos en el uso de extintores"],mnx:["Comprobar fugas con un mechero","Permitir botellas y mangueras sin revisión"]},
+ {id:"eve_pir",g:"tec",ab:"PIR",n:"Accidente en espectáculo pirotécnico",plan:"PEMEXCA",d:"Proyecciones o explosión durante los fuegos artificiales.",
+  me:["Zona de seguridad vallada alrededor del punto de disparo","Protección de la zona de lanzamiento frente a proyecciones"],mex:["Situar el punto de disparo junto a la zona de público","Almacenar la pirotecnia en una carpa del recinto con público"],
+  mn:["Autorización del espectáculo y empresa pirotécnica habilitada","Suspensión del disparo con viento fuerte o hacia el público"],mnx:["Permitir que el público recoja artificios sin explotar","Reducir la distancia de seguridad para mejorar la visibilidad"]},
+ {id:"eve_ava",g:"ant",ab:"AVA",n:"Avalancha o aplastamiento por sobredensidad",plan:"Ley 7/2011 · Decreto 86/2013",d:"Presión del público en accesos, salidas o zona de escenario.",
+  me:["Salidas dimensionadas y sin estrechamientos","Vallas con apertura de emergencia y zona de amortiguación ante el escenario"],mex:["Vallado perimetral fijo sin puertas de emergencia","Acceso en embudo con una sola puerta"],
+  mn:["Control de aforo y de densidad en tiempo real","Salida escalonada del público al finalizar"],mnx:["Abrir todas las puertas a la vez y sin control al inicio","Superar el aforo autorizado"]},
+ {id:"eve_sal",g:"ant",ab:"SAN",n:"Emergencias sanitarias e intoxicaciones",plan:"Plan de autoprotección del evento",d:"Intoxicaciones etílicas, golpes de calor y lesiones.",
+  me:["Puesto sanitario avanzado con acceso para ambulancias","Zonas de descanso y aseos suficientes"],mex:["Situar el puesto sanitario en el interior sin acceso rodado","Eliminar aseos para ganar espacio de público"],
+  mn:["Dispositivo sanitario dimensionado al aforo y al tipo de público","Coordinación del dispositivo con el CECOES 1-1-2"],mnx:["Prescindir del dispositivo sanitario por ser un evento gratuito","Permitir la venta de alcohol a menores"]},
+ {id:"eve_van",g:"ant",ab:"VIO",n:"Altercados, vandalismo o actos violentos",plan:"Ley 7/2011",d:"Peleas, lanzamiento de objetos o daños en el recinto.",
+  me:["Control de accesos con registro","Videovigilancia e iluminación de todo el recinto"],mex:["Dejar zonas sin iluminación en el perímetro del recinto","Retirar las vallas que separan al público del escenario"],
+  mn:["Seguridad privada coordinada con Fuerzas y Cuerpos de Seguridad","Plan de comunicación con el público ante incidentes"],mnx:["Permitir la entrada de envases de vidrio","Prescindir de personal de seguridad en un evento multitudinario"]},
+ {id:"eve_tra",g:"ant",ab:"ATR",n:"Atropellos en los accesos al recinto",plan:"Plan de movilidad del evento",d:"Conflicto entre el tráfico rodado y el público a pie.",
+  me:["Separación física entre accesos peatonales y vehiculares","Barreras antiintrusión de vehículos en el perímetro"],mex:["Permitir el aparcamiento en los viales de emergencia","Cruces peatonales sin señalizar en la vía de acceso"],
+  mn:["Plan de movilidad con cortes de tráfico y lanzaderas","Regulación de accesos coordinada con la Policía Local"],mnx:["Mantener abierto el tráfico en la zona peatonal durante la salida","No informar al público de los cortes de tráfico"]}],
+inf:[
+ {id:"inf_lad",g:"nat",ab:"LAD",n:"Desprendimientos sobre la vía",plan:"PLATECA / plan de carreteras",d:"Caída de rocas desde taludes y laderas a la calzada.",
+  me:["Mallas de triple torsión y barreras dinámicas en los taludes","Bulonado y gunitado de los taludes inestables"],mex:["Excavar el pie del talud para ensanchar la calzada sin estabilizarlo","Retirar las mallas para ahorrar mantenimiento"],
+  mn:["Inspección periódica de los taludes, sobre todo tras lluvias","Cierre preventivo de la vía ante aviso de lluvias intensas"],mnx:["Mantener la vía abierta tras detectar movimiento en el talud","Retirar las señales de peligro por desprendimientos"]},
+ {id:"inf_inu",g:"nat",ab:"INU",n:"Inundación de la vía o del paso inferior",plan:"PEINCA",d:"Acumulación de agua en pasos inferiores y tramos en cauce.",
+  me:["Redimensionado de las obras de drenaje transversal","Bombeo y sensores de nivel en los pasos inferiores"],mex:["Reducir la sección de las obras de drenaje","Construir la vía en el fondo del cauce sin obra de paso"],
+  mn:["Cierre señalizado de los pasos inferiores cuando sube el nivel del agua","Limpieza de cunetas y drenajes antes de la temporada de lluvias"],mnx:["Permitir el paso de vehículos por vados inundados","Aplazar la limpieza de cunetas hasta después de las lluvias"]},
+ {id:"inf_fma",g:"nat",ab:"VIE",n:"Viento fuerte en viaductos o aeropuerto",plan:"PEFMA",d:"Rachas que afectan a vehículos altos y a las operaciones aéreas.",
+  me:["Pantallas cortavientos en los viaductos expuestos","Anemómetros conectados a paneles de mensaje variable"],mex:["Instalar paneles publicitarios de gran superficie en el viaducto","Retirar los anemómetros del viaducto"],
+  mn:["Restricción del paso de vehículos altos con viento fuerte","Protocolo de coordinación con el gestor aeroportuario ante avisos"],mnx:["Permitir el paso de camiones vacíos con rachas fuertes","No difundir los avisos de viento a los usuarios"]},
+ {id:"inf_sis",g:"nat",ab:"SIS",n:"Terremoto o erupción con daños en la infraestructura",plan:"PESICAN / PEVOLCA",d:"Daños en puentes y túneles o corte de la vía por coladas.",
+  me:["Refuerzo sísmico de puentes y viaductos","Itinerarios alternativos con capacidad suficiente"],mex:["Trazar el único acceso por la zona de mayor peligro volcánico","Eliminar juntas y apoyos sísmicos durante el mantenimiento del puente"],
+  mn:["Inspección de puentes y túneles tras un sismo antes de reabrir","Plan de evacuación por vías alternativas coordinado con PEVOLCA"],mnx:["Reabrir la vía sin inspección tras el sismo","Planificar la evacuación por una vía amenazada por las coladas"]},
+ {id:"inf_mmp",g:"tec",ab:"MMP",n:"Accidente de cisterna de mercancías peligrosas",plan:"PEMERCA",d:"Vuelco, fuga o incendio de una cisterna en la vía.",
+  me:["Barreras de contención de alta capacidad en los tramos críticos","Balsas de recogida de derrames en el drenaje de la vía"],mex:["Drenaje de la calzada directo al barranco sin separador","Barreras de baja contención en curvas peligrosas"],
+  mn:["Rutas obligatorias y restricciones horarias para MMPP","Mapa de flujos de MMPP y plan de actuación en la vía"],mnx:["Permitir el estacionamiento de cisternas en zonas habitadas","Suprimir la señal de prohibición de MMPP en los túneles"]},
+ {id:"inf_tun",g:"tec",ab:"TUN",n:"Incendio de vehículo en túnel",plan:"Plan de autoprotección del túnel",d:"Humo y calor en un espacio confinado con usuarios atrapados.",
+  me:["Ventilación de control de humos y galerías de evacuación","Hidrantes y nichos de seguridad a lo largo del túnel"],mex:["Suprimir las galerías de evacuación por su coste","Alumbrado de emergencia sin alimentación independiente"],
+  mn:["Centro de control con cierre del túnel y mensajes a los usuarios","Ejercicios conjuntos con los servicios de bomberos"],mnx:["Indicar a los usuarios que permanezcan en el vehículo con humo","Mantener el túnel abierto con un incendio en su interior"]},
+ {id:"inf_ele",g:"tec",ab:"CTL",n:"Fallo eléctrico o de los sistemas de control",plan:"Sistema PNPIC",d:"Pérdida de señalización, ventilación o control del tráfico.",
+  me:["Doble acometida eléctrica y SAI en el centro de control","Grupo electrógeno para ventilación e iluminación"],mex:["Una única acometida para todos los sistemas","Centro de control ubicado en zona inundable"],
+  mn:["Plan de Seguridad del Operador y protocolo de funcionamiento en modo degradado","Mantenimiento preventivo de los sistemas críticos"],mnx:["Aplazar el mantenimiento de los SAI","Carecer de procedimiento manual ante la caída del sistema"]},
+ {id:"inf_aer",g:"tec",ab:"AER",n:"Accidente aéreo en el entorno del aeropuerto",plan:"Plan de autoprotección aeroportuario",d:"Salida de pista o accidente en la aproximación.",
+  me:["Áreas de seguridad de extremo de pista libres de obstáculos","Viales de acceso del servicio de extinción a la zona de aproximación"],mex:["Edificar dentro de las servidumbres aeronáuticas","Ocupar el área de seguridad de extremo de pista con instalaciones"],
+  mn:["Plan de emergencia aeroportuario coordinado con los medios exteriores","Respeto de las servidumbres aeronáuticas en el planeamiento"],mnx:["Autorizar usos residenciales bajo la senda de aproximación","Realizar los ejercicios generales sin medios externos"]},
+ {id:"inf_acc",g:"ant",ab:"ACC",n:"Accidente múltiple de tráfico",plan:"Plan de carreteras / plan municipal",d:"Colisiones en cadena en vías de alta intensidad.",
+  me:["Corrección del trazado y barreras en tramos de concentración de accidentes","Paneles de mensaje variable y cámaras de tráfico"],mex:["Eliminar la mediana para añadir un carril","Retirar las bandas sonoras de los arcenes"],
+  mn:["Análisis de siniestralidad y control de velocidad","Protocolo de gestión de tráfico y desvíos con el centro de control"],mnx:["Elevar el límite de velocidad en el tramo de accidentes","No informar de las retenciones a los usuarios"]},
+ {id:"inf_mar",g:"ant",ab:"BUQ",n:"Accidente de buque de pasaje en puerto",plan:"Plan de autoprotección portuario / PECMAR",d:"Colisión, incendio o escora durante el atraque.",
+  me:["Defensas y bolardos dimensionados para los buques que operan","Pasarelas protegidas y accesos de emergencia en la estación marítima"],mex:["Atracar buques mayores que los que admite el muelle","Retirar las escalas de salvamento del muelle"],
+  mn:["Plan de autoprotección portuario coordinado con Salvamento Marítimo","Ejercicios de evacuación de buques con la naviera"],mnx:["Embarcar pasaje por encima de la capacidad autorizada","Prescindir del control de embarque en las operaciones nocturnas"]},
+ {id:"inf_tran",g:"ant",ab:"TRV",n:"Descarrilamiento o colisión del tranvía",plan:"Plan de autoprotección del operador",d:"Accidente en cruces con tráfico rodado o con peatones.",
+  me:["Separación física de la plataforma en los tramos de mayor velocidad","Semáforos con prioridad y detección en los cruces"],mex:["Eliminar la señalización en los cruces con tráfico rodado","Plataforma sin bordillo en tramos con peatones"],
+  mn:["Plan de autoprotección del operador con evacuación de vehículos","Formación de conductores y campañas dirigidas a peatones"],mnx:["Evacuar a los pasajeros hacia la vía contraria sin cortar la circulación","No coordinar la respuesta con el CECOES 1-1-2"]},
+ {id:"inf_ter",g:"ant",ab:"SAB",n:"Sabotaje o atentado contra la infraestructura",plan:"Sistema PNPIC",d:"Acción intencionada contra puntos críticos de la red.",
+  me:["Protección física y control de accesos en las instalaciones críticas","Videovigilancia de los puntos críticos"],mex:["Dejar sin cerramiento los accesos técnicos","Centro de control sin control de acceso"],
+  mn:["Plan de Seguridad del Operador y Plan de Protección Específico","Coordinación con el Plan de Apoyo Operativo de las Fuerzas de Seguridad"],mnx:["Publicar los planos de seguridad de la instalación","Compartir credenciales de acceso entre empresas externas"]}]};
+const R=Object.values(RR).flat();
 const RX=Object.fromEntries(R.map(r=>[r.id,r]));
-const MCAT={e:"Estructurales",n:"No estructurales",u:"En situación de emergencia",v:"Vigilancia y alerta"};
-const MCAT_CE={e:"RA4·CE a",n:"RA4·CE b",u:"RA4·CE d",v:"RA5"};
+const MCAT={e:"Medidas estructurales",n:"Medidas no estructurales"};
+const MCAT_CE={e:"RA4·CE a",n:"RA4·CE b"};
+const MDEF={e:"Obras e intervenciones físicas que reducen el suceso peligroso o protegen los elementos expuestos: presas de laminación, desviación de cauces, consolidación de laderas, refuerzo de edificios, entre otras.",
+ n:"Medidas sin obra que reducen los elementos expuestos o aumentan la resiliencia de la población: zonificación del territorio, normativa, planes de autoprotección, formación, divulgación, simulacros y sistemas de aviso."};
+function hashStr(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function opciones(r,c){const ok=c==="e"?r.me:r.mn,bad=c==="e"?r.mex:r.mnx;return [...ok.map(t=>({t,ok:true})),...bad.map(t=>({t,ok:false}))].sort((a,b)=>hashStr(r.id+a.t)-hashStr(r.id+b.t))}
+function tipoDe(id){return id.split("_")[0]}
 
 const PDESC=["","Muy improbable: sin antecedentes conocidos","Improbable: antecedentes aislados","Posible: antecedentes en la zona","Probable: se repite cada pocos años","Muy probable: frecuente o en curso"];
 const DDESC={
@@ -317,32 +457,22 @@ const DDESC={
  b:["","Daños mínimos","Daños leves en bienes","Daños en viviendas o servicios","Daños graves en infraestructuras críticas","Destrucción extensa"],
  a:["","Sin afección","Afección leve y reversible","Afección moderada","Afección grave a espacios protegidos","Daño irreversible"]};
 const SDESC=["","Insignificante","Menor","Moderada","Grave","Catastrófica"];
-
-const GRUPOS=[
- ["men","Menores (centros educativos, guarderías)"],["may","Personas mayores (residencias, centros de día)"],
- ["dis","Personas con discapacidad o dependencia"],["san","Pacientes en centros sanitarios"],
- ["tur","Población flotante y turística (desconoce el entorno y el idioma)"],["ais","Núcleos aislados o con un único acceso"],
- ["cri","Infraestructuras críticas en la zona (desaladora, central, puerto)"],["env","Espacios naturales protegidos o especies singulares"]];
+const MINPAL=50;
+const palabras=t=>String(t||"").trim().split(/\s+/).filter(Boolean).length;
+const urlsDe=t=>String(t||"").split(/\s+/).map(s=>s.trim()).filter(Boolean);
+const urlOk=u=>/^https?:\/\/[^\s/$.?#][^\s]*\.[^\s]+$/i.test(u);
 
 /* ---------- estado ---------- */
-const EXAMPLE={ejemplo:true,step:0,metodo:"ambos",
- meta:{alumno:"",ambito:"Municipio costero de ejemplo",isla:"Gran Canaria",tipo:"Territorio municipal",
-  desc:"Núcleo urbano de unos 12.000 habitantes atravesado por un barranco canalizado. Autovía con tránsito de cisternas junto al polígono industrial. Recinto portuario donde se celebra un festival anual.",
-  pob:"12.000 habitantes; población flotante en verano [EDITABLE]", grupos:["may","men","tur","cri"],notas:"Residencia de mayores a 300 m del cauce [EDITABLE]."},
- sel:["inu","mmp","con"],
- ev:{inu:{P:3,dp:4,db:4,da:2,S:4,just:"Episodios de lluvia intensa registrados en la zona; viviendas en plantas bajas junto al cauce."},
-     mmp:{P:2,dp:5,db:4,da:3,S:5,just:"Paso diario de cisternas de GLP y combustibles junto a zona habitada."},
-     con:{P:3,dp:5,db:2,da:1,S:4,just:"Festival con aforo elevado en explanada con salidas limitadas."}},
- med:{inu:["Delimitación de zonas inundables y limitación de usos","Cierre preventivo de pasos, garajes y vías en cauce"],mmp:["Mapa de flujos de MMPP y rutas preferentes"],con:["Plan de autoprotección del evento","Control de aforo y densidad"]},
- medx:{},
- conclu:""};
-function blank(){return {ejemplo:false,step:0,metodo:"ambos",meta:{alumno:"",ambito:"",isla:"",tipo:"Territorio municipal",desc:"",pob:"",grupos:[],notas:""},sel:[],ev:{},med:{},medx:{},conclu:""}}
-let S=store.get("evb_state",null)||JSON.parse(JSON.stringify(EXAMPLE));
-function save(){store.set("evb_state",S)}
-function ev(id){if(!S.ev[id])S.ev[id]={P:3,dp:3,db:3,da:3,S:3,just:""};return S.ev[id]}
+const SKEY="evb_state_v2";
+function blank(){return {v:2,step:0,metodo:"ambos",meta:{alumno:"",ambito:"",isla:"",tipo:"",desc:"",pob:"",grupos:[],notas:""},sel:[],ev:{},med:{},medx:{},conclu:""}}
+let S=store.get(SKEY,null);if(!S||S.v!==2)S=blank();
+function save(){store.set(SKEY,S)}
+function ev(id){if(!S.ev[id])S.ev[id]={P:null,dp:null,db:null,da:null,S:null,just:"",urls:""};return S.ev[id]}
+const need1=()=>S.metodo!=="mx",need2=()=>S.metodo!=="pd";
+function completo(e){return e.P!=null&&(!need1()||(e.dp!=null&&e.db!=null&&e.da!=null))&&(!need2()||e.S!=null)}
 function D(e){return cfg.dRule==="media"?Math.round((e.dp+e.db+e.da)/3):Math.max(e.dp,e.db,e.da)}
-function ir1(e){return e.P*D(e)}
-function ir2(e){return e.P*e.S}
+function ir1(e){return e.P!=null&&e.dp!=null&&e.db!=null&&e.da!=null?e.P*D(e):null}
+function ir2(e){return e.P!=null&&e.S!=null?e.P*e.S:null}
 
 /* ---------- pestañas ---------- */
 const TABS=["asis","casos","ref","doc"];
@@ -355,88 +485,116 @@ const STEPS=[
  {t:"Identificación",ra:["RA1·CE a","RA2·CE a","RA3·CE a"]},
  {t:"Evaluación",ra:["RA1·CE e","RA2·CE c","RA3·CE e"]},
  {t:"Mapa y prioridad",ra:["RA1·CE f","RA2·CE d"]},
- {t:"Medidas",ra:["RA4·CE a–e","RA5·CE a–c, e"]},
+ {t:"Medidas",ra:[]},
  {t:"Informe",ra:["RA4·CE i"]}];
+function bloqueo(i){
+ if(i===0&&!S.meta.tipo)return "Selecciona el tipo de análisis en el paso 1";
+ if(i===1&&!S.sel.length)return "Selecciona al menos un riesgo";
+ if(i===2){const inc=S.sel.filter(id=>!completo(ev(id)));if(inc.length)return `Completa la valoración de ${inc.length} riesgo(s): hay campos sin selección`;
+  const cortas=S.sel.filter(id=>palabras(ev(id).just)<MINPAL);if(cortas.length)return `La justificación debe tener al menos ${MINPAL} palabras (${cortas.length} riesgo(s) pendiente(s))`;
+  if(S.sel.some(id=>urlsDe(ev(id).urls).some(u=>!urlOk(u))))return "Revisa los enlaces: cada URL debe empezar por http:// o https://"}
+ return ""}
 function renderSteps(){const ol=$("#steps");ol.innerHTML=STEPS.map((s,i)=>`<li><button type="button" data-s="${i}" ${i===S.step?'aria-current="step"':''} class="${i<S.step?'done':''}"><i>${i+1}</i>${s.t}</button></li>`).join("");ol.querySelectorAll("button").forEach(b=>b.onclick=()=>go(+b.dataset.s))}
-function go(i){S.step=Math.max(0,Math.min(STEPS.length-1,i));save();renderAsis();window.scrollTo({top:0})}
+function go(i){i=Math.max(0,Math.min(STEPS.length-1,i));
+ for(let k=0;k<i;k++){const msg=bloqueo(k);if(msg){toast(msg);if(S.step!==k){S.step=k;save();renderAsis();window.scrollTo({top:0})}return}}
+ S.step=i;save();renderAsis();window.scrollTo({top:0})}
 $("#prev").onclick=()=>go(S.step-1);
-$("#next").onclick=()=>{if(S.step===1&&!S.sel.length){toast("Selecciona al menos un riesgo");return}go(S.step+1)};
-function head(i,txt){const s=STEPS[i];return `<div class="intro"><p class="eyebrow">Paso ${i+1} de ${STEPS.length}</p><h2>${s.t}</h2><p class="muted">${txt}</p><div class="ra" aria-label="Criterios de evaluación">${s.ra.map(r=>`<span>${r}</span>`).join("")}</div></div>`}
-function exampleBanner(){return S.ejemplo?`<div class="warnbox">Estás viendo un <b>análisis de ejemplo</b> con datos ficticios. Modifícalo para practicar o pulsa «Empezar de cero» para hacer el tuyo.</div>`:""}
+$("#next").onclick=()=>go(S.step+1);
+function head(i,txt){const s=STEPS[i];return `<div class="intro"><p class="eyebrow">Paso ${i+1} de ${STEPS.length}</p><h2>${s.t}</h2><p class="muted">${txt}</p>${s.ra.length?`<div class="ra" aria-label="Criterios de evaluación">${s.ra.map(r=>`<span>${r}</span>`).join("")}</div>`:""}</div>`}
 
 function renderAsis(){renderSteps();const b=$("#stepBody");
  $("#prev").disabled=S.step===0;$("#next").hidden=S.step===STEPS.length-1;
  [step0,step1,step2,step3,step4,step5][S.step](b)}
 
-function bindInputs(root){root.querySelectorAll("[data-k]").forEach(el=>{el.addEventListener("input",()=>{const path=el.dataset.k.split(".");let o=S;for(let i=0;i<path.length-1;i++)o=o[path[i]];o[path.at(-1)]=el.type==="number"?+el.value:el.value;S.ejemplo=false;save()})})}
+function bindInputs(root){root.querySelectorAll("[data-k]").forEach(el=>{el.addEventListener("input",()=>{const path=el.dataset.k.split(".");let o=S;for(let i=0;i<path.length-1;i++)o=o[path[i]];o[path.at(-1)]=el.value;save()})})}
 
-function step0(b){const m=S.meta;
- b.innerHTML=`<div class="panel">${head(0,"Describe el territorio o la actividad. La vulnerabilidad depende de quién y qué está expuesto: población, urbanismo y medio ambiente.")}${exampleBanner()}
+function step0(b){const m=S.meta,lista=VULN[m.tipo]||[];
+ b.innerHTML=`<div class="panel">${head(0,"Elige el tipo de análisis y describe el ámbito. La vulnerabilidad depende de quién y qué está expuesto: población, urbanismo y medio ambiente.")}
  <div class="grid2">
+  <label class="f" for="m-tipo">Tipo de análisis <small>Determina los elementos vulnerables, los riesgos y las medidas que verás después.</small><select id="m-tipo"><option value="" ${m.tipo?"":"selected"}>— Sin selección —</option>${TIPOS.map(([k,t])=>`<option value="${k}" ${k===m.tipo?"selected":""}>${t}</option>`).join("")}</select></label>
   <label class="f" for="m-alumno">Alumno/a o grupo<input type="text" id="m-alumno" data-k="meta.alumno" value="${esc(m.alumno)}" placeholder="Nombre y apellidos"></label>
-  <label class="f" for="m-ambito">Ámbito de estudio<input type="text" id="m-ambito" data-k="meta.ambito" value="${esc(m.ambito)}" placeholder="Municipio, polígono, recinto..."></label>
-  <label class="f" for="m-isla">Isla<select id="m-isla" data-k="meta.isla">${["","Lanzarote","Fuerteventura","Gran Canaria","Tenerife","La Gomera","La Palma","El Hierro","La Graciosa"].map(x=>`<option ${x===m.isla?"selected":""}>${x}</option>`).join("")}</select></label>
-  <label class="f" for="m-tipo">Tipo de análisis<select id="m-tipo" data-k="meta.tipo">${["Territorio municipal","Actividad o establecimiento","Evento o espectáculo público","Infraestructura o vía de comunicación"].map(x=>`<option ${x===m.tipo?"selected":""}>${x}</option>`).join("")}</select></label>
+  <label class="f" for="m-ambito">Ámbito de estudio<input type="text" id="m-ambito" data-k="meta.ambito" value="${esc(m.ambito)}" placeholder="Municipio, establecimiento, recinto o vía"></label>
+  <label class="f" for="m-isla">Isla<select id="m-isla" data-k="meta.isla">${["","Lanzarote","Fuerteventura","Gran Canaria","Tenerife","La Gomera","La Palma","El Hierro","La Graciosa"].map(x=>`<option value="${x}" ${x===m.isla?"selected":""}>${x||"— Sin selección —"}</option>`).join("")}</select></label>
  </div>
  <label class="f" for="m-desc">Descripción del ámbito <small>Geomorfología, clima, usos, vías, servicios básicos, actividades peligrosas cercanas.</small><textarea id="m-desc" data-k="meta.desc">${esc(m.desc)}</textarea></label>
- <label class="f" for="m-pob">Población expuesta <small>Número, densidad y variaciones estacionales.</small><input type="text" id="m-pob" data-k="meta.pob" value="${esc(m.pob)}"></label>
- <fieldset><legend>Elementos vulnerables presentes</legend><div class="checks">${GRUPOS.map(([k,t])=>`<label class="chk"><input type="checkbox" data-g="${k}" ${m.grupos.includes(k)?"checked":""}><span>${t}</span></label>`).join("")}</div></fieldset>
- <label class="f" for="m-notas">Observaciones de vulnerabilidad<textarea id="m-notas" data-k="meta.notas">${esc(m.notas)}</textarea></label>
+ <label class="f" for="m-pob">Población expuesta <small>Número, densidad y variaciones estacionales u horarias.</small><input type="text" id="m-pob" data-k="meta.pob" value="${esc(m.pob)}"></label>
+ <fieldset><legend>Elementos vulnerables presentes${m.tipo?` <span class="cnt">${esc(TIPO[m.tipo])}</span>`:""}</legend>
+  ${lista.length?`<div class="checks">${lista.map(([k,t])=>`<label class="chk"><input type="checkbox" data-g="${k}" ${m.grupos.includes(k)?"checked":""}><span>${esc(t)}</span></label>`).join("")}</div>`:`<p class="muted">Selecciona primero el tipo de análisis para ver los elementos vulnerables.</p>`}
+ </fieldset>
+ <label class="f" for="m-notas">Observaciones de vulnerabilidad <small>Explica por qué los elementos marcados son vulnerables y dónde se sitúan.</small><textarea id="m-notas" data-k="meta.notas">${esc(m.notas)}</textarea></label>
  </div>`;
  bindInputs(b);
- b.querySelectorAll("[data-g]").forEach(c=>c.onchange=()=>{const g=S.meta.grupos;const k=c.dataset.g;if(c.checked){if(!g.includes(k))g.push(k)}else S.meta.grupos=g.filter(x=>x!==k);S.ejemplo=false;save()})}
+ $("#m-tipo").onchange=e=>{const nt=e.target.value,old=S.meta.tipo;S.meta.tipo=nt;
+  S.meta.grupos=S.meta.grupos.filter(k=>(VULN[nt]||[]).some(v=>v[0]===k));
+  const fuera=S.sel.filter(id=>tipoDe(id)!==nt);fuera.forEach(id=>{delete S.ev[id];delete S.med[id];delete S.medx[id]});S.sel=S.sel.filter(id=>tipoDe(id)===nt);
+  save();step0(b);$("#m-tipo").focus();if(old&&old!==nt)toast("Tipo cambiado: se han borrado los elementos y riesgos del tipo anterior")};
+ b.querySelectorAll("[data-g]").forEach(c=>c.onchange=()=>{const k=c.dataset.g;if(c.checked){if(!S.meta.grupos.includes(k))S.meta.grupos.push(k)}else S.meta.grupos=S.meta.grupos.filter(x=>x!==k);save()})}
 
-function step1(b){
- b.innerHTML=`<div class="panel">${head(1,"Marca los fenómenos peligrosos que pueden afectar al ámbito. Junto a cada uno aparece el plan especial o la norma de referencia en Canarias.")}
- ${Object.keys(G).map(g=>`<fieldset><legend>Riesgos de origen ${G[g].toLowerCase()}</legend><div class="checks">${R.filter(r=>r.g===g).map(r=>`<label class="chk"><input type="checkbox" data-r="${r.id}" ${S.sel.includes(r.id)?"checked":""}><span>${r.n}<em>${r.plan} · ${r.d}</em></span></label>`).join("")}</div></fieldset>`).join("")}
- <p class="small muted" id="selCount"></p></div>`;
- const upd=()=>$("#selCount").textContent=`${S.sel.length} riesgo(s) seleccionado(s).`;upd();
- b.querySelectorAll("[data-r]").forEach(c=>c.onchange=()=>{const k=c.dataset.r;if(c.checked){if(!S.sel.includes(k))S.sel.push(k);ev(k)}else S.sel=S.sel.filter(x=>x!==k);S.ejemplo=false;save();upd()})}
+function step1(b){const t=S.meta.tipo;
+ if(!t){b.innerHTML=`<div class="panel">${head(1,"")}<p>Selecciona primero el tipo de análisis en el paso 1.</p></div>`;return}
+ b.innerHTML=`<div class="panel">${head(1,`Marca los fenómenos peligrosos que pueden afectar a este ${TIPO[t].toLowerCase()}. Puedes elegir hasta ${MAXORIG} riesgos de cada origen. Junto a cada uno aparece el plan o la norma de referencia en Canarias.`)}
+ ${Object.keys(G).map(g=>`<fieldset data-orig="${g}"><legend>Riesgos de origen ${G[g].toLowerCase()} <span class="cnt" data-cnt="${g}"></span></legend><div class="checks">${RR[t].filter(r=>r.g===g).map(r=>`<label class="chk"><input type="checkbox" data-r="${r.id}" ${S.sel.includes(r.id)?"checked":""}><span>${esc(r.n)}<em>${esc(r.plan)} · ${esc(r.d)}</em></span></label>`).join("")}</div></fieldset>`).join("")}
+ </div>`;
+ const upd=()=>Object.keys(G).forEach(g=>{const n=S.sel.filter(id=>RX[id].g===g).length;b.querySelector(`[data-cnt="${g}"]`).textContent=`${n} / ${MAXORIG}`;
+  b.querySelectorAll(`[data-orig="${g}"] [data-r]`).forEach(c=>{c.disabled=!c.checked&&n>=MAXORIG;c.closest(".chk").classList.toggle("off",c.disabled)})});upd();
+ b.querySelectorAll("[data-r]").forEach(c=>c.onchange=()=>{const k=c.dataset.r;
+  if(c.checked){if(S.sel.filter(id=>RX[id].g===RX[k].g).length>=MAXORIG){c.checked=false;toast(`Máximo ${MAXORIG} riesgos de origen ${G[RX[k].g].toLowerCase()}`);return}if(!S.sel.includes(k))S.sel.push(k);ev(k)}
+  else S.sel=S.sel.filter(x=>x!==k);save();upd()})}
 
 function seg(){return `<div class="btns"><span class="small muted">Método:</span><div class="seg" role="group" aria-label="Método de evaluación">${[["pd","Índice P × D"],["mx","Matriz 5×5"],["ambos","Ambos (comparar)"]].map(([k,t])=>`<button type="button" data-m="${k}" aria-pressed="${S.metodo===k}">${t}</button>`).join("")}</div></div>`}
 function bindSeg(b,re){b.querySelectorAll("[data-m]").forEach(x=>x.onclick=()=>{S.metodo=x.dataset.m;save();re()})}
-function sel(id,val,desc,label,key){return `<label class="f" for="${id}">${label}<select id="${id}" data-e="${key}">${[1,2,3,4,5].map(v=>`<option value="${v}" ${v===val?"selected":""}>${v} · ${desc[v]}</option>`).join("")}</select></label>`}
+function sel(id,val,desc,label,key){return `<label class="f" for="${id}">${label}<select id="${id}" data-e="${key}" class="${val==null?"pend":""}"><option value="" ${val==null?"selected":""}>— Sin selección —</option>${[1,2,3,4,5].map(v=>`<option value="${v}" ${v===val?"selected":""}>${v} · ${desc[v]}</option>`).join("")}</select></label>`}
 function lvBadge(n,v){return `<span class="lvl b${n}">${LV[n-1]}${v!=null?` <span class="mono">${v}</span>`:""}</span>`}
+const sinEval=`<span class="pill">Sin evaluar</span>`;
 
-function vulnWarn(e){const crit=S.meta.grupos.filter(g=>["men","may","dis","san"].includes(g)).length;
- if(crit>=2&&e.dp<=2)return `<div class="warnbox">Has marcado ${crit} grupos críticos en el ámbito y valoras el daño a personas en ${e.dp}. Revisa si es coherente con la vulnerabilidad descrita en el paso 1.</div>`;
- if(S.meta.grupos.includes("env")&&e.da<=1)return `<div class="warnbox">Hay espacios naturales protegidos en el ámbito y el daño ambiental está en 1. Justifica por qué no se verían afectados.</div>`;return ""}
+function vulnWarn(e){const gr=S.meta.grupos.map(k=>VX[k]).filter(Boolean);const crit=gr.filter(v=>v[2]==="p").length,env=gr.some(v=>v[2]==="a");
+ if(e.dp!=null&&crit>=2&&e.dp<=2)return `<div class="warnbox">Has marcado ${crit} grupos de personas especialmente vulnerables y valoras el daño a personas en ${e.dp}. Revisa si es coherente con la vulnerabilidad descrita en el paso 1.</div>`;
+ if(env&&e.da!=null&&e.da<=1)return `<div class="warnbox">Hay espacios naturales sensibles en el ámbito y el daño ambiental está en 1. Justifica por qué no se verían afectados.</div>`;return ""}
 
 function step2(b){
  if(!S.sel.length){b.innerHTML=`<div class="panel">${head(2,"")}<p>No hay riesgos seleccionados. Vuelve al paso 2.</p></div>`;return}
- const show1=S.metodo!=="mx",show2=S.metodo!=="pd";
- b.innerHTML=`<div class="panel">${head(2,"Valora cada riesgo. El índice P × D calcula el daño a partir de tres dimensiones; la matriz 5×5 usa una severidad global. Con «Ambos» puedes comparar los dos resultados.")}${seg()}
+ const show1=need1(),show2=need2();
+ b.innerHTML=`<div class="panel">${head(2,`Valora cada riesgo: todos los campos empiezan sin selección. La justificación es obligatoria, con un mínimo de ${MINPAL} palabras, y puedes añadir enlaces a noticias o fuentes que respalden los antecedentes.`)}${seg()}
  <details><summary>Cómo se calcula</summary><dl>
   <dt>Índice P × D</dt><dd>IR = Probabilidad (1–5) × Daños (1–5). Daños = ${cfg.dRule==="max"?"valor máximo":"media redondeada"} de personas, bienes y medio ambiente. Rango 1–25. Niveles: Bajo ≤ ${cfg.m1[0]}, Moderado ≤ ${cfg.m1[1]}, Alto ≤ ${cfg.m1[2]}, Muy alto > ${cfg.m1[2]}.</dd>
   <dt>Matriz 5×5</dt><dd>Nivel = Probabilidad × Severidad global. Niveles: Bajo ≤ ${cfg.m2[0]}, Moderado ≤ ${cfg.m2[1]}, Alto ≤ ${cfg.m2[2]}, Muy alto > ${cfg.m2[2]}.</dd>
  </dl></details></div>
  ${S.sel.map(id=>{const r=RX[id],e=ev(id);return `<article class="risk" data-id="${id}">
-  <div class="risk-h"><h3>${r.n}</h3><span class="plan">${r.plan}</span></div>
-  <p class="tag">${G[r.g]} · ${r.ab}</p>
+  <div class="risk-h"><h3>${esc(r.n)}</h3><span class="plan">${esc(r.plan)}</span></div>
+  <p class="tag">${G[r.g]} · ${r.ab} <span class="st"></span></p>
   <div class="scales">${sel(id+"-P",e.P,PDESC,"Probabilidad (P)","P")}</div>
   ${show1?`<div class="scales">${sel(id+"-dp",e.dp,DDESC.p,"Daños a personas","dp")}${sel(id+"-db",e.db,DDESC.b,"Daños a bienes e infraestructuras","db")}${sel(id+"-da",e.da,DDESC.a,"Daños al medio ambiente","da")}</div>`:""}
   ${show2?`<div class="scales">${sel(id+"-S",e.S,SDESC,"Severidad global (matriz)","S")}</div>`:""}
   <div class="result" aria-live="polite"></div>
   <div class="vw"></div>
-  <label class="f" for="${id}-just">Justificación <small>Antecedentes históricos, fuentes consultadas, elementos expuestos.</small><textarea id="${id}-just" data-j>${esc(e.just)}</textarea></label>
+  <label class="f" for="${id}-just">Justificación (obligatoria) <small>Antecedentes históricos, fuentes consultadas y elementos expuestos. Mínimo ${MINPAL} palabras.</small><textarea id="${id}-just" data-j>${esc(e.just)}</textarea></label>
+  <p class="wc" aria-live="polite"></p>
+  <label class="f" for="${id}-url">Enlaces a noticias o fuentes (opcional) <small>Una URL por línea. Aparecerán como enlace en el informe PDF.</small><textarea id="${id}-url" data-u class="urls" rows="2" placeholder="https://...">${esc(e.urls)}</textarea></label>
+  <p class="wc uc" aria-live="polite"></p>
  </article>`}).join("")}`;
  bindSeg(b,()=>step2(b));
  b.querySelectorAll(".risk").forEach(card=>{const id=card.dataset.id,e=ev(id);
-  const upd=()=>{const parts=[];if(show1){const v=ir1(e);parts.push(`<span>P × D = <b class="mono">${e.P} × ${D(e)} = ${v}</b></span>${lvBadge(level(v,cfg.m1))}`)}
-   if(show2){const v=ir2(e);parts.push(`<span>Matriz P × S = <b class="mono">${e.P} × ${e.S} = ${v}</b></span>${lvBadge(level(v,cfg.m2))}`)}
-   if(show1&&show2&&level(ir1(e),cfg.m1)!==level(ir2(e),cfg.m2))parts.push(`<span class="small">Los métodos dan niveles distintos: explica la diferencia en la justificación.</span>`);
-   card.querySelector(".result").innerHTML=parts.join("");card.querySelector(".vw").innerHTML=show1?vulnWarn(e):""};
+  const upd=()=>{const parts=[];
+   if(show1){const v=ir1(e);parts.push(v==null?`<span>P × D: <b>pendiente</b></span>`:`<span>P × D = <b class="mono">${e.P} × ${D(e)} = ${v}</b></span>${lvBadge(level(v,cfg.m1))}`)}
+   if(show2){const v=ir2(e);parts.push(v==null?`<span>Matriz P × S: <b>pendiente</b></span>`:`<span>Matriz P × S = <b class="mono">${e.P} × ${e.S} = ${v}</b></span>${lvBadge(level(v,cfg.m2))}`)}
+   if(show1&&show2&&ir1(e)!=null&&ir2(e)!=null&&level(ir1(e),cfg.m1)!==level(ir2(e),cfg.m2))parts.push(`<span class="small">Los métodos dan niveles distintos: explica la diferencia en la justificación.</span>`);
+   card.querySelector(".result").innerHTML=parts.join("");card.querySelector(".vw").innerHTML=show1?vulnWarn(e):"";
+   const n=palabras(e.just),wc=card.querySelector(".wc:not(.uc)");wc.textContent=n>=MINPAL?`${n} palabras ✓`:`${n} / ${MINPAL} palabras`;wc.className="wc "+(n>=MINPAL?"ok":"ko");
+   const us=urlsDe(e.urls),mal=us.filter(u=>!urlOk(u)),uc=card.querySelector(".uc");uc.textContent=mal.length?`Enlace no válido: ${mal[0]}`:us.length?`${us.length} enlace(s) válido(s)`:"";uc.className="wc uc "+(mal.length?"ko":us.length?"ok":"");
+   const okAll=completo(e)&&n>=MINPAL&&!mal.length;const st=card.querySelector(".st");st.textContent=okAll?"Completo":"Pendiente";st.className="st pill "+(okAll?"pok":"pko")};
   upd();
-  card.querySelectorAll("[data-e]").forEach(s=>s.onchange=()=>{e[s.dataset.e]=+s.value;S.ejemplo=false;save();upd()});
-  card.querySelector("[data-j]").oninput=t=>{e.just=t.target.value;save()}})}
+  card.querySelectorAll("[data-e]").forEach(s=>s.onchange=()=>{e[s.dataset.e]=s.value===""?null:+s.value;s.classList.toggle("pend",s.value==="");save();upd()});
+  card.querySelector("[data-j]").oninput=t=>{e.just=t.target.value;save();upd()};
+  card.querySelector("[data-u]").oninput=t=>{e.urls=t.target.value;save();upd()}})}
 
 function matrix(kind){const th=kind==="pd"?cfg.m1:cfg.m2;const ylab=kind==="pd"?"D":"S";
  let h=`<div class="mx" role="table" aria-label="Matriz de riesgos ${kind==="pd"?"probabilidad por daños":"probabilidad por severidad"}">`;
  for(let p=5;p>=1;p--){h+=`<div class="ax" role="rowheader">P${p}</div>`;
-  for(let d=1;d<=5;d++){const lv=level(p*d,th);const chips=S.sel.filter(id=>{const e=ev(id);return e.P===p&&(kind==="pd"?D(e):e.S)===d}).map(id=>`<span class="chip" title="${esc(RX[id].n)}">${RX[id].ab}</span>`).join("");
+  for(let d=1;d<=5;d++){const lv=level(p*d,th);const chips=S.sel.filter(id=>{const e=ev(id);if((kind==="pd"?ir1(e):ir2(e))==null)return false;return e.P===p&&(kind==="pd"?D(e):e.S)===d}).map(id=>`<span class="chip" title="${esc(RX[id].n)}">${RX[id].ab}</span>`).join("");
    h+=`<div class="c${lv}" role="cell" aria-label="P${p} ${ylab}${d}: ${LV[lv-1]}${chips?", contiene riesgos":""}">${chips}</div>`}}
  h+=`<div class="ax"></div>${[1,2,3,4,5].map(d=>`<div class="ax">${ylab}${d}</div>`).join("")}</div>`;return h}
-function ranking(){return S.sel.map(id=>{const e=ev(id);return {id,r:RX[id],v1:ir1(e),v2:ir2(e),l1:level(ir1(e),cfg.m1),l2:level(ir2(e),cfg.m2)}}).sort((a,b)=>S.metodo==="mx"?b.v2-a.v2:b.v1-a.v1)}
+function ranking(){const key=S.metodo==="mx"?"v2":"v1";return S.sel.map(id=>{const e=ev(id),v1=ir1(e),v2=ir2(e);return {id,r:RX[id],v1,v2,l1:v1==null?null:level(v1,cfg.m1),l2:v2==null?null:level(v2,cfg.m2)}}).sort((a,b)=>(b[key]??-1)-(a[key]??-1))}
+const lvlP=x=>S.metodo==="mx"?x.l2:x.l1,valP=x=>S.metodo==="mx"?x.v2:x.v1;
 function step3(b){
  if(!S.sel.length){b.innerHTML=`<div class="panel">${head(3,"")}<p>No hay riesgos seleccionados.</p></div>`;return}
  const kinds=S.metodo==="ambos"?["pd","mx"]:[S.metodo];
@@ -444,84 +602,81 @@ function step3(b){
  <div class="grid2">${kinds.map(k=>`<div style="display:grid;gap:.5rem;min-width:0"><h3>${k==="pd"?"Índice P × D":"Matriz 5×5 (P × S)"}</h3><div class="mx-wrap">${matrix(k)}</div><p class="axis-t">Filas: probabilidad. Columnas: ${k==="pd"?"daños":"severidad"}.</p></div>`).join("")}</div>
  <div class="mx-legend">${[1,2,3,4].map(n=>lvBadge(n)).join("")}</div>
  <h3>Prioridad de actuación</h3>
- <div class="tbl"><table><thead><tr><th>#</th><th>Riesgo</th><th>Plan</th>${S.metodo!=="mx"?"<th>IR P×D</th>":""}${S.metodo!=="pd"?"<th>Matriz</th>":""}</tr></thead><tbody>
- ${ranking().map((x,i)=>`<tr><td class="num">${i+1}</td><td><b class="mono">${x.r.ab}</b> ${x.r.n}</td><td class="small">${x.r.plan}</td>${S.metodo!=="mx"?`<td>${lvBadge(x.l1,x.v1)}</td>`:""}${S.metodo!=="pd"?`<td>${lvBadge(x.l2,x.v2)}</td>`:""}</tr>`).join("")}
+ <div class="tbl"><table><thead><tr><th>#</th><th>Riesgo</th><th>Plan</th>${need1()?"<th>IR P×D</th>":""}${need2()?"<th>Matriz</th>":""}</tr></thead><tbody>
+ ${ranking().map((x,i)=>`<tr><td class="num">${i+1}</td><td><b class="mono">${x.r.ab}</b> ${esc(x.r.n)}</td><td class="small">${esc(x.r.plan)}</td>${need1()?`<td>${x.l1?lvBadge(x.l1,x.v1):sinEval}</td>`:""}${need2()?`<td>${x.l2?lvBadge(x.l2,x.v2):sinEval}</td>`:""}</tr>`).join("")}
  </tbody></table></div></div>`;bindSeg(b,()=>step3(b))}
 
 function step4(b){
  if(!S.sel.length){b.innerHTML=`<div class="panel">${head(4,"")}<p>No hay riesgos seleccionados.</p></div>`;return}
- b.innerHTML=`<div class="panel">${head(4,"Selecciona las medidas para cada riesgo, empezando por los de mayor nivel. Añade las tuyas propias. Las propuestas son orientativas: adáptalas al ámbito.")}</div>
+ b.innerHTML=`<div class="panel">${head(4,"Para cada riesgo se proponen medidas estructurales y no estructurales: algunas son adecuadas y otras no. Marca solo las que consideres correctas y añade tus propias medidas. Este apartado no es obligatorio, pero se valora en la rúbrica.")}</div>
  ${ranking().map(x=>{const id=x.id,r=x.r,ch=S.med[id]||[];return `<article class="risk" data-id="${id}">
-  <div class="risk-h"><h3>${r.n}</h3>${lvBadge(S.metodo==="mx"?x.l2:x.l1,S.metodo==="mx"?x.v2:x.v1)}</div>
-  ${Object.keys(MCAT).map(c=>r.m[c].length?`<fieldset><legend>${MCAT[c]} <span class="ra"><span>${MCAT_CE[c]}</span></span></legend><div class="checks">${r.m[c].map(t=>`<label class="chk"><input type="checkbox" data-t="${esc(t)}" ${ch.includes(t)?"checked":""}><span>${esc(t)}</span></label>`).join("")}</div></fieldset>`:"").join("")}
-  <label class="f" for="${id}-mx">Otras medidas propias <small>Una por línea. Indica el tipo entre corchetes, por ejemplo: [No estructural] Señalización de rutas.</small><textarea id="${id}-mx" data-x>${esc((S.medx||{})[id]||"")}</textarea></label>
+  <div class="risk-h"><h3>${esc(r.n)}</h3>${lvlP(x)?lvBadge(lvlP(x),valP(x)):sinEval}</div>
+  ${["e","n"].map(c=>`<fieldset><legend>${MCAT[c]}</legend><p class="def">${MDEF[c]}</p><div class="ra"><span>${MCAT_CE[c]}</span></div><div class="checks">${opciones(r,c).map(o=>`<label class="chk"><input type="checkbox" data-t="${esc(o.t)}" ${ch.includes(o.t)?"checked":""}><span>${esc(o.t)}</span></label>`).join("")}</div></fieldset>`).join("")}
+  <label class="f" for="${id}-mx">Otras medidas propias (opcional) <small>Una por línea. Indica el tipo entre corchetes, por ejemplo: [No estructural] Señalización de rutas de evacuación.</small><textarea id="${id}-mx" data-x>${esc((S.medx||{})[id]||"")}</textarea></label>
  </article>`}).join("")}`;
  b.querySelectorAll(".risk").forEach(card=>{const id=card.dataset.id;
-  card.querySelectorAll("[data-t]").forEach(c=>c.onchange=()=>{const a=S.med[id]||(S.med[id]=[]);const t=c.dataset.t;if(c.checked){if(!a.includes(t))a.push(t)}else S.med[id]=a.filter(x=>x!==t);S.ejemplo=false;save()});
+  card.querySelectorAll("[data-t]").forEach(c=>c.onchange=()=>{const a=S.med[id]||(S.med[id]=[]);const t=c.dataset.t;if(c.checked){if(!a.includes(t))a.push(t)}else S.med[id]=a.filter(x=>x!==t);save()});
   card.querySelector("[data-x]").oninput=e=>{(S.medx||(S.medx={}))[id]=e.target.value;save()}})}
 
 /* ---------- rúbrica de evaluación ---------- */
 const NIV=["Insuficiente","Básico","Adecuado","Excelente"],NIVF=[0,.5,.75,1];
 const RUB=[
  {id:"amb",t:"Ámbito y vulnerabilidad",ce:"RA1·CE b, c, d · RA2·CE b",max:2,d:["Descripción ausente o sin datos de población ni elementos vulnerables.","Descripción general; población o elementos vulnerables incompletos.","Describe el ámbito y la población e identifica varios elementos vulnerables.","Descripción completa (medio físico, urbanismo, servicios), población cuantificada y vulnerabilidad justificada."]},
- {id:"ide",t:"Identificación de riesgos",ce:"RA1·CE a · RA2·CE a · RA3·CE a",max:1.5,d:["Menos de dos riesgos o sin relación con el ámbito.","Varios riesgos de un único origen.","Riesgos de dos orígenes distintos.","Cuatro o más riesgos de origen natural, tecnológico y antrópico."]},
- {id:"eva",t:"Evaluación y cálculo del riesgo",ce:"RA1·CE e · RA2·CE c · RA3·CE e",max:2,d:["Valores por defecto o sin justificación.","Valoración con justificaciones escasas.","Valoración diferenciada y justificada en la mayoría de riesgos.","Todos los riesgos valorados y justificados con antecedentes y elementos expuestos, coherentes con la vulnerabilidad."]},
+ {id:"ide",t:"Identificación de riesgos",ce:"RA1·CE a · RA2·CE a · RA3·CE a",max:1.5,d:["Menos de dos riesgos.","Varios riesgos de un único origen.","Riesgos de dos orígenes distintos.","Cuatro o más riesgos de origen natural, tecnológico y antrópico."]},
+ {id:"eva",t:"Evaluación y cálculo del riesgo",ce:"RA1·CE e · RA2·CE c · RA3·CE e",max:2.5,d:["Riesgos sin valorar o sin justificar.",`Valoración incompleta o justificaciones de menos de ${MINPAL} palabras.`,`Todos los riesgos valorados y justificados con al menos ${MINPAL} palabras.`,"Valoración completa, justificaciones desarrolladas y respaldadas con fuentes enlazadas, coherentes con la vulnerabilidad."]},
  {id:"pri",t:"Matriz y priorización",ce:"RA1·CE f · RA2·CE d",max:1,d:["Sin diferenciación entre riesgos.","Priorización con poca diferenciación.","Riesgos diferenciados por nivel.","Riesgos diferenciados y comparación entre métodos de evaluación."]},
- {id:"med",t:"Medidas preventivas y de protección",ce:"RA4·CE a, b, c, d, e",max:2,d:["Sin medidas o medidas aisladas.","Medidas en pocos riesgos o de un solo tipo.","Medidas de varios tipos para cada riesgo.","Medidas estructurales, no estructurales y en emergencia, reforzadas en riesgos altos y con aportaciones propias."]},
- {id:"vig",t:"Vigilancia, alerta e información",ce:"RA5·CE a, c, e",max:.5,d:["No contempla vigilancia ni alerta.","Vigilancia o alerta en algún riesgo.","Vigilancia o alerta en la mayoría de riesgos.","Vigilancia o alerta en todos los riesgos."]},
+ {id:"med",t:"Medidas preventivas",ce:"RA4·CE a, b, c",max:2,d:["Sin medidas o predominan las medidas inadecuadas.","Pocas medidas adecuadas o alguna inadecuada.","Medidas estructurales y no estructurales adecuadas en la mayoría de riesgos.","Medidas adecuadas de ambos tipos en todos los riesgos, sin medidas inadecuadas y con aportaciones propias."]},
  {id:"con",t:"Conclusiones",ce:"RA4·CE f, i",max:1,d:["Sin conclusiones.","Conclusiones breves sin análisis.","Prioridades y algún criterio de coste-beneficio o inspección.","Prioridades, relación coste-beneficio e inspecciones preventivas propuestas."]}];
 function nivelDe(r){return r<.35?0:r<.6?1:r<.85?2:3}
 const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
 function ownLines(id){return((S.medx||{})[id]||"").split("\n").map(s=>s.trim()).filter(Boolean)}
+const nombres=ids=>ids.map(id=>RX[id].n.toLowerCase()).join(", ");
 function evaluar(){const m=S.meta,n=S.sel.length,out=[];
  // 1 ámbito
- {const i=[Math.min(m.desc.trim().length/250,1),m.pob.trim().length>=10?1:0,Math.min(m.grupos.length/3,1),m.notas.trim().length>=30?1:m.notas.trim()?.5:0],mj=[];
-  if(i[0]<1)mj.push("amplía la descripción del ámbito con geomorfología, clima, usos del suelo, vías y servicios básicos");
-  if(!i[1])mj.push("cuantifica la población expuesta, su densidad y la variación estacional");
-  if(i[2]<1)mj.push("identifica más elementos vulnerables (grupos críticos, infraestructuras críticas, espacios protegidos)");
+ {const i=[Math.min(m.desc.trim().length/250,1),m.pob.trim().length>=10?1:0,Math.min(m.grupos.length/4,1),m.notas.trim().length>=30?1:m.notas.trim()?.5:0],mj=[];
+  if(!m.tipo)mj.push("selecciona el tipo de análisis");
+  if(i[0]<1)mj.push("amplía la descripción del ámbito con medio físico, usos, vías y servicios básicos");
+  if(!i[1])mj.push("cuantifica la población expuesta, su densidad y su variación");
+  if(i[2]<1)mj.push("identifica más elementos vulnerables del ámbito");
   if(i[3]<1)mj.push("justifica en las observaciones por qué esos elementos son vulnerables");
   out.push({r:i[0]<1?Math.min(avg(i),.84):avg(i),mj})}
  // 2 identificación
  {const orig=new Set(S.sel.map(id=>RX[id].g));const i=[Math.min(n/4,1),orig.size/3],mj=[];
   if(n<4)mj.push("identifica al menos cuatro riesgos relevantes para el ámbito");
-  Object.keys(G).forEach(g=>{if(!orig.has(g))mj.push("valora si existen riesgos de origen "+G[g].toLowerCase()+" en la zona")});
+  Object.keys(G).forEach(g=>{if(!orig.has(g))mj.push("valora si existen riesgos de origen "+G[g].toLowerCase())});
   out.push({r:n?avg(i):0,mj})}
  // 3 evaluación
- {const mj=[];let r=0;if(n){const just=S.sel.map(id=>Math.min(ev(id).just.trim().length/120,1));
-   const nd=S.sel.map(id=>{const e=ev(id);return(e.P===3&&e.dp===3&&e.db===3&&e.da===3&&e.S===3)?0:1});
-   const wn=S.sel.filter(id=>vulnWarn(ev(id))).length;
-   r=avg([avg(just),avg(nd),1-wn/n]);
-   const cortas=S.sel.filter(id=>ev(id).just.trim().length<120).map(id=>RX[id].n.toLowerCase());
-   if(cortas.length)mj.push("desarrolla la justificación (antecedentes, fuentes, elementos expuestos) de: "+cortas.join(", "));
-   if(avg(nd)<1)mj.push("revisa los riesgos que mantienen los valores por defecto");
-   if(cortas.length||wn)r=Math.min(r,.84);
+ {const mj=[];let r=0;if(n){const E=S.sel.map(id=>ev(id));
+   const comp=E.map(e=>completo(e)?1:0),pal=E.map(e=>Math.min(palabras(e.just)/80,1)),url=E.map(e=>urlsDe(e.urls).some(urlOk)?1:0),coh=E.map(e=>vulnWarn(e)?0:1);
+   r=avg([avg(comp),avg(pal),avg(url),avg(coh)]);
+   const inc=S.sel.filter((id,i)=>!comp[i]),cortas=S.sel.filter(id=>palabras(ev(id).just)<MINPAL),sinUrl=S.sel.filter((id,i)=>!url[i]),wn=coh.filter(x=>!x).length;
+   if(inc.length||cortas.length)r=Math.min(r,.59);else if(sinUrl.length||wn)r=Math.min(r,.84);
+   if(inc.length)mj.push("completa la valoración de: "+nombres(inc));
+   if(cortas.length)mj.push(`amplía hasta al menos ${MINPAL} palabras la justificación de: `+nombres(cortas));
+   if(sinUrl.length)mj.push("respalda los antecedentes con enlaces a noticias o fuentes en: "+nombres(sinUrl));
    if(wn)mj.push("corrige la incoherencia entre la vulnerabilidad descrita y los daños valorados en "+wn+" riesgo(s)")}
   else mj.push("evalúa los riesgos identificados");out.push({r,mj})}
  // 4 priorización
- {const mj=[];let r=0;if(n){const lv=new Set(ranking().map(x=>S.metodo==="mx"?x.l2:x.l1));const vari=n<2?.5:Math.min((lv.size-1)/Math.min(n-1,2),1);
+ {const mj=[];let r=0;const ev_=ranking().filter(x=>lvlP(x));if(ev_.length){const lv=new Set(ev_.map(lvlP));const k=ev_.length;const vari=k<2?.5:Math.min((lv.size-1)/Math.min(k-1,2),1);
    r=avg([vari,S.metodo==="ambos"?1:.5]);
    if(vari<1)mj.push("diferencia mejor el nivel de los riesgos para que la priorización sea útil");
    if(S.metodo!=="ambos")mj.push("compara el índice P × D con la matriz 5×5 y explica las diferencias")}
+  else mj.push("evalúa los riesgos para poder priorizarlos");
   out.push({r,mj})}
  // 5 medidas
- {const mj=[];let r=0;if(n){const cnt=id=>(S.med[id]||[]).length+ownLines(id).length;
-   const cov=avg(S.sel.map(id=>Math.min(cnt(id)/3,1)));
-   const cats=new Set();S.sel.forEach(id=>{const ch=S.med[id]||[];["e","n","u"].forEach(c=>{if(RX[id].m[c].some(t=>ch.includes(t)))cats.add(c)})});
-   S.sel.forEach(id=>ownLines(id).forEach(l=>{if(/estructural\]/i.test(l)&&!/no estructural/i.test(l))cats.add("e");if(/no estructural/i.test(l))cats.add("n");if(/emergencia|evacua|confina/i.test(l))cats.add("u")}));
-   const altos=ranking().filter(x=>(S.metodo==="mx"?x.l2:x.l1)>=3);const refz=altos.length?avg(altos.map(x=>cnt(x.id)>=3?1:0)):1;
-   const propias=S.sel.some(id=>ownLines(id).length)?1:0;
-   r=avg([cov,cats.size/3,refz,propias]);
-   const pocas=S.sel.filter(id=>cnt(id)<3).map(id=>RX[id].n.toLowerCase());if(pocas.length)mj.push("propón al menos tres medidas para: "+pocas.join(", "));
-   ["e","n","u"].forEach(c=>{if(!cats.has(c))mj.push("incluye medidas "+MCAT[c].toLowerCase())});
-   if(refz<1)mj.push("refuerza las medidas de los riesgos de nivel alto o muy alto");
-   if(!propias)mj.push("añade medidas propias adaptadas al ámbito, no solo las propuestas por la app")}
+ {const mj=[];let r=0;if(n){let wrong=0;const tipos=new Set();
+   const sc=S.sel.map(id=>{const r_=RX[id],ch=S.med[id]||[];const okE=r_.me.filter(t=>ch.includes(t)).length,okN=r_.mn.filter(t=>ch.includes(t)).length;const w=[...r_.mex,...r_.mnx].filter(t=>ch.includes(t)).length;wrong+=w;if(okE)tipos.add("e");if(okN)tipos.add("n");
+    ownLines(id).forEach(l=>{if(/no estructural/i.test(l))tipos.add("n");else if(/estructural/i.test(l))tipos.add("e")});
+    return Math.max(0,Math.min(1,(okE+okN-1.5*w)/4))*.85+(ownLines(id).length?.15:0)});
+   r=avg(sc);const propias=S.sel.some(id=>ownLines(id).length);
+   if(wrong)r=Math.min(r,.84);if(!propias)r=Math.min(r,.84);
+   const sinMed=S.sel.filter(id=>!(S.med[id]||[]).some(t=>RX[id].me.includes(t)||RX[id].mn.includes(t))&&!ownLines(id).length);
+   if(wrong)mj.push("revisa las medidas marcadas: alguna no es adecuada o resulta contraproducente para el riesgo");
+   if(sinMed.length)mj.push("propón medidas adecuadas para: "+nombres(sinMed));
+   ["e","n"].forEach(c=>{if(!tipos.has(c))mj.push("incluye "+MCAT[c].toLowerCase())});
+   if(!propias)mj.push("añade medidas propias adaptadas al ámbito")}
   out.push({r,mj})}
- // 6 vigilancia
- {const mj=[];let r=0;if(n){const has=id=>RX[id].m.v.some(t=>(S.med[id]||[]).includes(t))||ownLines(id).some(l=>/vigil|alerta|aviso|alarma|informaci/i.test(l));
-   r=avg(S.sel.map(id=>has(id)?1:0));const sin=S.sel.filter(id=>!has(id)).map(id=>RX[id].n.toLowerCase());
-   if(sin.length)mj.push("define sistemas de vigilancia, alerta o información a la población para: "+sin.join(", "))}
-  out.push({r,mj})}
- // 7 conclusiones
+ // 6 conclusiones
  {const c=S.conclu.trim(),kw=[/priori/i,/coste|benefici/i,/inspecci/i].map(x=>x.test(c)?1:0),mj=[];
   const r=c?avg([Math.min(c.length/400,1),avg(kw)]):0;
   if(c.length<400)mj.push("desarrolla más las conclusiones");
@@ -536,34 +691,17 @@ function valoracionTxt(v){const fuertes=v.res.filter(x=>x.nivel===3).map(x=>x.t.
  let p1=`El análisis ${cal}.`+(fuertes.length?` Destaca en: ${fuertes.join(", ")}.`:"");
  let p2=mj.length?`Para mejorar: ${mj.join("; ")}.`:"No se detectan carencias en los indicadores de la rúbrica; revisa la precisión técnica de las justificaciones.";
  return p1+" "+p2.charAt(0).toUpperCase()+p2.slice(1)+` Nota propuesta: ${v.total.toFixed(1).replace(".",",")} / 10.`}
-function rubricaTxt(v){const L=[];const pad=(s,n)=>(s+" ".repeat(n)).slice(0,n);
- L.push(pad("Criterio",38)+pad("Nivel",14)+"Puntos");
- v.res.forEach(x=>L.push(pad(x.t,38)+pad(NIV[x.nivel],14)+x.pts.toFixed(2).replace(".",",")+" / "+String(x.max).replace(".",",")));
- L.push(pad("TOTAL",52)+v.total.toFixed(1).replace(".",",")+" / 10");return L}
 
-function report(){const m=S.meta,L=[];const line="------------------------------------------------------------";
- L.push("INFORME DE ANÁLISIS DE RIESGOS","Módulo 1502 · Evaluación de riesgos y medidas preventivas",line);
- L.push("Alumno/a o grupo: "+(m.alumno||"[EDITABLE]"),"Ámbito: "+(m.ambito||"[EDITABLE]"),"Isla: "+(m.isla||"[EDITABLE]"),"Tipo de análisis: "+m.tipo,"Fecha: "+new Date().toLocaleDateString("es-ES"),"");
- L.push("1. DESCRIPCIÓN DEL ÁMBITO",m.desc||"[EDITABLE]","","Población expuesta: "+(m.pob||"[EDITABLE]"),"");
- L.push("2. ANÁLISIS DE VULNERABILIDAD");if(m.grupos.length)GRUPOS.filter(g=>m.grupos.includes(g[0])).forEach(g=>L.push("- "+g[1]));else L.push("- No se han identificado elementos vulnerables específicos [revisar]");if(m.notas)L.push("Observaciones: "+m.notas);L.push("");
- L.push("3. RIESGOS IDENTIFICADOS");Object.keys(G).forEach(g=>{const rs=S.sel.filter(id=>RX[id].g===g);if(rs.length){L.push("Origen "+G[g].toLowerCase()+":");rs.forEach(id=>L.push("- "+RX[id].n+" (referencia: "+RX[id].plan+")"))}});L.push("");
- L.push("4. EVALUACIÓN");
- if(S.metodo!=="mx")L.push(`Método índice P x D: IR = P x D; D = ${cfg.dRule==="max"?"máximo":"media"} de daños a personas, bienes y medio ambiente. Umbrales: Bajo <= ${cfg.m1[0]}, Moderado <= ${cfg.m1[1]}, Alto <= ${cfg.m1[2]}, Muy alto > ${cfg.m1[2]}.`);
- if(S.metodo!=="pd")L.push(`Método matriz 5x5: P x S. Umbrales: Bajo <= ${cfg.m2[0]}, Moderado <= ${cfg.m2[1]}, Alto <= ${cfg.m2[2]}, Muy alto > ${cfg.m2[2]}.`);
- L.push("");ranking().forEach((x,i)=>{const e=ev(x.id);L.push(`${i+1}. ${x.r.n}`);L.push(`   P = ${e.P}`+(S.metodo!=="mx"?` | Personas ${e.dp}, Bienes ${e.db}, Medio ambiente ${e.da} -> D = ${D(e)} | IR = ${x.v1} (${LV[x.l1-1]})`:"")+(S.metodo!=="pd"?` | S = ${e.S} -> ${x.v2} (${LV[x.l2-1]})`:""));L.push("   Justificación: "+(e.just||"[EDITABLE]"))});L.push("");
- L.push("5. MEDIDAS PREVENTIVAS Y DE PROTECCIÓN");ranking().forEach(x=>{const ch=S.med[x.id]||[];const ex=((S.medx||{})[x.id]||"").split("\n").map(s=>s.trim()).filter(Boolean);L.push(x.r.n+":");let any=false;Object.keys(MCAT).forEach(c=>{const it=x.r.m[c].filter(t=>ch.includes(t));if(it.length){any=true;L.push("  "+MCAT[c]+":");it.forEach(t=>L.push("  - "+t))}});if(ex.length){any=true;L.push("  Medidas propias:");ex.forEach(t=>L.push("  - "+t))}if(!any)L.push("  - Pendiente de definir");});L.push("");
- L.push("6. CONCLUSIONES",S.conclu||"[EDITABLE] Riesgos prioritarios, coste-beneficio de las medidas y propuesta de inspecciones preventivas.","",line);
- const v=evaluar();L.push("7. VALORACIÓN SEGÚN RÚBRICA (propuesta automática, pendiente de revisión docente)","");
- L.push(...rubricaTxt(v),"","Valoración:",valoracionTxt(v),"",line,"Los niveles de riesgo son resultado de una metodología didáctica. Verificar con el plan territorial o municipal de referencia.");
- return L.join("\n")}
 /* ---------- informe PDF ---------- */
 function loadScript(src){return new Promise((ok,ko)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=()=>ko(new Error(src));document.head.appendChild(s)})}
 let pdfLibs=null;
 function libsPDF(){if(window.jspdf&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API.autoTable)return Promise.resolve();
  if(!pdfLibs)pdfLibs=loadScript("vendor/jspdf.umd.min.js").then(()=>loadScript("vendor/jspdf.plugin.autotable.min.js")).catch(e=>{pdfLibs=null;throw e});return pdfLibs}
 const pdfTxt=s=>String(s??"").replace(/₂/g,"2").replace(/≥/g,">=").replace(/≤/g,"<=").replace(/[^\u0000-ÿ–—‘’“”•…€]/g,"");
-const C={navy:[31,58,104],signal:[201,86,26],ink:[20,32,51],muted:[85,98,117],line:[211,218,228],sunk:[232,236,242],lv:[[47,125,79],[185,138,18],[210,96,28],[179,38,30]]};
+function wrapUrl(doc,u,w){const out=[];let cur="";for(const ch of u){if(doc.getTextWidth(cur+ch)>w){out.push(cur);cur=ch}else cur+=ch}if(cur)out.push(cur);return out}
+const C={link:[31,90,170],navy:[31,58,104],signal:[201,86,26],ink:[20,32,51],muted:[85,98,117],line:[211,218,228],sunk:[232,236,242],lv:[[47,125,79],[185,138,18],[210,96,28],[179,38,30]]};
 async function descargarPDF(btn){
+ for(let k=0;k<3;k++){const msg=bloqueo(k);if(msg){toast("Antes de descargar: "+msg.charAt(0).toLowerCase()+msg.slice(1));return}}
  const label=btn.textContent;btn.disabled=true;btn.textContent="Generando PDF…";
  try{await libsPDF()}catch(e){btn.disabled=false;btn.textContent=label;toast("No se pudo cargar el generador de PDF. Revisa la conexión y vuelve a intentarlo.");return}
  try{
@@ -582,13 +720,13 @@ async function descargarPDF(btn){
  y=40;
  const metodo=S.metodo==="pd"?"Índice P x D":S.metodo==="mx"?"Matriz 5x5 (P x S)":"Índice P x D y matriz 5x5 (comparación)";
  table({theme:"plain",styles:{fontSize:10,cellPadding:1.2,textColor:C.ink},columnStyles:{0:{fontStyle:"bold",cellWidth:42,textColor:C.muted}},
-  body:[["Alumno/a o grupo",m.alumno||"[sin indicar]"],["Ámbito de estudio",m.ambito||"[sin indicar]"],["Isla",m.isla||"[sin indicar]"],["Tipo de análisis",m.tipo],["Método de evaluación",metodo],["Fecha",new Date().toLocaleDateString("es-ES")]].map(r=>r.map(pdfTxt))});
+  body:[["Alumno/a o grupo",m.alumno||"[sin indicar]"],["Ámbito de estudio",m.ambito||"[sin indicar]"],["Isla",m.isla||"[sin indicar]"],["Tipo de análisis",TIPO[m.tipo]||"[sin indicar]"],["Método de evaluación",metodo],["Fecha",new Date().toLocaleDateString("es-ES")]].map(r=>r.map(pdfTxt))});
  // resumen nota
  need(16);doc.setDrawColor(...C.navy);doc.setLineWidth(.6);doc.rect(M,y,TW,13);doc.setFont("helvetica","bold");doc.setFontSize(10);doc.setTextColor(...C.muted);doc.text(pdfTxt("Nota propuesta según rúbrica (pendiente de revisión docente)"),M+4,y+8.2);doc.setFontSize(16);doc.setTextColor(...C.navy);doc.text(v.total.toFixed(1).replace(".",",")+" / 10",W-M-4,y+8.8,{align:"right"});y+=19;
  // 1
  h2(1,"Descripción del ámbito");para(m.desc||"[Pendiente de completar]");para("Población expuesta: "+(m.pob||"[pendiente]"),{bold:true});
  // 2
- h2(2,"Análisis de vulnerabilidad");const gs=GRUPOS.filter(g=>m.grupos.includes(g[0])).map(g=>g[1]);bullets(gs.length?gs:["No se han identificado elementos vulnerables específicos."]);y+=1;if(m.notas)para("Observaciones: "+m.notas);
+ h2(2,"Análisis de vulnerabilidad");const gs=m.grupos.map(k=>VX[k]).filter(Boolean).map(v=>v[1]);bullets(gs.length?gs:["No se han identificado elementos vulnerables específicos."]);y+=1;if(m.notas)para("Observaciones: "+m.notas);
  // 3
  h2(3,"Riesgos identificados");
  if(S.sel.length)table({head:[["Origen","Riesgo","Plan o norma de referencia"]],body:Object.keys(G).flatMap(g=>S.sel.filter(id=>RX[id].g===g).map(id=>[G[g],RX[id].n,RX[id].plan].map(pdfTxt))),columnStyles:{0:{cellWidth:28}}});else para("No se han identificado riesgos.");
@@ -597,11 +735,14 @@ async function descargarPDF(btn){
  if(S.metodo!=="mx")para(`Índice P x D: IR = Probabilidad x Daños (1-25). D = ${cfg.dRule==="max"?"valor máximo":"media redondeada"} de los daños a personas, bienes y medio ambiente. Bajo hasta ${cfg.m1[0]}, Moderado hasta ${cfg.m1[1]}, Alto hasta ${cfg.m1[2]}, Muy alto por encima.`,{size:9,color:C.muted});
  if(S.metodo!=="pd")para(`Matriz 5x5: Probabilidad x Severidad global. Bajo hasta ${cfg.m2[0]}, Moderado hasta ${cfg.m2[1]}, Alto hasta ${cfg.m2[2]}, Muy alto por encima.`,{size:9,color:C.muted});
  if(rk.length){const hd=["#","Riesgo","P"];if(S.metodo!=="mx")hd.push("Pers.","Bienes","M.A.","D","IR P x D");if(S.metodo!=="pd")hd.push("S","Matriz");
-  table({head:[hd],body:rk.map((x,i)=>{const e=ev(x.id);const r=[String(i+1),pdfTxt(x.r.n),String(e.P)];if(S.metodo!=="mx")r.push(String(e.dp),String(e.db),String(e.da),String(D(e)),lvCell(x.l1,x.v1+" "+LV[x.l1-1]));if(S.metodo!=="pd")r.push(String(e.S),lvCell(x.l2,x.v2+" "+LV[x.l2-1]));return r}),columnStyles:{0:{cellWidth:7,halign:"center"}},styles:{halign:"center",fontSize:9,cellPadding:1.8,lineColor:C.line,lineWidth:.2},didParseCell:d=>{if(d.column.index===1)d.cell.styles.halign="left"}});
-  table({head:[["Riesgo","Justificación"]],body:rk.map(x=>[pdfTxt(x.r.n),pdfTxt(ev(x.id).just||"[Sin justificar]")]),columnStyles:{0:{cellWidth:45,fontStyle:"bold"}}})}
+  table({head:[hd],body:rk.map((x,i)=>{const e=ev(x.id);const r=[String(i+1),pdfTxt(x.r.n),String(e.P??"-")];if(S.metodo!=="mx")r.push(String(e.dp),String(e.db),String(e.da),String(D(e)),lvCell(x.l1,x.v1+" "+LV[x.l1-1]));if(S.metodo!=="pd")r.push(String(e.S),lvCell(x.l2,x.v2+" "+LV[x.l2-1]));return r}),columnStyles:{0:{cellWidth:7,halign:"center"}},styles:{halign:"center",fontSize:9,cellPadding:1.8,lineColor:C.line,lineWidth:.2},didParseCell:d=>{if(d.column.index===1)d.cell.styles.halign="left"}});
+  table({head:[["Riesgo","Justificación"]],body:rk.map(x=>[pdfTxt(x.r.n),pdfTxt(ev(x.id).just||"[Sin justificar]")]),columnStyles:{0:{cellWidth:45,fontStyle:"bold"}}});
+  const links=rk.flatMap(x=>urlsDe(ev(x.id).urls).filter(urlOk).map(u=>[x.r.ab+" · "+x.r.n,u]));
+  if(links.length){need(12);doc.setFont("helvetica","bold");doc.setFontSize(10);doc.setTextColor(...C.ink);doc.text(pdfTxt("Fuentes y noticias citadas"),M,y);y+=5;
+   links.forEach(([lab,u])=>{doc.setFont("helvetica","normal");doc.setFontSize(9);const ls=wrapUrl(doc,pdfTxt(u),TW-4);need(4+ls.length*4.2);doc.setTextColor(...C.muted);doc.text(pdfTxt(lab),M,y);y+=4.2;doc.setTextColor(...C.link);ls.forEach(l=>{doc.textWithLink(l,M+3,y,{url:u});const w=doc.getTextWidth(l);doc.setDrawColor(...C.link);doc.setLineWidth(.15);doc.line(M+3,y+.6,M+3+w,y+.6);y+=4.2});y+=1.5});y+=2}}
  // 5
- h2(5,"Medidas preventivas y de protección");
- if(rk.length){const body=[];rk.forEach(x=>{const ch=S.med[x.id]||[];const rows=[];Object.keys(MCAT).forEach(c=>x.r.m[c].filter(t=>ch.includes(t)).forEach(t=>rows.push([MCAT[c],t])));ownLines(x.id).forEach(t=>rows.push(["Propia",t]));if(!rows.length)rows.push(["-","Pendiente de definir"]);
+ h2(5,"Medidas preventivas");
+ if(rk.length){const body=[];rk.forEach(x=>{const ch=S.med[x.id]||[];const rows=[];[...x.r.me,...x.r.mex].filter(t=>ch.includes(t)).forEach(t=>rows.push(["Estructural",t]));[...x.r.mn,...x.r.mnx].filter(t=>ch.includes(t)).forEach(t=>rows.push(["No estructural",t]));ownLines(x.id).forEach(t=>rows.push(["Propia",t]));if(!rows.length)rows.push(["-","Sin medidas seleccionadas"]);
    rows.forEach((r,i)=>body.push([i===0?{content:pdfTxt(x.r.n),rowSpan:rows.length,styles:{fontStyle:"bold",valign:"top"}}:null,pdfTxt(r[0]),pdfTxt(r[1])].filter(c=>c!==null)))});
   table({head:[["Riesgo","Tipo","Medida"]],body,columnStyles:{0:{cellWidth:40},1:{cellWidth:32}}})}
  // 6
@@ -636,7 +777,7 @@ function step5(b){
  $("#dl").onclick=e=>descargarPDF(e.currentTarget)}
 
 $("#exportJson").onclick=()=>download("analisis-riesgos.json",JSON.stringify(S,null,2),"application/json");
-$("#importJson").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o.meta||!Array.isArray(o.sel))throw 0;S=Object.assign(blank(),o);save();renderAsis();toast("Análisis abierto")}catch(x){toast("El archivo no es un análisis válido")}};rd.readAsText(f);e.target.value=""};
+$("#importJson").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o.meta||!Array.isArray(o.sel))throw 0;if(o.v!==2){toast("El archivo es de una versión anterior de la app y no se puede cargar");return}S=Object.assign(blank(),o);save();renderAsis();toast("Análisis cargado")}catch(x){toast("El archivo no es un análisis válido")}};rd.readAsText(f);e.target.value=""};
 let resetArm=false;
 $("#resetBtn").onclick=function(){if(!resetArm){resetArm=true;this.textContent="Pulsa otra vez para borrar";setTimeout(()=>{resetArm=false;this.textContent="Empezar de cero"},3000);return}resetArm=false;this.textContent="Empezar de cero";S=blank();save();renderAsis();toast("Análisis vacío creado")};
 
@@ -743,14 +884,14 @@ function renderDoc(){const b=$("#docBody");
  <div class="btns"><button class="btn" type="button" id="cfgSave">Aplicar umbrales</button><button class="btn ghost" type="button" id="cfgDef">Valores por defecto</button></div>
  <p class="small muted">Los casos prácticos calculan el IR con D = valor máximo; los niveles mencionados en sus explicaciones usan los umbrales por defecto.</p>
  <h3>Rúbrica del informe de análisis de riesgos</h3>
- <p class="small muted">La app propone el nivel de cada criterio a partir de indicadores objetivos (extensión y contenido de descripciones y justificaciones, cobertura de orígenes y tipos de medidas, coherencia vulnerabilidad-daños). No valora la exactitud técnica del texto: esa revisión corresponde al docente.</p>
- <div class="tbl"><table><thead><tr><th>Criterio (RA·CE)</th><th>Pts</th>${NIV.map((n,i)=>`<th>${n} (${NIVF[i]*100} %)</th>`).join("")}</tr></thead><tbody>${RUB.map(c=>`<tr><td><b>${c.t}</b><div class="ra"><span>${c.ce}</span></div></td><td class="num">${c.max}</td>${c.d.map(t=>`<td class="small">${t}</td>`).join("")}</tr>`).join("")}<tr><td><b>Total</b></td><td class="num">10</td><td colspan="4" class="small">Nota = suma de puntos de cada criterio (máximo × porcentaje del nivel).</td></tr></tbody></table></div>
+ <p class="small muted">La app propone el nivel de cada criterio a partir de indicadores objetivos (extensión de descripciones y justificaciones, enlaces a fuentes, cobertura de orígenes, acierto en la selección de medidas y coherencia vulnerabilidad-daños). No valora la exactitud técnica del texto: esa revisión corresponde al docente.</p>
+ <div class="tbl"><table><thead><tr><th>Criterio (RA·CE)</th><th>Pts</th>${NIV.map((n,i)=>`<th>${n} (${NIVF[i]*100} %)</th>`).join("")}</tr></thead><tbody>${RUB.map(c=>`<tr><td><b>${c.t}</b><div class="ra"><span>${c.ce}</span></div></td><td class="num">${String(c.max).replace(".",",")}</td>${c.d.map(t=>`<td class="small">${t}</td>`).join("")}</tr>`).join("")}<tr><td><b>Total</b></td><td class="num">10</td><td colspan="4" class="small">Nota = suma de puntos de cada criterio (máximo × porcentaje del nivel).</td></tr></tbody></table></div>
  <h3>Correspondencia con el RD 906/2013</h3><div class="tbl"><table><tbody>${RA_TXT.map(r=>`<tr><td><b class="mono">${r[0]}</b></td><td>${r[1]}</td></tr>`).join("")}</tbody></table></div>
  <h3>Pautas DUA aplicadas</h3><ul class="small" style="margin:0;padding-left:1.1rem;display:grid;gap:.3rem">
   <li>Representación: información en texto, matriz de color con etiquetas de nivel y tablas de referencia.</li>
-  <li>Acción y expresión: asistente por pasos, justificación libre, medidas propias e informe exportable.</li>
+  <li>Acción y expresión: asistente por pasos, justificación con fuentes enlazadas, medidas propias e informe en PDF.</li>
   <li>Implicación: casos contextualizados en Canarias, retroalimentación inmediata y repetición sin penalización.</li>
-  <li>Accesibilidad: tamaño de texto ajustable, tema claro u oscuro según el dispositivo, navegación por teclado.</li></ul>`;
+  <li>Accesibilidad: tamaño de texto ajustable, modo claro u oscuro seleccionable, navegación por teclado.</li></ul>`;
  $("#cfgSave").onclick=()=>{const m1=[0,1,2].map(i=>+$("#m1-"+i).value),m2=[0,1,2].map(i=>+$("#m2-"+i).value);
   if(!(m1[0]<m1[1]&&m1[1]<m1[2])||!(m2[0]<m2[1]&&m2[1]<m2[2])){toast("Los umbrales deben ir en orden creciente");return}
   cfg={m1,m2,dRule:$("#drule").value};store.set("evb_cfg",cfg);toast("Umbrales aplicados")};
