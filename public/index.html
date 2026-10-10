@@ -211,6 +211,7 @@ dd{margin:0 0 .2rem;color:var(--muted)}
     <div class="btns">
       <button class="btn ghost" id="prev" type="button">← Anterior</button>
       <button class="btn" id="next" type="button">Siguiente →</button>
+      <button class="btn" id="dl" type="button" hidden>Descargar informe PDF</button>
       <span class="spacer"></span>
       <button class="btn ghost" id="exportJson" type="button">Guardar análisis (.json)</button>
       <label class="btn ghost" for="importJson" style="cursor:pointer">Subir análisis</label>
@@ -281,7 +282,7 @@ function level(v,th){return v<=th[0]?1:v<=th[1]?2:v<=th[2]?3:4}
 
 /* ---------- catálogo por tipo de análisis ---------- */
 const G={nat:"Natural",tec:"Tecnológico",ant:"Antrópico"};
-const MAXORIG=3;
+const MAXORIG=3,MINVULN=3;
 const TIPOS=[["ter","Territorio municipal"],["act","Actividad o establecimiento"],["eve","Evento o espectáculo público"],["inf","Infraestructura o vía de comunicación"]];
 const TIPO=Object.fromEntries(TIPOS);
 /* Elementos vulnerables: [clave, texto, marca] · p = grupo de personas crítico · a = medio ambiente */
@@ -329,7 +330,16 @@ ter:[
   mn:["Inspección de las condiciones de seguridad de los edificios antiguos","Campañas de prevención de incendios domésticos"],mnx:["Recomendar el uso del ascensor para evacuar en caso de incendio","Permitir el almacenamiento de enseres en rellanos y escaleras"]},
  {id:"ter_van",g:"ant",ab:"VAN",n:"Sabotaje o vandalismo en infraestructuras críticas",plan:"Sistema PNPIC",d:"Actos intencionados contra desaladoras, depósitos o centros de transformación.",
   me:["Protección física perimetral y control de accesos en instalaciones críticas","Videovigilancia e iluminación perimetral"],mex:["Dejar sin cerramiento los depósitos de agua potable","Retirar las cerraduras de los centros de transformación"],
-  mn:["Planes de Protección Específicos (PPE) de las infraestructuras críticas","Coordinación con las Fuerzas y Cuerpos de Seguridad"],mnx:["Publicar en la web municipal los planos de seguridad de las instalaciones","Prescindir de los protocolos de aviso a las Fuerzas de Seguridad"]}],
+  mn:["Planes de Protección Específicos (PPE) de las infraestructuras críticas","Coordinación con las Fuerzas y Cuerpos de Seguridad"],mnx:["Publicar en la web municipal los planos de seguridad de las instalaciones","Prescindir de los protocolos de aviso a las Fuerzas de Seguridad"]},
+ {id:"ter_tsu",g:"nat",ab:"TSU",n:"Maremoto",plan:"Plan Estatal ante el riesgo de maremotos",d:"Ondas de gran longitud que inundan el frente litoral.",
+  me:["Refugios verticales en edificios de primera línea","Diques y muros de protección en el frente litoral"],mex:["Construir equipamientos sensibles en primera línea de costa","Eliminar los accesos peatonales a cotas altas para ampliar el paseo"],
+  mn:["Cartografía de zonas inundables por maremoto y señalización de rutas de evacuación","Información a la población sobre la retirada repentina del mar como señal de aviso"],mnx:["Recomendar acercarse a la orilla para observar la retirada del mar","Evacuar en vehículo por el paseo marítimo"]},
+ {id:"ter_rad",g:"tec",ab:"RAD",n:"Emergencia radiológica",plan:"RADICAN",d:"Fuentes radiactivas en hospitales, industria o transporte.",
+  me:["Almacenamiento blindado de las fuentes radiactivas en instalaciones sanitarias e industriales","Recintos de acceso restringido y señalizados para las fuentes"],mex:["Ubicar el almacén de fuentes junto a zonas de pública concurrencia","Retirar el blindaje durante el mantenimiento sin medidas de control"],
+  mn:["Inventario de las instalaciones radiactivas del municipio","Protocolo de confinamiento y control de accesos ante una fuente fuera de control"],mnx:["Manipular una fuente encontrada sin equipos de medición","Acercar a la población al lugar del hallazgo para identificar la fuente"]},
+ {id:"ter_ban",g:"ant",ab:"BAN",n:"Ahogamientos en playas y zonas de baño",plan:"Plan municipal de salvamento en playas",d:"Accidentes de bañistas por corrientes, oleaje o falta de vigilancia.",
+  me:["Torres de vigilancia y puestos de socorrismo en las playas","Señalización fija de corrientes y zonas peligrosas en los accesos"],mex:["Retirar los aros salvavidas y las escalas de los muelles","Abrir accesos a calas peligrosas sin señalización"],
+  mn:["Plan de seguridad y salvamento en playas con socorristas en temporada","Sistema de banderas e información en varios idiomas"],mnx:["Limitar el socorrismo a los fines de semana en temporada alta","Permitir el baño con bandera roja"]}],
 act:[
  {id:"act_sis",g:"nat",ab:"SIS",n:"Terremoto en el establecimiento",plan:"PESICAN",d:"Caída de elementos no estructurales y daños en el edificio.",
   me:["Anclaje de estanterías, falsos techos e instalaciones","Refuerzo estructural conforme a la normativa sismorresistente"],mex:["Almacenar material pesado en estanterías altas sin anclar","Colgar luminarias pesadas sin sujeción adicional"],
@@ -366,7 +376,16 @@ act:[
   mn:["Protocolo de recepción de amenazas telefónicas","Procedimiento de búsqueda y evacuación coordinado con los cuerpos de seguridad"],mnx:["Manipular o abrir el paquete sospechoso","Usar teléfonos móviles junto al objeto sospechoso"]},
  {id:"act_tra",g:"ant",ab:"MUE",n:"Accidente en carga y descarga o aparcamiento",plan:"Plan de autoprotección",d:"Atropellos y golpes en muelles y aparcamientos.",
   me:["Separación física entre la circulación de peatones y vehículos","Muelles de carga con topes y señalización"],mex:["Compartir el paso de peatones con la zona de maniobras sin separación","Retirar los espejos de visibilidad de las curvas del aparcamiento"],
-  mn:["Normas de circulación interna y formación de transportistas","Coordinación de actividades empresariales con las contratas"],mnx:["Permitir el manejo de carretillas a personal sin formación","Prescindir de la coordinación con los transportistas externos"]}],
+  mn:["Normas de circulación interna y formación de transportistas","Coordinación de actividades empresariales con las contratas"],mnx:["Permitir el manejo de carretillas a personal sin formación","Prescindir de la coordinación con los transportistas externos"]},
+ {id:"act_tsu",g:"nat",ab:"TSU",n:"Maremoto en establecimiento de primera línea",plan:"Plan Estatal ante el riesgo de maremotos",d:"Hotel o local en el frente litoral expuesto a la inundación.",
+  me:["Refugio vertical en las plantas altas con acceso señalizado","Accesos directos y practicables a cubiertas y plantas superiores"],mex:["Habitaciones de huéspedes en plantas bajo rasante frente al mar","Cerrar con candado los accesos a la cubierta"],
+  mn:["Procedimiento de evacuación vertical en el plan de autoprotección","Información a los huéspedes en varios idiomas sobre las señales de aviso"],mnx:["Evacuar a los huéspedes hacia la playa","Esperar confirmación oficial antes de reaccionar ante la retirada del mar"]},
+ {id:"act_leg",g:"tec",ab:"LEG",n:"Brote de legionela en instalaciones de agua",plan:"Plan de autoprotección / normativa de legionelosis",d:"Proliferación en torres de refrigeración o agua caliente sanitaria.",
+  me:["Red de agua caliente diseñada sin zonas de estancamiento","Torres de refrigeración con separadores de gotas"],mex:["Mantener tramos ciegos y depósitos sin circulación en la red","Situar la torre de refrigeración junto a la toma de aire exterior"],
+  mn:["Programa de mantenimiento y limpieza con registros","Control de temperatura y análisis periódicos del agua"],mnx:["Bajar sin control la temperatura del agua caliente para ahorrar energía","Suprimir los registros de mantenimiento"]},
+ {id:"act_pis",g:"ant",ab:"PIS",n:"Ahogamiento en la piscina del establecimiento",plan:"Plan de autoprotección / normativa de piscinas",d:"Accidentes de usuarios, especialmente menores, en piscinas.",
+  me:["Vallado perimetral de la piscina con puerta de cierre automático","Bordes antideslizantes y señalización de profundidad"],mex:["Eliminar la valla de la piscina infantil","Suelo pulido y deslizante alrededor del vaso"],
+  mn:["Socorrista en el horario de apertura y normas de uso visibles","Formación del personal en primeros auxilios y uso del desfibrilador"],mnx:["Permitir el acceso de menores sin acompañante y sin socorrista","Retirar el material de salvamento por motivos estéticos"]}],
 eve:[
  {id:"eve_fma",g:"nat",ab:"VIE",n:"Viento fuerte o tormenta durante el evento",plan:"PEFMA",d:"Vuelco o caída de estructuras y descargas eléctricas.",
   me:["Cálculo y lastrado de escenarios, carpas y torres según el viento previsto","Toma de tierra y protección frente a descargas en estructuras metálicas"],mex:["Montar carpas sin lastre ni vientos para agilizar el desmontaje","Colocar lonas publicitarias cerradas en los vallados con viento previsto"],
@@ -403,7 +422,16 @@ eve:[
   mn:["Seguridad privada coordinada con Fuerzas y Cuerpos de Seguridad","Plan de comunicación con el público ante incidentes"],mnx:["Permitir la entrada de envases de vidrio","Prescindir de personal de seguridad en un evento multitudinario"]},
  {id:"eve_tra",g:"ant",ab:"ATR",n:"Atropellos en los accesos al recinto",plan:"Plan de movilidad del evento",d:"Conflicto entre el tráfico rodado y el público a pie.",
   me:["Separación física entre accesos peatonales y vehiculares","Barreras antiintrusión de vehículos en el perímetro"],mex:["Permitir el aparcamiento en los viales de emergencia","Cruces peatonales sin señalizar en la vía de acceso"],
-  mn:["Plan de movilidad con cortes de tráfico y lanzaderas","Regulación de accesos coordinada con la Policía Local"],mnx:["Mantener abierto el tráfico en la zona peatonal durante la salida","No informar al público de los cortes de tráfico"]}],
+  mn:["Plan de movilidad con cortes de tráfico y lanzaderas","Regulación de accesos coordinada con la Policía Local"],mnx:["Mantener abierto el tráfico en la zona peatonal durante la salida","No informar al público de los cortes de tráfico"]},
+ {id:"eve_sis",g:"nat",ab:"SIS",n:"Terremoto durante el evento",plan:"PESICAN",d:"Sacudida sísmica con el recinto lleno de público.",
+  me:["Estructuras temporales calculadas frente a acciones sísmicas y de viento","Anclaje de pantallas, focos y elementos suspendidos"],mex:["Colgar elementos pesados sobre el público sin sujeción secundaria","Apoyar las gradas sobre muros de mampostería antiguos"],
+  mn:["Mensajes de actuación ante sismo preparados para la megafonía","Procedimiento de desalojo ordenado tras la sacudida"],mnx:["Ordenar el desalojo inmediato durante la sacudida por salidas saturadas","Reanudar el espectáculo sin revisar las estructuras"]},
+ {id:"eve_inc",g:"tec",ab:"INC",n:"Incendio en carpa o escenario",plan:"Plan de autoprotección",d:"Fuego en lonas, decorados o equipos del escenario.",
+  me:["Lonas y decorados con reacción al fuego certificada","Salidas de las carpas señalizadas y con anchura suficiente"],mex:["Decorar el escenario con textiles sin certificar","Cerrar los laterales de la carpa sin salidas alternativas"],
+  mn:["Prohibición de fumar y de llamas en carpas y escenarios","Personal de primera intervención con extintores en cada carpa"],mnx:["Permitir velas y bengalas dentro de la carpa","Concentrar los extintores en un único punto alejado de las carpas"]},
+ {id:"eve_ext",g:"ant",ab:"EXT",n:"Menores extraviados o personas desorientadas",plan:"Plan de autoprotección del evento",d:"Pérdida de menores o personas vulnerables entre el público.",
+  me:["Punto de encuentro señalizado y visible en el recinto","Iluminación y señalización de todos los recorridos"],mex:["Punto de encuentro en una zona oscura y sin vigilancia","Recorridos sin señalizar con salida a vías con tráfico"],
+  mn:["Pulseras identificativas para menores con teléfono de contacto","Protocolo de búsqueda coordinado con seguridad y Policía Local"],mnx:["Anunciar por megafonía los datos personales completos del menor","Entregar al menor a cualquier adulto que lo reclame sin verificar"]}],
 inf:[
  {id:"inf_lad",g:"nat",ab:"LAD",n:"Desprendimientos sobre la vía",plan:"PLATECA / plan de carreteras",d:"Caída de rocas desde taludes y laderas a la calzada.",
   me:["Mallas de triple torsión y barreras dinámicas en los taludes","Bulonado y gunitado de los taludes inestables"],mex:["Excavar el pie del talud para ensanchar la calzada sin estabilizarlo","Retirar las mallas para ahorrar mantenimiento"],
@@ -440,7 +468,16 @@ inf:[
   mn:["Plan de autoprotección del operador con evacuación de vehículos","Formación de conductores y campañas dirigidas a peatones"],mnx:["Evacuar a los pasajeros hacia la vía contraria sin cortar la circulación","No coordinar la respuesta con el CECOES 1-1-2"]},
  {id:"inf_ter",g:"ant",ab:"SAB",n:"Sabotaje o atentado contra la infraestructura",plan:"Sistema PNPIC",d:"Acción intencionada contra puntos críticos de la red.",
   me:["Protección física y control de accesos en las instalaciones críticas","Videovigilancia de los puntos críticos"],mex:["Dejar sin cerramiento los accesos técnicos","Centro de control sin control de acceso"],
-  mn:["Plan de Seguridad del Operador y Plan de Protección Específico","Coordinación con el Plan de Apoyo Operativo de las Fuerzas de Seguridad"],mnx:["Publicar los planos de seguridad de la instalación","Compartir credenciales de acceso entre empresas externas"]}]};
+  mn:["Plan de Seguridad del Operador y Plan de Protección Específico","Coordinación con el Plan de Apoyo Operativo de las Fuerzas de Seguridad"],mnx:["Publicar los planos de seguridad de la instalación","Compartir credenciales de acceso entre empresas externas"]},
+ {id:"inf_cal",g:"nat",ab:"CAL",n:"Calima intensa con baja visibilidad",plan:"PEFMA",d:"Reducción de visibilidad en carreteras y operaciones aéreas.",
+  me:["Paneles de mensaje variable y balizamiento luminoso en los tramos críticos","Filtros en la ventilación de túneles y centros de control"],mex:["Retirar el balizamiento luminoso para ahorrar consumo","Eliminar los paneles de mensaje variable en los accesos al aeropuerto"],
+  mn:["Limitación de velocidad y avisos a los conductores con baja visibilidad","Coordinación con el aeropuerto ante cierres por visibilidad"],mnx:["Mantener los límites de velocidad habituales con visibilidad reducida","No informar a los usuarios de la baja visibilidad"]},
+ {id:"inf_con",g:"tec",ab:"CON",n:"Rotura de conducciones bajo la vía",plan:"Plan de carreteras / plan municipal",d:"Fuga de gas, agua o combustible en servicios que cruzan la vía.",
+  me:["Protección y señalización de las conducciones que cruzan la vía","Válvulas de corte sectorizadas en las conducciones"],mex:["Apoyar la conducción directamente bajo el firme sin protección","Eliminar las válvulas de corte intermedias"],
+  mn:["Inventario georreferenciado de los servicios afectados","Coordinación con las compañías suministradoras antes de cualquier obra"],mnx:["Excavar sin consultar los planos de servicios","Mantener el tráfico sobre la zona de la fuga"]},
+ {id:"inf_obr",g:"ant",ab:"OBR",n:"Accidente en zona de obras de la vía",plan:"Plan de carreteras",d:"Colisiones y atropellos de trabajadores en obras con tráfico.",
+  me:["Separación física con barreras entre la zona de obras y el tráfico","Señalización luminosa de aproximación a las obras"],mex:["Delimitar la zona de obras solo con cinta de balizamiento","Retirar la señalización de obra durante la noche"],
+  mn:["Plan de seguridad de la obra con desvíos y limitación de velocidad","Coordinación con el centro de control y la Policía Local"],mnx:["Mantener la velocidad máxima de la vía junto a las obras","Trabajar de noche sin señalización para no molestar"]}]};
 const R=Object.values(RR).flat();
 const RX=Object.fromEntries(R.map(r=>[r.id,r]));
 const MCAT={e:"Medidas estructurales",n:"Medidas no estructurales"};
@@ -489,7 +526,8 @@ const STEPS=[
  {t:"Informe",ra:["RA4·CE i"]}];
 function bloqueo(i){
  if(i===0&&!S.meta.tipo)return "Selecciona el tipo de análisis en el paso 1";
- if(i===1&&!S.sel.length)return "Selecciona al menos un riesgo";
+ if(i===0&&S.meta.grupos.length<MINVULN)return `Selecciona al menos ${MINVULN} elementos vulnerables (llevas ${S.meta.grupos.length})`;
+ if(i===1){const f=Object.keys(G).filter(g=>S.sel.filter(id=>RX[id].g===g).length<MAXORIG);if(f.length)return `Selecciona ${MAXORIG} riesgos de cada origen; faltan en: ${f.map(g=>G[g].toLowerCase()).join(", ")}`}
  if(i===2){const inc=S.sel.filter(id=>!completo(ev(id)));if(inc.length)return `Completa la valoración de ${inc.length} riesgo(s): hay campos sin selección`;
   const cortas=S.sel.filter(id=>palabras(ev(id).just)<MINPAL);if(cortas.length)return `La justificación debe tener al menos ${MINPAL} palabras (${cortas.length} riesgo(s) pendiente(s))`;
   if(S.sel.some(id=>urlsDe(ev(id).urls).some(u=>!urlOk(u))))return "Revisa los enlaces: cada URL debe empezar por http:// o https://"}
@@ -503,7 +541,7 @@ $("#next").onclick=()=>go(S.step+1);
 function head(i,txt){const s=STEPS[i];return `<div class="intro"><p class="eyebrow">Paso ${i+1} de ${STEPS.length}</p><h2>${s.t}</h2><p class="muted">${txt}</p>${s.ra.length?`<div class="ra" aria-label="Criterios de evaluación">${s.ra.map(r=>`<span>${r}</span>`).join("")}</div>`:""}</div>`}
 
 function renderAsis(){renderSteps();const b=$("#stepBody");
- $("#prev").disabled=S.step===0;$("#next").hidden=S.step===STEPS.length-1;
+ $("#prev").disabled=S.step===0;$("#next").hidden=S.step===STEPS.length-1;$("#dl").hidden=S.step!==STEPS.length-1;
  [step0,step1,step2,step3,step4,step5][S.step](b)}
 
 function bindInputs(root){root.querySelectorAll("[data-k]").forEach(el=>{el.addEventListener("input",()=>{const path=el.dataset.k.split(".");let o=S;for(let i=0;i<path.length-1;i++)o=o[path[i]];o[path.at(-1)]=el.value;save()})})}
@@ -518,7 +556,8 @@ function step0(b){const m=S.meta,lista=VULN[m.tipo]||[];
  </div>
  <label class="f" for="m-desc">Descripción del ámbito <small>Geomorfología, clima, usos, vías, servicios básicos, actividades peligrosas cercanas.</small><textarea id="m-desc" data-k="meta.desc">${esc(m.desc)}</textarea></label>
  <label class="f" for="m-pob">Población expuesta <small>Número, densidad y variaciones estacionales u horarias.</small><input type="text" id="m-pob" data-k="meta.pob" value="${esc(m.pob)}"></label>
- <fieldset><legend>Elementos vulnerables presentes${m.tipo?` <span class="cnt">${esc(TIPO[m.tipo])}</span>`:""}</legend>
+ <fieldset><legend>Elementos vulnerables presentes${m.tipo?` <span class="cnt">${esc(TIPO[m.tipo])} · <span id="vcnt"></span></span>`:""}</legend>
+  ${lista.length?`<p class="def">Marca al menos ${MINVULN} elementos presentes en el ámbito.</p>`:""}
   ${lista.length?`<div class="checks">${lista.map(([k,t])=>`<label class="chk"><input type="checkbox" data-g="${k}" ${m.grupos.includes(k)?"checked":""}><span>${esc(t)}</span></label>`).join("")}</div>`:`<p class="muted">Selecciona primero el tipo de análisis para ver los elementos vulnerables.</p>`}
  </fieldset>
  <label class="f" for="m-notas">Observaciones de vulnerabilidad <small>Explica por qué los elementos marcados son vulnerables y dónde se sitúan.</small><textarea id="m-notas" data-k="meta.notas">${esc(m.notas)}</textarea></label>
@@ -528,11 +567,12 @@ function step0(b){const m=S.meta,lista=VULN[m.tipo]||[];
   S.meta.grupos=S.meta.grupos.filter(k=>(VULN[nt]||[]).some(v=>v[0]===k));
   const fuera=S.sel.filter(id=>tipoDe(id)!==nt);fuera.forEach(id=>{delete S.ev[id];delete S.med[id];delete S.medx[id]});S.sel=S.sel.filter(id=>tipoDe(id)===nt);
   save();step0(b);$("#m-tipo").focus();if(old&&old!==nt)toast("Tipo cambiado: se han borrado los elementos y riesgos del tipo anterior")};
- b.querySelectorAll("[data-g]").forEach(c=>c.onchange=()=>{const k=c.dataset.g;if(c.checked){if(!S.meta.grupos.includes(k))S.meta.grupos.push(k)}else S.meta.grupos=S.meta.grupos.filter(x=>x!==k);save()})}
+ const vc=()=>{const el=$("#vcnt");if(el){const n=S.meta.grupos.length;el.textContent=`${n} marcados (mínimo ${MINVULN})`;el.style.color=n>=MINVULN?"var(--ok)":"var(--signal)"}};vc();
+ b.querySelectorAll("[data-g]").forEach(c=>c.onchange=()=>{const k=c.dataset.g;if(c.checked){if(!S.meta.grupos.includes(k))S.meta.grupos.push(k)}else S.meta.grupos=S.meta.grupos.filter(x=>x!==k);save();vc()})}
 
 function step1(b){const t=S.meta.tipo;
  if(!t){b.innerHTML=`<div class="panel">${head(1,"")}<p>Selecciona primero el tipo de análisis en el paso 1.</p></div>`;return}
- b.innerHTML=`<div class="panel">${head(1,`Marca los fenómenos peligrosos que pueden afectar a este ${TIPO[t].toLowerCase()}. Puedes elegir hasta ${MAXORIG} riesgos de cada origen. Junto a cada uno aparece el plan o la norma de referencia en Canarias.`)}
+ b.innerHTML=`<div class="panel">${head(1,`Marca los fenómenos peligrosos que pueden afectar a este ${TIPO[t].toLowerCase()}. Elige ${MAXORIG} riesgos de cada origen (${MAXORIG*3} en total); sin ellos no podrás avanzar. Junto a cada uno aparece el plan o la norma de referencia en Canarias.`)}
  ${Object.keys(G).map(g=>`<fieldset data-orig="${g}"><legend>Riesgos de origen ${G[g].toLowerCase()} <span class="cnt" data-cnt="${g}"></span></legend><div class="checks">${RR[t].filter(r=>r.g===g).map(r=>`<label class="chk"><input type="checkbox" data-r="${r.id}" ${S.sel.includes(r.id)?"checked":""}><span>${esc(r.n)}<em>${esc(r.plan)} · ${esc(r.d)}</em></span></label>`).join("")}</div></fieldset>`).join("")}
  </div>`;
  const upd=()=>Object.keys(G).forEach(g=>{const n=S.sel.filter(id=>RX[id].g===g).length;b.querySelector(`[data-cnt="${g}"]`).textContent=`${n} / ${MAXORIG}`;
@@ -621,8 +661,8 @@ function step4(b){
 /* ---------- rúbrica de evaluación ---------- */
 const NIV=["Insuficiente","Básico","Adecuado","Excelente"],NIVF=[0,.5,.75,1];
 const RUB=[
- {id:"amb",t:"Ámbito y vulnerabilidad",ce:"RA1·CE b, c, d · RA2·CE b",max:2,d:["Descripción ausente o sin datos de población ni elementos vulnerables.","Descripción general; población o elementos vulnerables incompletos.","Describe el ámbito y la población e identifica varios elementos vulnerables.","Descripción completa (medio físico, urbanismo, servicios), población cuantificada y vulnerabilidad justificada."]},
- {id:"ide",t:"Identificación de riesgos",ce:"RA1·CE a · RA2·CE a · RA3·CE a",max:1.5,d:["Menos de dos riesgos.","Varios riesgos de un único origen.","Riesgos de dos orígenes distintos.","Cuatro o más riesgos de origen natural, tecnológico y antrópico."]},
+ {id:"amb",t:"Ámbito y vulnerabilidad",ce:"RA1·CE b, c, d · RA2·CE b",max:2,d:["Sin descripción del ámbito o sin datos de población ni elementos vulnerables.","Descripción general; población o elementos vulnerables incompletos.","Describe el ámbito y la población e identifica varios elementos vulnerables.","Descripción completa (medio físico, urbanismo, servicios), población cuantificada y vulnerabilidad justificada."]},
+ {id:"ide",t:"Identificación de riesgos",ce:"RA1·CE a · RA2·CE a · RA3·CE a",max:1.5,d:["Riesgos sin identificar.","Riesgos de un único origen.","Riesgos de dos orígenes o menos de tres por origen.","Tres riesgos de origen natural, tecnológico y antrópico (nueve en total)."]},
  {id:"eva",t:"Evaluación y cálculo del riesgo",ce:"RA1·CE e · RA2·CE c · RA3·CE e",max:2.5,d:["Riesgos sin valorar o sin justificar.",`Valoración incompleta o justificaciones de menos de ${MINPAL} palabras.`,`Todos los riesgos valorados y justificados con al menos ${MINPAL} palabras.`,"Valoración completa, justificaciones desarrolladas y respaldadas con fuentes enlazadas, coherentes con la vulnerabilidad."]},
  {id:"pri",t:"Matriz y priorización",ce:"RA1·CE f · RA2·CE d",max:1,d:["Sin diferenciación entre riesgos.","Priorización con poca diferenciación.","Riesgos diferenciados por nivel.","Riesgos diferenciados y comparación entre métodos de evaluación."]},
  {id:"med",t:"Medidas preventivas",ce:"RA4·CE a, b, c",max:2,d:["Sin medidas o predominan las medidas inadecuadas.","Pocas medidas adecuadas o alguna inadecuada.","Medidas estructurales y no estructurales adecuadas en la mayoría de riesgos.","Medidas adecuadas de ambos tipos en todos los riesgos, sin medidas inadecuadas y con aportaciones propias."]},
@@ -635,15 +675,14 @@ function evaluar(){const m=S.meta,n=S.sel.length,out=[];
  // 1 ámbito
  {const i=[Math.min(m.desc.trim().length/250,1),m.pob.trim().length>=10?1:0,Math.min(m.grupos.length/4,1),m.notas.trim().length>=30?1:m.notas.trim()?.5:0],mj=[];
   if(!m.tipo)mj.push("selecciona el tipo de análisis");
+  if(!m.desc.trim())mj.push("incluye una descripción del ámbito de estudio");
   if(i[0]<1)mj.push("amplía la descripción del ámbito con medio físico, usos, vías y servicios básicos");
   if(!i[1])mj.push("cuantifica la población expuesta, su densidad y su variación");
   if(i[2]<1)mj.push("identifica más elementos vulnerables del ámbito");
   if(i[3]<1)mj.push("justifica en las observaciones por qué esos elementos son vulnerables");
-  out.push({r:i[0]<1?Math.min(avg(i),.84):avg(i),mj})}
+  out.push({r:!m.desc.trim()?0:i[0]<1?Math.min(avg(i),.84):avg(i),mj})}
  // 2 identificación
- {const orig=new Set(S.sel.map(id=>RX[id].g));const i=[Math.min(n/4,1),orig.size/3],mj=[];
-  if(n<4)mj.push("identifica al menos cuatro riesgos relevantes para el ámbito");
-  Object.keys(G).forEach(g=>{if(!orig.has(g))mj.push("valora si existen riesgos de origen "+G[g].toLowerCase())});
+ {const mj=[];const i=Object.keys(G).map(g=>{const c=S.sel.filter(id=>RX[id].g===g).length;if(c<MAXORIG)mj.push(`identifica ${MAXORIG} riesgos de origen ${G[g].toLowerCase()}`);return Math.min(c/MAXORIG,1)});
   out.push({r:n?avg(i):0,mj})}
  // 3 evaluación
  {const mj=[];let r=0;if(n){const E=S.sel.map(id=>ev(id));
@@ -686,9 +725,10 @@ function evaluar(){const m=S.meta,n=S.sel.length,out=[];
   out.push({r,mj})}
  const res=RUB.map((c,i)=>{const nv=nivelDe(out[i].r);return Object.assign({},c,{nivel:nv,pts:Math.round(c.max*NIVF[nv]*100)/100,mj:out[i].mj})});
  const total=Math.round(res.reduce((s,x)=>s+x.pts,0)*10)/10;return{res,total}}
+function descTxt(){const n=palabras(S.meta.desc);return n?`El informe incluye una descripción del ámbito de estudio (${n} palabras)${n<40?", aunque es breve":""}.`:"El informe no incluye una descripción del ámbito de estudio."}
 function valoracionTxt(v){const fuertes=v.res.filter(x=>x.nivel===3).map(x=>x.t.toLowerCase());const mj=v.res.filter(x=>x.nivel<3).sort((a,b)=>(b.max-b.pts)-(a.max-a.pts)).flatMap(x=>x.mj).slice(0,6);
  const cal=v.total<5?"no alcanza todavía los mínimos exigibles":v.total<7?"alcanza los mínimos con margen de mejora":v.total<9?"es un trabajo correcto y bien estructurado":"es un trabajo completo y riguroso";
- let p1=`El análisis ${cal}.`+(fuertes.length?` Destaca en: ${fuertes.join(", ")}.`:"");
+ let p1=descTxt()+` El análisis ${cal}.`+(fuertes.length?` Destaca en: ${fuertes.join(", ")}.`:"");
  let p2=mj.length?`Para mejorar: ${mj.join("; ")}.`:"No se detectan carencias en los indicadores de la rúbrica; revisa la precisión técnica de las justificaciones.";
  return p1+" "+p2.charAt(0).toUpperCase()+p2.slice(1)+` Nota propuesta: ${v.total.toFixed(1).replace(".",",")} / 10.`}
 
@@ -765,8 +805,7 @@ async function descargarPDF(btn){
 function step5(b){
  b.innerHTML=`<div class="panel">${head(5,"Escribe tus conclusiones y descarga el informe en PDF para entregarlo. Al final se incluye la valoración según la rúbrica.")}
  <label class="f" for="conclu">Conclusiones <small>Riesgos prioritarios, relación coste-beneficio de las medidas, inspecciones preventivas propuestas.</small><textarea id="conclu" style="min-height:7rem">${esc(S.conclu)}</textarea></label>
- <div class="btns"><button class="btn" type="button" id="dl">Descargar informe PDF</button></div>
- <p class="small muted">Rellena tu nombre en el paso 1 antes de descargar: aparece en la portada y en el nombre del archivo.</p>
+ <p class="small muted">Cuando termines, pulsa «Descargar informe PDF» al final de la página. Rellena tu nombre en el paso 1 antes de descargar: aparece en la portada y en el nombre del archivo.</p>
  </div>
  <div class="panel"><div class="intro"><p class="eyebrow">Autoevaluación</p><h3>Valoración según la rúbrica</h3><p class="muted small">Se recalcula al modificar el análisis. Es una propuesta orientativa basada en indicadores; la nota final la pone tu profesor.</p></div><div id="rubBox" aria-live="polite"></div></div>`;
  const upd=()=>{const v=evaluar();
@@ -774,7 +813,8 @@ function step5(b){
   <div class="total"><span>Nota propuesta</span><b>${v.total.toFixed(1).replace(".",",")} / 10</b></div><p class="fb">${esc(valoracionTxt(v))}</p>`;
   $("#rubBox").querySelectorAll(".lvl").forEach((el,i)=>el.textContent=NIV[v.res[i].nivel])};upd();
  $("#conclu").oninput=e=>{S.conclu=e.target.value;save();upd()};
- $("#dl").onclick=e=>descargarPDF(e.currentTarget)}
+}
+$("#dl").onclick=e=>descargarPDF(e.currentTarget);
 
 $("#exportJson").onclick=()=>download("analisis-riesgos.json",JSON.stringify(S,null,2),"application/json");
 $("#importJson").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o.meta||!Array.isArray(o.sel))throw 0;if(o.v!==2){toast("El archivo es de una versión anterior de la app y no se puede cargar");return}S=Object.assign(blank(),o);save();renderAsis();toast("Análisis cargado")}catch(x){toast("El archivo no es un análisis válido")}};rd.readAsText(f);e.target.value=""};
