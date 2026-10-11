@@ -68,7 +68,10 @@ button,input,select,textarea{font:inherit;color:inherit}
 .tabs button[aria-selected="true"]{opacity:1;border-bottom-color:var(--signal)}
 
 main{max-width:var(--maxw);margin:0 auto;padding-inline:16px;padding-block:1.4rem 3rem;display:grid;gap:1.4rem}
-section.view{display:grid;gap:1.2rem}
+section.view{display:grid;gap:1.2rem;min-width:0}
+main>*,section.view>*{min-width:0}
+#mesBody,#cfBody{display:grid;gap:1.2rem;min-width:0}
+.panel>*,fieldset>*{min-width:0}
 
 /* pasos */
 .steps{display:flex;gap:.3rem;overflow-x:auto;padding-bottom:.2rem;list-style:none;margin:0;padding-left:0;counter-reset:s}
@@ -138,6 +141,40 @@ th{font-family:var(--f-display);font-weight:600;font-size:1rem;letter-spacing:.0
 td.num{white-space:nowrap;font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:right}
 .tbl{overflow-x:auto}
 
+.ib{display:inline-grid;place-items:center;width:1.35rem;height:1.35rem;border-radius:50%;border:1.5px solid var(--navy);background:transparent;color:var(--navy);font:700 .8rem/1 var(--f-display);cursor:pointer;flex:none;padding:0}
+.ib[aria-expanded="true"]{background:var(--navy);color:var(--navy-ink)}
+.ib-inline{display:inline-grid;place-items:center;width:1.2rem;height:1.2rem;border-radius:50%;border:1.5px solid var(--navy);color:var(--navy);font:700 .75rem/1 var(--f-display)}
+.help{background:var(--sunk);border-left:4px solid var(--navy);border-radius:0 4px 4px 0;padding:.6rem .8rem;font-size:.9rem;display:grid;gap:.4rem}
+.help dl{gap:.3rem}.help dd{margin:0}
+.crits{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:.9rem 1.2rem;margin-bottom:.8rem}
+.crit{display:grid;gap:.35rem;align-content:start;min-width:0}
+.crit-h{display:flex;gap:.45rem;align-items:center;font-weight:600}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:.6rem}
+.bomb{display:grid;gap:.5rem;background:var(--bg);border:1px dashed var(--line);border-radius:4px;padding:.7rem}
+.btn.sm{padding:.25rem .65rem;font-size:.85rem}
+a.btn{text-decoration:none;display:inline-block}
+a.btn.off{opacity:.5}
+.okc{color:var(--ok);font-weight:600}
+.resgrid{display:grid;grid-template-columns:minmax(0,15rem) minmax(0,1fr);gap:1.2rem;align-items:start}
+@media (max-width:700px){.resgrid{grid-template-columns:1fr}}
+.big{display:grid;gap:.35rem;border:2px solid var(--navy);border-radius:var(--radius);padding:.9rem;justify-items:start}
+.big b{font-size:1.7rem}
+.pbar{position:relative;height:.9rem;border-radius:999px;background:linear-gradient(90deg,var(--l4) 0 30%,var(--l3) 30% 50%,var(--l2) 50% 80%,var(--l1) 80% 100%);margin:1.4rem 0 .4rem}
+.pbar i{position:absolute;top:-.35rem;bottom:-.35rem;width:3px;background:var(--ink);border-radius:2px}
+.pbar span{position:absolute;top:-1.25rem;transform:translateX(-50%);font:600 .75rem var(--f-mono);color:var(--muted)}
+.nri{display:flex;flex-wrap:wrap;gap:3px;margin:.5rem 0}
+.nri span{font-size:.75rem;font-weight:700;padding:.2rem .45rem;border-radius:3px;opacity:.35;color:var(--on-l)}
+.nri span.on{opacity:1;outline:2px solid var(--ink);outline-offset:1px}
+.nri .n1{background:var(--l1)}.nri .n2{background:var(--l2)}.nri .n3{background:var(--l3)}.nri .n4{background:var(--l4)}
+.mets{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:.8rem}
+.metc{display:grid;gap:.35rem;border:1.5px solid var(--line);border-radius:var(--radius);padding:.8rem;cursor:pointer;align-content:start}
+.metc.on{border-color:var(--navy);background:color-mix(in srgb,var(--navy) 8%,var(--surface))}
+.metc input{accent-color:var(--navy)}
+.ej{border-top:1px solid var(--line);padding-top:.8rem;margin-top:.8rem;display:grid;gap:.4rem;max-width:90ch}
+.ej h4{margin:0;font-family:var(--f-display);font-size:1.15rem}
+table.rows input,table.rows select{min-width:6.5rem;padding:.35rem .45rem}
+table.rows td{vertical-align:middle}
+.ytab select{min-width:8rem}
 .cnt{font-family:var(--f-mono);font-size:.8rem;font-weight:600;color:var(--muted);margin-left:.3rem}
 .pill{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:.05rem .55rem;background:var(--sunk);color:var(--muted)}
 .pill.pok{background:color-mix(in srgb,var(--ok) 18%,var(--surface));color:var(--ok)}
@@ -207,6 +244,8 @@ dd{margin:0 0 .2rem;color:var(--muted)}
     <button role="tab" id="tab-casos" aria-controls="v-casos" aria-selected="false">Casos prácticos</button>
     <button role="tab" id="tab-doc" aria-controls="v-doc" aria-selected="false">Rúbrica</button>
     <button role="tab" id="tab-asis" aria-controls="v-asis" aria-selected="false">Análisis de Riesgos</button>
+    <button role="tab" id="tab-mes" aria-controls="v-mes" aria-selected="false">Método MESERI</button>
+    <button role="tab" id="tab-cf" aria-controls="v-cf" aria-selected="false">Carga de Fuego Ponderada</button>
   </nav>
 </header>
 
@@ -243,12 +282,40 @@ dd{margin:0 0 .2rem;color:var(--muted)}
     <div class="refgrid" id="refBody"></div>
   </section>
 
+  <!-- MESERI -->
+  <section class="view" id="v-mes" role="tabpanel" aria-labelledby="tab-mes" hidden>
+    <div id="mesBody"></div>
+    <div class="btns">
+      <button class="btn" id="mesPdf" type="button">Descargar informe PDF</button>
+      <span class="spacer"></span>
+      <button class="btn ghost" id="mesExport" type="button">Guardar análisis (.json)</button>
+      <label class="btn ghost" for="mesImport" style="cursor:pointer">Subir análisis</label>
+      <input type="file" id="mesImport" accept=".json,application/json" hidden>
+      <button class="btn warn" id="mesReset" type="button">Empezar de cero</button>
+    </div>
+    <p class="small muted">El trabajo se guarda en este navegador. Para continuar en otro equipo, usa «Guardar análisis» y después «Subir análisis».</p>
+  </section>
+
+  <!-- CARGA DE FUEGO -->
+  <section class="view" id="v-cf" role="tabpanel" aria-labelledby="tab-cf" hidden>
+    <div id="cfBody"></div>
+    <div class="btns">
+      <button class="btn" id="cfPdf" type="button">Descargar informe PDF</button>
+      <span class="spacer"></span>
+      <button class="btn ghost" id="cfExport" type="button">Guardar análisis (.json)</button>
+      <label class="btn ghost" for="cfImport" style="cursor:pointer">Subir análisis</label>
+      <input type="file" id="cfImport" accept=".json,application/json" hidden>
+      <button class="btn warn" id="cfReset" type="button">Empezar de cero</button>
+    </div>
+    <p class="small muted">El trabajo se guarda en este navegador. Para continuar en otro equipo, usa «Guardar análisis» y después «Subir análisis».</p>
+  </section>
+
   <!-- RÚBRICA -->
   <section class="view" id="v-doc" role="tabpanel" aria-labelledby="tab-doc" hidden>
     <div class="intro">
       <p class="eyebrow">Evaluación</p>
       <h2>Rúbrica del informe de análisis de riesgos</h2>
-      <p class="muted">Así se valora el informe que generas en «Análisis de Riesgos». La nota se calcula sobre 10 sumando los puntos de cada criterio.</p>
+      <p class="muted">Así se valoran los informes que generas en «Análisis de Riesgos», «Método MESERI» y «Carga de Fuego Ponderada». Cada nota se calcula sobre 10 sumando los puntos de cada criterio.</p>
     </div>
     <div class="panel" id="docBody"></div>
   </section>
@@ -531,8 +598,8 @@ function ir1(e){return e.P!=null&&e.dp!=null&&e.db!=null&&e.da!=null?e.P*D(e):nu
 function ir2(e){return e.P!=null&&e.S!=null?e.P*e.S:null}
 
 /* ---------- pestañas ---------- */
-const TABS=["asis","casos","ref","doc"];
-function showTab(t){TABS.forEach(x=>{$("#tab-"+x).setAttribute("aria-selected",x===t);$("#v-"+x).hidden=x!==t});if(t==="casos")renderCasos();if(t==="doc")renderDoc();if(t==="asis")renderAsis();store.set("evb_tab",t);scrollTo({top:0})}
+const TABS=["asis","casos","ref","doc","mes","cf"];
+function showTab(t){TABS.forEach(x=>{$("#tab-"+x).setAttribute("aria-selected",x===t);$("#v-"+x).hidden=x!==t});if(t==="casos")renderCasos();if(t==="doc")renderDoc();if(t==="asis")renderAsis();if(t==="mes")renderMeseri();if(t==="cf")renderCF();store.set("evb_tab",t);scrollTo({top:0})}
 TABS.forEach(x=>$("#tab-"+x).onclick=()=>showTab(x));
 
 /* ---------- asistente ---------- */
@@ -756,7 +823,7 @@ function loadScript(src){return new Promise((ok,ko)=>{const s=document.createEle
 let pdfLibs=null;
 function libsPDF(){if(window.jspdf&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API.autoTable)return Promise.resolve();
  if(!pdfLibs)pdfLibs=loadScript("vendor/jspdf.umd.min.js").then(()=>loadScript("vendor/jspdf.plugin.autotable.min.js")).catch(e=>{pdfLibs=null;throw e});return pdfLibs}
-const pdfTxt=s=>String(s??"").replace(/₂/g,"2").replace(/≥/g,">=").replace(/≤/g,"<=").replace(/[^\u0000-ÿ–—‘’“”•…€]/g,"");
+const pdfTxt=s=>String(s??"").replace(/²/g,"2").replace(/³/g,"3").replace(/Σ/g,"Suma ").replace(/₂/g,"2").replace(/≥/g,">=").replace(/≤/g,"<=").replace(/[^\u0000-ÿ–—‘’“”•…€]/g,"");
 function wrapUrl(doc,u,w){const out=[];let cur="";for(const ch of u){if(doc.getTextWidth(cur+ch)>w){out.push(cur);cur=ch}else cur+=ch}if(cur)out.push(cur);return out}
 const C={link:[31,90,170],navy:[31,58,104],signal:[201,86,26],ink:[20,32,51],muted:[85,98,117],line:[211,218,228],sunk:[232,236,242],lv:[[47,125,79],[185,138,18],[210,96,28],[179,38,30]]};
 async function descargarPDF(btn){
@@ -938,11 +1005,427 @@ function renderRef(){const P=[["PLATECA","Plan territorial de la Comunidad Autó
  <details><summary>Protección contra incendios</summary><dl><dt>Activa</dt><dd>Detecta, avisa o extingue: detectores, pulsadores, alarma, extintores, BIE, rociadores.</dd><dt>Pasiva</dt><dd>Actúa sin intervención: compartimentación, sectorización, tratamientos ignífugos, protección de estructura.</dd></dl></details>
  <details><summary>Infraestructuras críticas (PNPIC)</summary><dl><dt>Planes Estratégicos Sectoriales</dt><dd>Análisis por sector estratégico.</dd><dt>PSO</dt><dd>Plan de Seguridad del Operador.</dd><dt>PPE</dt><dd>Plan de Protección Específico de cada infraestructura.</dd><dt>PAO</dt><dd>Plan de Apoyo Operativo de las Fuerzas y Cuerpos de Seguridad.</dd></dl></details>`}
 
+/* ======================================================================
+   UTILIDADES COMUNES DE LAS PESTAÑAS DE MÉTODOS
+   ====================================================================== */
+const nz=v=>String(v??"").trim()!=="";
+const num=v=>{const n=parseFloat(String(v??"").replace(",","."));return isFinite(n)?n:null};
+const fmt=(n,d=2)=>n==null?"—":Number(n).toLocaleString("es-ES",{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmt0=n=>n==null?"—":Math.round(n).toLocaleString("es-ES");
+function evalRub(R,outs){const res=R.map((c,i)=>{const nv=nivelDe(outs[i].r);return Object.assign({},c,{nivel:nv,pts:Math.round(c.max*NIVF[nv]*100)/100,mj:outs[i].mj})});
+ return {res,total:Math.round(res.reduce((s,x)=>s+x.pts,0)*10)/10}}
+function valTxt(v,intro){const fuertes=v.res.filter(x=>x.nivel===3).map(x=>x.t.toLowerCase());const mj=v.res.filter(x=>x.nivel<3).sort((a,b)=>(b.max-b.pts)-(a.max-a.pts)).flatMap(x=>x.mj).slice(0,6);
+ const cal=v.total<5?"no alcanza todavía los mínimos exigibles":v.total<7?"alcanza los mínimos con margen de mejora":v.total<9?"es un trabajo correcto y bien estructurado":"es un trabajo completo y riguroso";
+ const p2=mj.length?`Para mejorar: ${mj.join("; ")}.`:"No se detectan carencias en los indicadores de la rúbrica; revisa la precisión técnica de los datos.";
+ return `${intro} El trabajo ${cal}.`+(fuertes.length?` Destaca en: ${fuertes.join(", ")}.`:"")+" "+p2.charAt(0).toUpperCase()+p2.slice(1)+` Nota propuesta: ${v.total.toFixed(1).replace(".",",")} / 10.`}
+function rubHTML(v,intro){return `<div class="tbl"><table><thead><tr><th>Criterio</th><th>Nivel</th><th style="text-align:right">Puntos</th></tr></thead><tbody>${v.res.map(x=>`<tr><td><b>${x.t}</b><br><span class="small muted">${x.d[x.nivel]}</span><div class="ra"><span>${x.ce}</span></div></td><td><span class="lvl b${4-x.nivel}">${NIV[x.nivel]}</span></td><td class="num">${x.pts.toFixed(2).replace(".",",")} / ${String(x.max).replace(".",",")}</td></tr>`).join("")}</tbody></table></div>
+ <div class="total"><span>Nota propuesta</span><b>${v.total.toFixed(1).replace(".",",")} / 10</b></div><p class="fb">${esc(valTxt(v,intro))}</p>`}
+function rubTable(R){return `<div class="tbl"><table><thead><tr><th>Criterio (RA·CE)</th><th>Pts</th>${NIV.map((n,i)=>`<th>${n} (${NIVF[i]*100} %)</th>`).join("")}</tr></thead><tbody>${R.map(c=>`<tr><td><b>${c.t}</b><div class="ra"><span>${c.ce}</span></div></td><td class="num">${String(c.max).replace(".",",")}</td>${c.d.map(t=>`<td class="small">${t}</td>`).join("")}</tr>`).join("")}<tr><td><b>Total</b></td><td class="num">10</td><td colspan="4" class="small">Nota = suma de los puntos de cada criterio (puntos máximos × porcentaje del nivel alcanzado).</td></tr></tbody></table></div>`}
+function infoBtn(key){return `<button type="button" class="ib" data-help="${key}" aria-expanded="false" aria-label="Ver ayuda">i</button>`}
+function bindHelp(root){root.querySelectorAll("[data-help]").forEach(b=>b.onclick=()=>{const p=root.querySelector(`#help-${b.dataset.help}`);if(!p)return;p.hidden=!p.hidden;b.setAttribute("aria-expanded",String(!p.hidden))})}
+function armReset(btn,fn){let arm=false;btn.onclick=()=>{if(!arm){arm=true;const t=btn.textContent;btn.textContent="Pulsa otra vez para borrar";setTimeout(()=>{arm=false;btn.textContent=t},3000);return}arm=false;btn.textContent="Empezar de cero";fn()}}
+function bindIO(prefix,getState,setState,appId,fname){
+ $(`#${prefix}Export`).onclick=()=>download(fname,JSON.stringify(getState(),null,2),"application/json");
+ $(`#${prefix}Import`).onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(o.app!==appId){toast("Este archivo no corresponde a esta pestaña");return}setState(o);toast("Análisis cargado")}catch(x){toast("El archivo no es un análisis válido")}};rd.readAsText(f);e.target.value=""}}
+/* PDF genérico */
+async function pdfKit(titulo){await libsPDF();const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:"mm",format:"a4"});const W=210,H=297,M=18,TW=W-2*M;
+ const k={doc,W,H,M,TW,y:40};
+ k.need=h=>{if(k.y+h>H-20){doc.addPage();k.y=M}};
+ k.h2=(n,t)=>{k.need(16);k.y+=4;doc.setFont("helvetica","bold");doc.setFontSize(9);doc.setTextColor(...C.signal);doc.text("APARTADO "+n,M,k.y);k.y+=5;doc.setFontSize(13);doc.setTextColor(...C.ink);doc.text(pdfTxt(t),M,k.y);k.y+=2;doc.setDrawColor(...C.line);doc.setLineWidth(.3);doc.line(M,k.y,W-M,k.y);k.y+=5};
+ k.para=(t,o={})=>{doc.setFont("helvetica",o.bold?"bold":"normal");doc.setFontSize(o.size||10);doc.setTextColor(...(o.color||C.ink));const ls=doc.splitTextToSize(pdfTxt(t),o.w||TW);const lh=(o.size||10)*.45;ls.forEach(l=>{k.need(lh);doc.text(l,o.x||M,k.y);k.y+=lh});k.y+=o.after??2};
+ k.table=o=>{const fx=rows=>rows&&rows.map(r=>r.map(c=>typeof c==="string"?pdfTxt(c):c&&typeof c.content==="string"?Object.assign({},c,{content:pdfTxt(c.content)}):c));o=Object.assign({},o,{head:fx(o.head),body:fx(o.body)});doc.autoTable(Object.assign({startY:k.y,margin:{left:M,right:M,bottom:20},theme:"grid",styles:{font:"helvetica",fontSize:9,cellPadding:1.8,textColor:C.ink,lineColor:C.line,lineWidth:.2,overflow:"linebreak"},headStyles:{fillColor:C.navy,textColor:255,fontStyle:"bold"},alternateRowStyles:{fillColor:[247,248,251]}},o));k.y=doc.lastAutoTable.finalY+5};
+ k.cell=(rgb,txt)=>({content:pdfTxt(txt),styles:{fillColor:rgb,textColor:255,fontStyle:"bold",halign:"center"}});
+ k.nota=(label,valor)=>{k.need(16);doc.setDrawColor(...C.navy);doc.setLineWidth(.6);doc.rect(M,k.y,TW,13);doc.setFont("helvetica","bold");doc.setFontSize(10);doc.setTextColor(...C.muted);doc.text(pdfTxt(label),M+4,k.y+8.2);doc.setFontSize(15);doc.setTextColor(...C.navy);doc.text(pdfTxt(valor),W-M-4,k.y+8.8,{align:"right"});k.y+=19};
+ k.link=(lab,u)=>{doc.setFont("helvetica","normal");doc.setFontSize(9);const ls=wrapUrl(doc,pdfTxt(u),TW-4);k.need(4+ls.length*4.2);doc.setTextColor(...C.muted);doc.text(pdfTxt(lab),M,k.y);k.y+=4.2;doc.setTextColor(...C.link);ls.forEach(l=>{doc.textWithLink(l,M+3,k.y,{url:u});const w=doc.getTextWidth(l);doc.setDrawColor(...C.link);doc.setLineWidth(.15);doc.line(M+3,k.y+.6,M+3+w,k.y+.6);k.y+=4.2});k.y+=1.5};
+ k.rubrica=(n,v,intro)=>{k.h2(n,"Valoración según rúbrica");
+  k.table({head:[["Criterio","RA · CE","Nivel","Puntos"]],body:[...v.res.map(x=>[pdfTxt(x.t+"\n"+x.d[x.nivel]),pdfTxt(x.ce),k.cell(C.lv[3-x.nivel],NIV[x.nivel]),x.pts.toFixed(2).replace(".",",")+" / "+String(x.max).replace(".",",")]),[{content:"TOTAL",colSpan:3,styles:{fontStyle:"bold",halign:"right"}},{content:v.total.toFixed(1).replace(".",",")+" / 10",styles:{fontStyle:"bold"}}]],columnStyles:{1:{cellWidth:32,fontSize:8,textColor:C.muted},2:{cellWidth:24},3:{cellWidth:22,halign:"right"}}});
+  const vt=doc.splitTextToSize(pdfTxt(valTxt(v,intro)),TW-8);k.need(vt.length*4.5+12);doc.setFillColor(...C.sunk);doc.rect(M,k.y,TW,vt.length*4.5+9,"F");doc.setFillColor(...C.navy);doc.rect(M,k.y,1.2,vt.length*4.5+9,"F");
+  doc.setFont("helvetica","bold");doc.setFontSize(10);doc.setTextColor(...C.ink);doc.text("Valoración",M+4,k.y+5.5);doc.setFont("helvetica","normal");let yy=k.y+10.5;vt.forEach(l=>{doc.text(l,M+4,yy);yy+=4.5});k.y=yy+4;
+  k.para("Propuesta generada automáticamente a partir de indicadores de la rúbrica. No valora la exactitud técnica del contenido; la calificación final corresponde al docente.",{size:8.5,color:C.muted})};
+ doc.setFillColor(...C.navy);doc.rect(0,0,W,30,"F");doc.setFillColor(...C.signal);doc.rect(0,30,W,1.2,"F");
+ doc.setTextColor(255);doc.setFont("helvetica","bold");doc.setFontSize(18);doc.text(pdfTxt(titulo),M,14);
+ doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text(pdfTxt("Módulo 1502 · Evaluación de riesgos y medidas preventivas · CFGS Coordinación de Emergencias y Protección Civil"),M,21);
+ k.save=(alumno,base)=>{const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setDrawColor(...C.line);doc.setLineWidth(.3);doc.line(M,H-13,W-M,H-13);doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(...C.muted);
+   doc.text(pdfTxt("Taller de Análisis de Riesgos · "+titulo+" · "+(alumno||"Alumno/a sin indicar")),M,H-8.5);doc.text(`Página ${i} de ${n}`,W-M,H-8.5,{align:"right"})}
+  const name=base+"-"+((alumno||"alumno").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/gi,"-").replace(/^-|-$/g,"").toLowerCase()||"alumno")+".pdf";doc.save(name);toast("PDF descargado: "+name)};
+ return k}
+async function conBoton(btn,fn){const label=btn.textContent;btn.disabled=true;btn.textContent="Generando PDF…";
+ try{await fn()}catch(e){console.error(e);toast(/vendor/.test(String(e&&e.message))?"No se pudo cargar el generador de PDF. Revisa la conexión.":"No se pudo generar el PDF")}finally{btn.disabled=false;btn.textContent=label}}
+
+/* ======================================================================
+   MÉTODO MESERI
+   ====================================================================== */
+const MDEF_COMB=`<dl>
+ <dt>M0 · No combustible</dt><dd>No arde ni aporta calor al fuego. Ejemplos: piedra, hormigón, ladrillo, acero, vidrio.</dd>
+ <dt>M1 · Combustible no inflamable</dt><dd>Puede llegar a arder, pero cuesta mucho que prenda y se apaga al retirar la llama. Ejemplos: placas de yeso laminado, algunos plásticos ignifugados.</dd>
+ <dt>M2 · Inflamabilidad moderada</dt><dd>Prende con dificultad y la llama avanza despacio. Ejemplo: madera ignifugada, algunos tableros tratados.</dd>
+ <dt>M3 · Inflamabilidad media</dt><dd>Arde con normalidad una vez iniciado el fuego. Ejemplo: madera maciza sin tratar, tableros gruesos.</dd>
+ <dt>M4 · Muy inflamable</dt><dd>Prende con facilidad y la llama se extiende rápido. Ejemplos: tableros finos, muchos plásticos, moquetas, cartón.</dd>
+ <dt>M5 · Extremadamente inflamable</dt><dd>Arde casi al instante. Ejemplos: espumas plásticas sin tratar, papel suelto, textiles ligeros.</dd></dl>
+ <p class="small muted">Esta clasificación procede de la antigua norma UNE 23727. Hoy se usan las Euroclases (UNE-EN 13501-1); equivalencia orientativa: M0 ≈ A1/A2, M1 ≈ B, M2 ≈ C, M3 ≈ D, M4 ≈ E, M5 ≈ F.</p>`;
+const MXG=[
+ {g:"Construcción",f:[
+  {id:"plantas",t:"Nº de plantas o altura del edificio",o:[["1 o 2 plantas · menos de 6 m",3],["3, 4 o 5 plantas · entre 6 y 15 m",2],["6, 7, 8 o 9 plantas · entre 15 y 28 m",1],["10 o más plantas · más de 28 m",0]],
+   h:"Cuenta las plantas del edificio o mide su altura. Cuanto más alto, más difícil es evacuar y apagar el fuego desde fuera. Si plantas y altura no coinciden en la misma fila, elige la más desfavorable."},
+  {id:"superficie",t:"Superficie del mayor sector de incendios",o:[["De 0 a 500 m²",5],["De 501 a 1.500 m²",4],["De 1.501 a 2.500 m²",3],["De 2.501 a 3.500 m²",2],["De 3.501 a 4.500 m²",1],["Más de 4.500 m²",0]],
+   h:"Un sector de incendios es una zona separada del resto por paredes, techos y puertas que resisten el fuego (puertas cortafuegos). Mide el sector más grande: cuanto mayor es, más superficie puede quemarse de una vez."},
+  {id:"resistencia",t:"Resistencia al fuego de la estructura",o:[["Resistente al fuego (hormigón)",10],["No combustible (metálica)",5],["Combustible (madera)",0]],
+   h:"<b>Hormigón:</b> aguanta mucho tiempo el fuego sin caerse. <b>Metálica:</b> no arde, pero con el calor el acero se dobla y puede hundirse. <b>Madera:</b> arde y alimenta el incendio."},
+  {id:"techos",t:"Falsos techos",o:[["Sin falsos techos",5],["Con falsos techos incombustibles (M0)",3],["Con falsos techos combustibles (M4 o más)",0]],
+   h:"El falso techo es el techo colgado que tapa instalaciones. Por encima el fuego y el humo pueden avanzar sin que se vean. Si es combustible, además arde y cae sobre las personas. Consulta la escala M0–M5 en «Combustibilidad»."}]},
+ {g:"Situación",f:[
+  {id:"bomberos",t:"Distancia de los bomberos",o:[["Menos de 5 km · menos de 5 min",10],["Entre 5 y 10 km · 5 a 10 min",8],["Entre 10 y 15 km · 10 a 15 min",6],["Entre 15 y 25 km · 15 a 25 min",2],["Más de 25 km · más de 25 min",0]],
+   h:"Busca el parque de bomberos más cercano y calcula el recorrido en coche hasta el establecimiento con Google Maps (usa los campos de debajo). Si los km y los minutos caen en filas distintas, elige la peor de las dos."},
+  {id:"accesibilidad",t:"Accesibilidad del edificio",o:[["Buena",5],["Media",3],["Mala",1],["Muy mala",0]],
+   h:"¿Pueden llegar y maniobrar los camiones de bomberos? <b>Buena:</b> calles anchas y acceso por varias fachadas. <b>Media:</b> acceso por dos fachadas o calles algo estrechas. <b>Mala:</b> solo se llega por una fachada. <b>Muy mala:</b> los vehículos no pueden acercarse al edificio. (Descripción orientativa.)"}]},
+ {g:"Procesos",f:[
+  {id:"activacion",t:"Peligro de activación",o:[["Bajo",10],["Medio",5],["Alto",0]],
+   h:"¿Hay cosas que puedan iniciar un fuego? <b>Bajo:</b> casi no hay focos de calor (oficinas, almacenes de productos que no arden). <b>Medio:</b> instalaciones eléctricas, calderas o cocinas controladas. <b>Alto:</b> llamas abiertas, soldadura, hornos o productos muy inflamables."},
+  {id:"carga",t:"Carga térmica (Q)",o:[["Baja · menos de 1.000 MJ/m² (100 Mcal/m²)",10],["Media · 1.000 a 2.000 MJ/m² (100 a 200 Mcal/m²)",5],["Alta · 2.000 a 5.000 MJ/m² (200 a 500 Mcal/m²)",2],["Muy alta · más de 5.000 MJ/m² (500 Mcal/m²)",0]],
+   h:"Es el calor que soltaría todo lo que puede arder, repartido por cada metro cuadrado. Puedes calcularlo en la pestaña «Carga de Fuego Ponderada»."},
+  {id:"combust",t:"Combustibilidad",o:[["Baja (M0 y M1)",5],["Media (M2 y M3)",3],["Alta (M4 y M5)",0]],h:MDEF_COMB},
+  {id:"orden",t:"Orden y limpieza",o:[["Alto",10],["Medio",5],["Bajo",0]],
+   h:"<b>Alto:</b> todo ordenado, pasillos libres y basura retirada a diario. <b>Medio:</b> algo de desorden puntual. <b>Bajo:</b> restos, cajas o basura acumulada y pasillos ocupados."},
+  {id:"altura",t:"Almacenamiento en altura",o:[["Menos de 2 m",3],["Entre 2 y 4 m",2],["Más de 4 m",0]],
+   h:"Altura de las pilas o estanterías con material. Cuanto más alto, más rápido sube el fuego y más difícil es apagarlo. (En el Excel de origen la última fila figura como «más de 6 m»; aquí se aplica a todo lo que supera 4 m.)"}]},
+ {g:"Concentración",f:[
+  {id:"concentracion",t:"Factor de concentración (valor en €/m²)",o:[["Menos de 600 €/m²",3],["Entre 600 y 1.500 €/m²",2],["Más de 1.500 €/m²",0]],
+   h:"Valor económico de lo que hay en cada metro cuadrado (máquinas, mercancía). Cuanto más valor concentrado, mayores pérdidas si hay fuego."}]},
+ {g:"Destructibilidad",f:[
+  {id:"calor",t:"Por calor",o:[["Baja",10],["Media",5],["Alta",0]],h:"¿Se estropean los bienes con el calor? <b>Baja:</b> aguantan (metal, piedra). <b>Alta:</b> se destruyen enseguida (electrónica, alimentos, plásticos)."},
+  {id:"humo",t:"Por humo",o:[["Baja",10],["Media",5],["Alta",0]],h:"¿Se estropean con el humo? <b>Alta:</b> alimentos, ropa, electrónica, documentos. <b>Baja:</b> piezas metálicas, materiales de obra."},
+  {id:"corrosion",t:"Por corrosión",o:[["Baja",10],["Media",5],["Alta",0]],h:"Algunos materiales al arder sueltan gases corrosivos (por ejemplo, el PVC). <b>Alta:</b> equipos electrónicos o maquinaria de precisión que se oxidan con esos gases."},
+  {id:"agua",t:"Por agua",o:[["Baja",10],["Media",5],["Alta",0]],h:"El agua de los bomberos también hace daño. <b>Alta:</b> papel, electrónica, harinas, tejidos. <b>Baja:</b> materiales que no se estropean al mojarse."}]},
+ {g:"Propagabilidad",f:[
+  {id:"vertical",t:"Vertical",o:[["Baja",5],["Media",3],["Alta",0]],h:"Facilidad para que el fuego suba de una planta a otra: escaleras abiertas, huecos, conductos o fachadas combustibles la hacen <b>alta</b>."},
+  {id:"horizontal",t:"Horizontal",o:[["Baja",5],["Media",3],["Alta",0]],h:"Facilidad para que el fuego avance por la misma planta: material almacenado de forma continua y sin separaciones la hace <b>alta</b>; pasillos libres y muros cortafuegos la hacen <b>baja</b>."}]}];
+const MXF=MXG.flatMap(g=>g.f);
+const MY=[
+ {id:"det",t:"Detección automática",cra:true,v:{sin:[0,2],con:[3,4]},h:"Detectores que notan el humo o el calor y hacen sonar la alarma sin que nadie tenga que verlo."},
+ {id:"roc",t:"Rociadores automáticos",cra:true,v:{sin:[5,6],con:[7,8]},h:"Aspersores en el techo que se abren solos con el calor y echan agua sobre el fuego."},
+ {id:"ext",t:"Extintores portátiles",v:{sin:1,con:2},h:"Los extintores de mano para apagar fuegos pequeños al principio."},
+ {id:"bie",t:"Bocas de incendio equipadas (BIE)",v:{sin:2,con:4},h:"Mangueras fijas en armarios rojos conectadas a la red de agua contra incendios."},
+ {id:"hid",t:"Hidrantes exteriores",v:{sin:2,con:4},h:"Tomas de agua en la calle o en el exterior del edificio donde los bomberos conectan sus mangueras."},
+ {id:"epi",t:"Equipo de primera intervención",v:{sin:2,con:2},h:"Trabajadores formados para usar los extintores y dar la alarma en los primeros minutos."},
+ {id:"esi",t:"Equipo de segunda intervención",v:{sin:4,con:4},h:"Brigada más preparada que actúa con BIE y equipos especiales cuando el fuego es mayor."},
+ {id:"pau",t:"Plan de autoprotección y emergencia",v:{sin:2,con:4},h:"Documento que dice qué hacer en una emergencia (quién avisa, quién evacúa, por dónde) y que se practica con simulacros."}];
+const MKEY="evb_meseri_v1";
+function blankM(){return {app:"meseri",v:1,meta:{alumno:"",empresa:"",actividad:"",area:"",direccion:"",desc:""},x:{},obs:{},bomb:{parque:"",km:"",min:""},vig:null,y:{},obsY:"",mej:[],mejVig:false,conclu:""}}
+let SM=store.get(MKEY,null);if(!SM||SM.app!=="meseri")SM=blankM();
+const saveM=()=>store.set(MKEY,SM);
+function yVal(it,has,cra,vig){if(!has)return 0;const t=it.v[vig];return it.cra?t[cra?1:0]:t}
+function calcM(st=SM){const xs=MXF.map(f=>st.x[f.id]);const xOk=xs.every(i=>i!=null);const X=xOk?MXF.reduce((s,f)=>s+f.o[st.x[f.id]][1],0):null;
+ const yOk=st.vig!=null&&MY.every(it=>{const y=st.y[it.id]||{};return y.has!=null&&(!it.cra||!y.has||y.cra!=null)});
+ const Y=yOk?MY.reduce((s,it)=>{const y=st.y[it.id];return s+yVal(it,y.has,y.cra,st.vig)},0):null;
+ const P=X!=null&&Y!=null?5*X/129+5*Y/32:null;return {X,Y,P,xOk,yOk,nx:xs.filter(i=>i!=null).length}}
+function calM(P){return P<3?["Muy alto",4]:P<=5?["Alto",3]:P<=8?["Bajo",2]:["Muy bajo",1]}
+function calcMej(){const c=calcM();if(c.P==null)return null;const vig=SM.mejVig?"con":SM.vig;
+ const Y=MY.reduce((s,it)=>{const y=SM.y[it.id];const prop=SM.mej.includes(it.id);const has=y.has||prop;const cra=prop&&!y.has?true:y.cra;return s+yVal(it,has,cra,vig)},0);
+ return {Y,P:5*c.X/129+5*Y/32,n:SM.mej.length+(SM.mejVig?1:0)}}
+function catBomb(km,min){const c=v=>v==null?null:v<5?0:v<=10?1:v<=15?2:v<=25?3:4;const a=c(num(km)),b=c(num(min));if(a==null&&b==null)return null;return Math.max(a??0,b??0)}
+const RUBM=[
+ {id:"dat",t:"Datos del establecimiento",ce:"RA4·CE g",max:1,d:["Sin datos del establecimiento.","Datos incompletos.","Datos completos con descripción breve.","Datos completos y descripción detallada de la actividad y el edificio."]},
+ {id:"x",t:"Factores de riesgo (X)",ce:"RA4·CE h",max:3,d:["Faltan factores por evaluar.","Factores incompletos u observaciones muy escasas.","Todos los factores evaluados con algunas observaciones.","Todos los factores evaluados y justificados con observaciones en cada grupo."]},
+ {id:"bom",t:"Distancia y acceso de bomberos",ce:"RA4·CE h",max:1,d:["Sin datos del recorrido.","Datos parciales del recorrido.","Parque, distancia y tiempo indicados.","Parque, distancia y tiempo indicados y coherentes con la opción elegida."]},
+ {id:"y",t:"Factores de protección (Y)",ce:"RA4·CE c, h",max:2,d:["Faltan medios de protección por evaluar.","Evaluación incompleta.","Todos los medios evaluados.","Todos los medios evaluados y justificados con observaciones."]},
+ {id:"mej",t:"Propuesta de mejora",ce:"RA4·CE c, i",max:1.5,d:["Sin propuesta de mejora.","Una mejora propuesta.","Varias mejoras propuestas.","Varias mejoras que elevan el valor P y reducen el riesgo."]},
+ {id:"con",t:"Conclusiones",ce:"RA4·CE i",max:1.5,d:["Sin conclusiones.","Conclusiones breves.","Conclusiones con la calificación del riesgo o las mejoras.","Conclusiones desarrolladas con la calificación del riesgo y las mejoras priorizadas."]}];
+function evalM(){const m=SM.meta,c=calcM(),outs=[];
+ {const i=[nz(m.empresa),nz(m.actividad),nz(m.direccion)].map(b=>b?1:0).concat([Math.min(palabras(m.desc)/40,1)]),mj=[];
+  if(!nz(m.empresa)||!nz(m.actividad)||!nz(m.direccion))mj.push("completa el nombre, la actividad y la dirección del establecimiento");if(palabras(m.desc)<40)mj.push("describe con más detalle el edificio y la actividad (al menos 40 palabras)");outs.push({r:avg(i),mj})}
+ {const comp=c.nx/MXF.length,obs=avg(MXG.map((g,i)=>Math.min(palabras(SM.obs[i])/10,1)));let r=avg([comp,obs]);if(comp<1)r=Math.min(r,.59);const mj=[];
+  if(comp<1)mj.push(`evalúa los ${MXF.length-c.nx} factores de riesgo que faltan`);const so=MXG.filter((g,i)=>palabras(SM.obs[i])<10).map(g=>g.g.toLowerCase());if(so.length)mj.push("añade observaciones en: "+so.join(", "));outs.push({r,mj})}
+ {const b=SM.bomb,sug=catBomb(b.km,b.min),i=[nz(b.parque)?1:0,num(b.km)!=null&&num(b.min)!=null?1:0,sug!=null&&SM.x.bomberos===sug?1:0],mj=[];
+  if(!nz(b.parque))mj.push("indica el parque de bomberos de referencia");if(!i[1])mj.push("anota los km y minutos del recorrido de Google Maps");if(i[1]&&SM.x.bomberos!==sug)mj.push("ajusta la opción de distancia de bomberos a los km y minutos calculados");outs.push({r:avg(i),mj})}
+ {const def=[SM.vig!=null?1:0,...MY.map(it=>{const y=SM.y[it.id]||{};return y.has!=null&&(!it.cra||!y.has||y.cra!=null)?1:0})];const comp=avg(def);let r=avg([comp,Math.min(palabras(SM.obsY)/15,1)]);if(comp<1)r=Math.min(r,.59);const mj=[];
+  if(comp<1)mj.push("indica la vigilancia humana y si existe cada medio de protección");if(palabras(SM.obsY)<15)mj.push("justifica los medios de protección en las observaciones");outs.push({r,mj})}
+ {const mm=calcMej(),mj=[];let r=0;if(c.P!=null){if(c.P>8&&!mm.n)r=1;else r=mm.n>=2&&mm.P>c.P?1:mm.n>=2?.75:mm.n===1?.5:0}
+  if(c.P==null)mj.push("completa los factores para calcular el valor del riesgo");else if(r<1)mj.push("propón al menos dos medidas de protección que mejoren el valor P");outs.push({r,mj})}
+ {const t=SM.conclu,kw=[/riesgo|calificaci|valor p|\bp\b/i,/mejora|medida|propon|instala|implant/i].map(x=>x.test(t)?1:0),mj=[];const r=nz(t)?avg([Math.min(palabras(t)/80,1),avg(kw)]):0;
+  if(palabras(t)<80)mj.push("desarrolla las conclusiones (al menos 80 palabras)");if(!kw[0])mj.push("indica en las conclusiones la calificación del riesgo");if(!kw[1])mj.push("explica qué mejoras propones y por qué");outs.push({r,mj})}
+ return evalRub(RUBM,outs)}
+function introM(){const c=calcM();if(c.P==null)return "No se ha podido calcular el valor del riesgo porque faltan factores por evaluar.";const [cal]=calM(c.P);
+ return `Valor del riesgo P = ${fmt(c.P)} (${cal}). ${c.P>5?"Con el criterio habitual del método (P > 5) el riesgo se considera aceptable.":"Con el criterio habitual del método (P > 5) el riesgo no se considera aceptable y requiere medidas."}`}
+
+function renderMeseri(){const b=$("#mesBody"),m=SM.meta;
+ const sel=f=>`<div class="crit"><div class="crit-h"><label for="mx-${f.id}">${f.t}</label>${infoBtn("m-"+f.id)}</div>
+  <div class="help" id="help-m-${f.id}" hidden>${f.h}<p class="small muted">Puntos de cada opción: ${f.o.map(o=>`${esc(o[0])} = ${o[1]}`).join(" · ")}.</p></div>
+  <select id="mx-${f.id}" data-mx="${f.id}" class="${SM.x[f.id]==null?"pend":""}"><option value="">— Sin selección —</option>${f.o.map((o,i)=>`<option value="${i}" ${SM.x[f.id]===i?"selected":""}>${esc(o[0])} · ${o[1]} pts</option>`).join("")}</select>
+  ${f.id==="bomberos"?`<div class="bomb"><div class="grid3">
+   <label class="f" for="mb-parque">Parque de bomberos<input type="text" id="mb-parque" data-mb="parque" value="${esc(SM.bomb.parque)}" placeholder="Nombre o dirección del parque"></label>
+   <label class="f" for="mb-km">Distancia (km)<input type="text" inputmode="decimal" id="mb-km" data-mb="km" value="${esc(SM.bomb.km)}"></label>
+   <label class="f" for="mb-min">Tiempo (min)<input type="text" inputmode="decimal" id="mb-min" data-mb="min" value="${esc(SM.bomb.min)}"></label></div>
+   <div class="btns"><a class="btn ghost sm" id="mbBuscar" target="_blank" rel="noopener">Buscar parques cercanos en Google Maps</a><a class="btn ghost sm" id="mbRuta" target="_blank" rel="noopener">Ver recorrido en Google Maps</a></div>
+   <p class="small" id="mbSug"></p></div>`:""}
+  ${f.id==="carga"?`<p class="small" id="mcSug"></p>`:""}</div>`;
+ b.innerHTML=`<div class="panel"><div class="intro"><p class="eyebrow">Método de evaluación del riesgo de incendio</p><h2>Método MESERI</h2>
+  <p class="muted">MESERI valora el riesgo de incendio de un edificio con dos grupos de factores: los que aumentan el riesgo (X, hasta 129 puntos) y los medios de protección (Y, hasta 32 puntos). El resultado es un valor P entre 0 y 10: cuanto más alto, menor es el riesgo. Pulsa <span class="ib-inline">i</span> para ver la ayuda de cada criterio.</p>
+  <div class="ra"><span>RA4·CE c</span><span>RA4·CE g</span><span>RA4·CE h</span><span>RA4·CE i</span></div></div></div>
+ <section class="panel"><h3>Paso 1 · Datos del establecimiento</h3><div class="grid2">
+  <label class="f" for="mm-alumno">Alumno/a o grupo<input type="text" id="mm-alumno" data-mm="alumno" value="${esc(m.alumno)}"></label>
+  <label class="f" for="mm-empresa">Empresa o establecimiento<input type="text" id="mm-empresa" data-mm="empresa" value="${esc(m.empresa)}"></label>
+  <label class="f" for="mm-actividad">Actividad<input type="text" id="mm-actividad" data-mm="actividad" value="${esc(m.actividad)}" placeholder="Almacén de cartón, taller, hotel…"></label>
+  <label class="f" for="mm-area">Área o sector evaluado<input type="text" id="mm-area" data-mm="area" value="${esc(m.area)}"></label></div>
+  <label class="f" for="mm-direccion">Dirección del establecimiento <small>Se usa para calcular el recorrido de los bomberos en Google Maps.</small><input type="text" id="mm-direccion" data-mm="direccion" value="${esc(m.direccion)}" placeholder="Calle, número, municipio, isla"></label>
+  <label class="f" for="mm-desc">Descripción del edificio y la actividad <small>Mínimo recomendado: 40 palabras.</small><textarea id="mm-desc" data-mm="desc">${esc(m.desc)}</textarea></label></section>
+ <section class="panel"><h3>Paso 2 · Factores de riesgo (X) <span class="cnt" id="mxCnt"></span></h3>
+  ${MXG.map((g,gi)=>`<fieldset><legend>${g.g}</legend><div class="crits">${g.f.map(sel).join("")}</div>
+   <label class="f" for="mo-${gi}">Observaciones de ${g.g.toLowerCase()} <small>Explica por qué has elegido esas opciones.</small><textarea id="mo-${gi}" data-mo="${gi}" rows="2">${esc(SM.obs[gi]||"")}</textarea></label></fieldset>`).join("")}</section>
+ <section class="panel"><h3>Paso 3 · Factores de protección (Y)</h3>
+  <div class="crit"><div class="crit-h"><label for="my-vig">Vigilancia humana</label>${infoBtn("m-vig")}</div>
+   <div class="help" id="help-m-vig" hidden>Hay vigilancia humana cuando siempre hay alguien en el establecimiento (vigilantes o turnos) que puede descubrir el fuego y avisar. Con vigilancia, los medios de protección valen más puntos. <b>CRA</b> es la Central Receptora de Alarmas: una empresa que recibe la señal de los detectores y avisa a los bomberos.</div>
+   <select id="my-vig" class="${SM.vig==null?"pend":""}"><option value="">— Sin selección —</option><option value="sin" ${SM.vig==="sin"?"selected":""}>Sin vigilancia humana</option><option value="con" ${SM.vig==="con"?"selected":""}>Con vigilancia humana</option></select></div>
+  <div class="tbl"><table class="ytab"><thead><tr><th>Medio de protección</th><th>¿Existe?</th><th>Conectado a CRA</th><th style="text-align:right">Puntos</th></tr></thead><tbody>
+  ${MY.map(it=>{const y=SM.y[it.id]||{};return `<tr><td><div class="crit-h"><span>${it.t}</span>${infoBtn("y-"+it.id)}</div><div class="help" id="help-y-${it.id}" hidden>${it.h}<p class="small muted">Puntos sin vigilancia: ${it.cra?`${it.v.sin[0]} sin CRA, ${it.v.sin[1]} con CRA`:it.v.sin} · con vigilancia: ${it.cra?`${it.v.con[0]} sin CRA, ${it.v.con[1]} con CRA`:it.v.con}.</p></div></td>
+   <td><select data-yh="${it.id}" aria-label="¿Existe ${esc(it.t)}?" class="${y.has==null?"pend":""}"><option value="">— Sin selección —</option><option value="0" ${y.has===false?"selected":""}>No</option><option value="1" ${y.has===true?"selected":""}>Sí</option></select></td>
+   <td>${it.cra?`<select data-yc="${it.id}" aria-label="${esc(it.t)} conectado a CRA" ${y.has?"":"disabled"}><option value="">— Sin selección —</option><option value="0" ${y.cra===false?"selected":""}>No</option><option value="1" ${y.cra===true?"selected":""}>Sí</option></select>`:`<span class="muted small">No aplica</span>`}</td>
+   <td class="num" data-yp="${it.id}"></td></tr>`}).join("")}</tbody></table></div>
+  <label class="f" for="mo-y">Observaciones de los medios de protección<textarea id="mo-y" rows="2">${esc(SM.obsY)}</textarea></label></section>
+ <section class="panel"><h3>Paso 4 · Resultado</h3><div id="mRes"></div></section>
+ <section class="panel"><h3>Paso 5 · Propuesta de mejora</h3><p class="muted small">Marca las medidas de protección que propondrías. La app recalcula el valor P como si ya estuvieran instaladas (detectores y rociadores conectados a CRA).</p><div id="mMej"></div></section>
+ <section class="panel"><h3>Paso 6 · Conclusiones</h3><label class="f" for="m-conclu">Conclusiones <small>Calificación del riesgo, puntos débiles y mejoras priorizadas. Mínimo recomendado: 80 palabras.</small><textarea id="m-conclu" style="min-height:7rem">${esc(SM.conclu)}</textarea></label></section>
+ <section class="panel"><div class="intro"><p class="eyebrow">Autoevaluación</p><h3>Valoración según la rúbrica</h3><p class="muted small">Se recalcula mientras trabajas. Es una propuesta orientativa; la nota final la pone tu profesor.</p></div><div id="mRub" aria-live="polite"></div></section>`;
+ bindHelp(b);
+ b.querySelectorAll("[data-mm]").forEach(el=>el.oninput=()=>{SM.meta[el.dataset.mm]=el.value;saveM();updM()});
+ b.querySelectorAll("[data-mx]").forEach(el=>el.onchange=()=>{SM.x[el.dataset.mx]=el.value===""?null:+el.value;el.classList.toggle("pend",el.value==="");saveM();updM()});
+ b.querySelectorAll("[data-mo]").forEach(el=>el.oninput=()=>{SM.obs[el.dataset.mo]=el.value;saveM();updM()});
+ b.querySelectorAll("[data-mb]").forEach(el=>el.oninput=()=>{SM.bomb[el.dataset.mb]=el.value;saveM();updM()});
+ $("#my-vig").onchange=e=>{SM.vig=e.target.value||null;e.target.classList.toggle("pend",!SM.vig);saveM();updM()};
+ b.querySelectorAll("[data-yh]").forEach(el=>el.onchange=()=>{const id=el.dataset.yh,y=SM.y[id]||(SM.y[id]={});y.has=el.value===""?null:el.value==="1";if(!y.has)y.cra=null;el.classList.toggle("pend",el.value==="");const c=b.querySelector(`[data-yc="${id}"]`);if(c){c.disabled=!y.has;if(!y.has)c.value=""}SM.mej=SM.mej.filter(x=>!(x===id&&y.has));saveM();updM()});
+ b.querySelectorAll("[data-yc]").forEach(el=>el.onchange=()=>{const y=SM.y[el.dataset.yc]||(SM.y[el.dataset.yc]={});y.cra=el.value===""?null:el.value==="1";saveM();updM()});
+ $("#mo-y").oninput=e=>{SM.obsY=e.target.value;saveM();updM()};
+ $("#m-conclu").oninput=e=>{SM.conclu=e.target.value;saveM();updM()};
+ updM()}
+function updM(){const c=calcM(),b=$("#mesBody");if(!b||!$("#mRes"))return;
+ $("#mxCnt").textContent=`${c.nx} de ${MXF.length} factores evaluados`;
+ MY.forEach(it=>{const y=SM.y[it.id]||{},el=b.querySelector(`[data-yp="${it.id}"]`);if(!el)return;const c2=b.querySelector(`[data-yc="${it.id}"]`);if(c2)c2.classList.toggle("pend",!!y.has&&y.cra==null);
+  el.textContent=SM.vig&&y.has!=null&&(!it.cra||!y.has||y.cra!=null)?yVal(it,y.has,y.cra,SM.vig):"—"});
+ const dir=SM.meta.direccion,pq=SM.bomb.parque,lb=$("#mbBuscar"),lr=$("#mbRuta");
+ if(lb){lb.href="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent("parque de bomberos cerca de "+(dir||"Canarias"));
+  lr.href=pq&&dir?`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(pq)}&destination=${encodeURIComponent(dir)}&travelmode=driving`:"https://www.google.com/maps/dir/";
+  lr.classList.toggle("off",!(pq&&dir));lr.title=pq&&dir?"Abre el recorrido en una pestaña nueva":"Escribe el parque y la dirección del establecimiento"}
+ const sug=catBomb(SM.bomb.km,SM.bomb.min),ms=$("#mbSug");
+ if(ms)ms.innerHTML=sug==null?`<span class="muted">Anota los km y los minutos que te da Google Maps para comprobar la opción correcta.</span>`:SM.x.bomberos===sug?`<span class="okc">✓ La opción elegida coincide con tu recorrido.</span>`:`Con ${esc(SM.bomb.km||"—")} km y ${esc(SM.bomb.min||"—")} min corresponde: <b>${esc(MXF.find(f=>f.id==="bomberos").o[sug][0])}</b>. <button type="button" class="btn ghost sm" id="mbApl">Aplicar</button>`;
+ const ap=$("#mbApl");if(ap)ap.onclick=()=>{SM.x.bomberos=sug;const s=$("#mx-bomberos");s.value=String(sug);s.classList.remove("pend");saveM();updM()};
+ const cq=calcF(),mc=$("#mcSug");if(mc){if(cq.Qs!=null){const idx=cq.Qs<1000?0:cq.Qs<=2000?1:cq.Qs<=5000?2:3;mc.innerHTML=SM.x.carga===idx?`<span class="okc">✓ Coincide con tu cálculo de carga de fuego (Qs = ${fmt0(cq.Qs)} MJ/m²).</span>`:`Tu cálculo en «Carga de Fuego Ponderada» da Qs = ${fmt0(cq.Qs)} MJ/m². <button type="button" class="btn ghost sm" id="mcApl">Usar este valor</button>`;
+   const a2=$("#mcApl");if(a2)a2.onclick=()=>{SM.x.carga=idx;const s=$("#mx-carga");s.value=String(idx);s.classList.remove("pend");saveM();updM()}}else mc.innerHTML=`<span class="muted">Si calculas la carga de fuego en su pestaña, aquí podrás usar el resultado.</span>`}
+ if(c.P==null){$("#mRes").innerHTML=`<p class="muted">Faltan datos: ${c.xOk?"":`${MXF.length-c.nx} factores de riesgo`}${!c.xOk&&!c.yOk?" y ":""}${c.yOk?"":"la vigilancia humana o algún medio de protección"}.</p>`}
+ else{const [cal,lv]=calM(c.P);const pct=Math.max(0,Math.min(100,c.P*10));
+  const debiles=MXF.filter(f=>f.o[SM.x[f.id]][1]===0).map(f=>f.t.toLowerCase());const faltan=MY.filter(it=>!SM.y[it.id].has).map(it=>it.t.toLowerCase());
+  $("#mRes").innerHTML=`<div class="resgrid"><div class="big"><span class="small muted">Valor del riesgo</span><b class="mono">P = ${fmt(c.P)}</b><span class="lvl b${lv}">${cal}</span></div>
+   <div><p class="mono">P = 5·X / 129 + 5·Y / 32</p><p class="mono">P = 5·${c.X} / 129 + 5·${c.Y} / 32 = ${fmt(5*c.X/129)} + ${fmt(5*c.Y/32)} = <b>${fmt(c.P)}</b></p>
+   <p class="small">X (riesgo) = <b>${c.X}</b> de 129 · Y (protección) = <b>${c.Y}</b> de 32</p>
+   <div class="pbar" role="img" aria-label="Valor P ${fmt(c.P)} sobre 10"><i style="left:calc(${pct}% - 1px)"></i><span style="left:30%">3</span><span style="left:50%">5</span><span style="left:80%">8</span></div>
+   <p class="small muted">Inferior a 3: muy alto · 3 a 5: alto · 5 a 8: bajo · superior a 8: muy bajo. Se suele considerar aceptable un valor de P superior a 5.</p></div></div>
+   ${debiles.length?`<p class="small"><b>Factores con 0 puntos:</b> ${esc(debiles.join(", "))}.</p>`:""}${faltan.length?`<p class="small"><b>Medios de protección que faltan:</b> ${esc(faltan.join(", "))}.</p>`:""}`}
+ const mj=$("#mMej");if(c.P==null){mj.innerHTML=`<p class="muted">Completa los factores para poder simular mejoras.</p>`}
+ else{const aus=MY.filter(it=>!SM.y[it.id].has);const mm=calcMej();
+  mj.innerHTML=`<div class="checks">${aus.map(it=>`<label class="chk"><input type="checkbox" data-mej="${it.id}" ${SM.mej.includes(it.id)?"checked":""}><span>Instalar o implantar: ${esc(it.t)}</span></label>`).join("")}${SM.vig==="sin"?`<label class="chk"><input type="checkbox" id="mejVig" ${SM.mejVig?"checked":""}><span>Implantar vigilancia humana permanente</span></label>`:""}</div>
+   ${!aus.length&&SM.vig!=="sin"?`<p class="muted small">Ya existen todos los medios de protección del método.</p>`:""}
+   ${mm.n?`<div class="result"><span>Con las mejoras: Y = <b class="mono">${mm.Y}</b> · P = <b class="mono">${fmt(mm.P)}</b></span><span class="lvl b${calM(mm.P)[1]}">${calM(mm.P)[0]}</span><span class="small">Antes: P = ${fmt(c.P)} (${calM(c.P)[0]})</span></div>`:""}`;
+  mj.querySelectorAll("[data-mej]").forEach(el=>el.onchange=()=>{const id=el.dataset.mej;SM.mej=el.checked?[...new Set([...SM.mej,id])]:SM.mej.filter(x=>x!==id);saveM();updM()});
+  const mv=$("#mejVig");if(mv)mv.onchange=()=>{SM.mejVig=mv.checked;saveM();updM()}}
+ $("#mRub").innerHTML=rubHTML(evalM(),introM())}
+async function pdfMeseri(){const c=calcM();if(c.P==null){toast("Antes de descargar: completa todos los factores para calcular el valor P");return}
+ const k=await pdfKit("Método MESERI"),m=SM.meta,v=evalM(),[cal,lv]=calM(c.P),mm=calcMej();
+ k.table({theme:"plain",styles:{fontSize:10,cellPadding:1.2,textColor:C.ink},columnStyles:{0:{fontStyle:"bold",cellWidth:46,textColor:C.muted}},
+  body:[["Alumno/a o grupo",m.alumno||"[sin indicar]"],["Establecimiento",m.empresa||"[sin indicar]"],["Actividad",m.actividad||"[sin indicar]"],["Área evaluada",m.area||"[sin indicar]"],["Dirección",m.direccion||"[sin indicar]"],["Fecha",new Date().toLocaleDateString("es-ES")]].map(r=>r.map(pdfTxt))});
+ k.nota("Nota propuesta según rúbrica (pendiente de revisión docente)",v.total.toFixed(1).replace(".",",")+" / 10");
+ k.h2(1,"Descripción del establecimiento");k.para(m.desc||"[Pendiente de completar]");
+ k.h2(2,"Factores de riesgo (X)");
+ k.table({head:[["Grupo","Factor","Opción elegida","Puntos"]],body:MXG.flatMap(g=>g.f.map((f,i)=>[i===0?{content:pdfTxt(g.g),rowSpan:g.f.length,styles:{fontStyle:"bold",valign:"top"}}:null,pdfTxt(f.t),pdfTxt(f.o[SM.x[f.id]][0]),{content:String(f.o[SM.x[f.id]][1]),styles:{halign:"right"}}].filter(x=>x!==null))).concat([[{content:"SUBTOTAL X (máximo 129)",colSpan:3,styles:{fontStyle:"bold",halign:"right"}},{content:String(c.X),styles:{fontStyle:"bold",halign:"right"}}]]),columnStyles:{0:{cellWidth:30},3:{cellWidth:18}}});
+ const obsX=MXG.map((g,i)=>[g.g,SM.obs[i]]).filter(x=>nz(x[1]));if(obsX.length)k.table({head:[["Grupo","Observaciones"]],body:obsX.map(x=>x.map(pdfTxt)),columnStyles:{0:{cellWidth:34,fontStyle:"bold"}}});
+ k.para(`Parque de bomberos: ${SM.bomb.parque||"[sin indicar]"} · Distancia: ${SM.bomb.km||"—"} km · Tiempo: ${SM.bomb.min||"—"} min.`,{size:9});
+ if(nz(SM.bomb.parque)&&nz(m.direccion))k.link("Recorrido en Google Maps",`https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(SM.bomb.parque)}&destination=${encodeURIComponent(m.direccion)}&travelmode=driving`);
+ k.h2(3,"Factores de protección (Y)");k.para(SM.vig==="con"?"Con vigilancia humana.":"Sin vigilancia humana.",{size:9,color:C.muted});
+ k.table({head:[["Medio de protección","Existe","CRA","Puntos"]],body:MY.map(it=>{const y=SM.y[it.id];return [pdfTxt(it.t),y.has?"Sí":"No",it.cra?(y.has?(y.cra?"Sí":"No"):"-"):"No aplica",{content:String(yVal(it,y.has,y.cra,SM.vig)),styles:{halign:"right"}}]}).concat([[{content:"SUBTOTAL Y (máximo 32)",colSpan:3,styles:{fontStyle:"bold",halign:"right"}},{content:String(c.Y),styles:{fontStyle:"bold",halign:"right"}}]]),columnStyles:{1:{cellWidth:18},2:{cellWidth:22},3:{cellWidth:18}}});
+ if(nz(SM.obsY))k.para("Observaciones: "+SM.obsY,{size:9});
+ k.h2(4,"Resultado");k.para("P = 5·X / 129 + 5·Y / 32",{bold:true});k.para(`P = 5·${c.X} / 129 + 5·${c.Y} / 32 = ${fmt(5*c.X/129)} + ${fmt(5*c.Y/32)} = ${fmt(c.P)}`);
+ k.table({head:[["Valor del riesgo P","Calificación","Aceptable (P > 5)"]],body:[[fmt(c.P),k.cell(C.lv[lv-1],cal),c.P>5?"Sí":"No"]]});
+ k.para("Tabla de resultados: inferior a 3 muy alto; entre 3 y 5 alto; entre 5 y 8 bajo; superior a 8 muy bajo.",{size:8.5,color:C.muted});
+ k.h2(5,"Propuesta de mejora");
+ if(mm.n){k.need(40);k.table({head:[["Medidas propuestas"]],body:[...SM.mej.map(id=>[pdfTxt(MY.find(x=>x.id===id).t)]),...(SM.mejVig?[["Vigilancia humana permanente"]]:[])]});k.table({head:[["","Y","P","Calificación"]],body:[["Situación actual",String(c.Y),fmt(c.P),k.cell(C.lv[lv-1],cal)],["Con las mejoras",String(mm.Y),fmt(mm.P),k.cell(C.lv[calM(mm.P)[1]-1],calM(mm.P)[0])]]})}
+ else k.para("No se han propuesto mejoras.");
+ k.h2(6,"Conclusiones");k.para(SM.conclu||"[Pendiente de completar]");
+ k.rubrica(7,v,introM());k.save(m.alumno,"meseri")}
+
+/* ======================================================================
+   CARGA DE FUEGO PONDERADA Y CORREGIDA (RSCIEI, RD 2267/2004, Anexo I)
+   ====================================================================== */
+/* Valores orientativos de la Tabla 1.2 (qs en MJ/m² para producción o venta; qv en MJ/m³ para almacenamiento) */
+const ACTS=[["Talleres mecánicos",200,null,1.0],["Reparación de automóviles",300,null,1.0],["Imprentas, taller tipográfico",300,null,1.5],["Textiles, confección",300,null,1.0],
+ ["Muebles de madera",500,800,1.5],["Oficinas técnicas",600,null,1.0],["Laboratorios químicos",500,null,1.5],["Panaderías industriales",1000,null,1.5],["Bodegas de vino",80,null,1.0],
+ ["Carnicerías (venta)",40,null,1.0],["Aparatos electrónicos",400,400,1.0],["Cartón",300,4200,1.5],["Madera en vigas y tablas",null,4200,1.5],["Materiales sintéticos",null,5900,2.0],["Papel viejo o a granel",null,8400,2.0]];
+/* Tabla 1.4: poder calorífico qi (MJ/kg) y Ci orientativo */
+const MATS=[["Madera",16.7,1.0],["Papel",16.7,1.0],["Cartón",16.7,1.0],["Azúcar",16.7,1.0],["Harina de trigo",16.7,1.0],["Polietileno",42,1.0],["Poliestireno",42,1.0],["Caucho",42,1.0],
+ ["Aceite mineral",42,1.0],["Gasóleo",42,1.3],["Bencina (gasolina)",42,1.6],["Alcohol etílico",25.1,1.6],["PVC (cloruro de polivinilo)",21,1.0],["Lana",21,1.0],["Cuero",21,1.0]];
+const NRI=[[425,"Bajo",1],[850,"Bajo",2],[1275,"Medio",3],[1700,"Medio",4],[3400,"Medio",5],[6800,"Alto",6],[13600,"Alto",7],[Infinity,"Alto",8]];
+const nriDe=q=>{const i=NRI.findIndex(r=>q<=r[0]);return {i,txt:`${NRI[i][1]} ${NRI[i][2]}`,lv:i<2?1:i<4?2:i<5?3:4}};
+const TIPOS_CONF=[["A","Tipo A","Ocupa una parte de un edificio en el que hay otros establecimientos (por ejemplo, un local en un edificio con otras empresas)."],
+ ["B","Tipo B","Ocupa todo un edificio que está pegado a otro o a 3 m o menos de otro edificio."],
+ ["C","Tipo C","Ocupa uno o varios edificios separados más de 3 m de cualquier otro, sin nada que pueda arder en medio."],
+ ["D","Tipo D","Ocupa un espacio abierto, que puede estar cubierto del todo, con alguna fachada sin pared."],
+ ["E","Tipo E","Ocupa un espacio abierto cubierto como máximo en la mitad de su superficie, con alguna fachada sin pared en la parte cubierta."]];
+const MET={
+ prod:{t:"Producción, transformación o venta",f:"Qs = ( Σ qsi · Si · Ci / A ) · Ra",d:"Para talleres, fábricas, tiendas u oficinas. Usas la carga de fuego por metro cuadrado (qs) de cada zona, que viene en la Tabla 1.2 del reglamento según la actividad.",cols:[["q","qsi (MJ/m²)"],["s","Si (m²)"]]},
+ alm:{t:"Almacenamiento",f:"Qs = ( Σ qvi · Ci · hi · si / A ) · Ra",d:"Para almacenes. Usas la carga de fuego por metro cúbico (qv) de cada producto almacenado, la altura de las pilas o estanterías (h) y la superficie que ocupan en el suelo (s).",cols:[["q","qvi (MJ/m³)"],["h","hi (m)"],["s","si (m²)"]]},
+ gen:{t:"Método general (por masas)",f:"Qs = ( Σ Gi · qi · Ci / A ) · Ra",d:"Cuando sabes cuántos kilos hay de cada material. Multiplicas los kilos (G) por el calor que da cada kilo al arder (q, Tabla 1.4).",cols:[["G","Gi (kg)"],["q","qi (MJ/kg)"]]}};
+const FKEY="evb_cf_v1";
+function blankF(){return {app:"cargafuego",v:1,meta:{alumno:"",empresa:"",actividad:"",direccion:"",tipo:"",A:"",desc:""},met:"",metJust:"",rows:[],ra:null,raJust:"",conclu:""}}
+let SF=store.get(FKEY,null);if(!SF||SF.app!=="cargafuego")SF=blankF();
+const saveF=()=>store.set(FKEY,SF);
+const newRow=()=>({n:"",cat:"",q:"",s:"",h:"",G:"",ci:""});
+function rowOk(r,met){return num(r.ci)!=null&&MET[met].cols.every(([k])=>num(r[k])!=null&&num(r[k])>0)}
+function termF(r,met){const ci=num(r.ci);if(!rowOk(r,met))return null;return met==="prod"?num(r.q)*num(r.s)*ci:met==="alm"?num(r.q)*ci*num(r.h)*num(r.s):num(r.G)*num(r.q)*ci}
+function raSug(st=SF){if(st.met==="gen")return null;const A=num(st.meta.A);if(!A)return null;const c=st.rows.filter(r=>r.cat!==""&&num(r.s)!=null&&num(r.s)>=.1*A).map(r=>ACTS[+r.cat][3]);return c.length?Math.max(...c):null}
+function calcF(st=SF){const A=num(st.meta.A),met=st.met;if(!met||!(A>0)||!st.rows.length)return {Qs:null};
+ const terms=st.rows.map(r=>termF(r,met));if(terms.some(t=>t==null)||st.ra==null)return {Qs:null,terms};
+ const sum=terms.reduce((a,b)=>a+b,0);const Qs=sum/A*st.ra;return {Qs,sum,A,ra:st.ra,terms,nri:nriDe(Qs)}}
+const EJ={
+ prod:{meta:{empresa:"Ejemplo: taller de reparación de coches",actividad:"Reparación de automóviles con oficina",tipo:"C",A:"400"},ra:1,rows:[{n:"Zona de taller",cat:"1",q:"300",s:"300",ci:"1"},{n:"Oficina",cat:"5",q:"600",s:"100",ci:"1"}],
+  txt:`Un taller de coches de <b>400 m²</b> tiene dos zonas: el taller (300 m², qs = 300 MJ/m²) y una oficina (100 m², qs = 600 MJ/m²). Todo son sólidos que arden por encima de 200 °C, así que Ci = 1,0.<br>
+  1) Multiplica cada zona: 300 × 300 × 1,0 = 90.000 y 600 × 100 × 1,0 = 60.000.<br>2) Suma: 90.000 + 60.000 = 150.000.<br>3) Divide entre la superficie: 150.000 / 400 = 375.<br>4) Multiplica por Ra. Las dos zonas ocupan más del 10 % y las dos tienen Ra = 1,0: 375 × 1,0 = <b>375 MJ/m²</b>.<br>5) 375 es menor que 425, así que el nivel de riesgo intrínseco es <b>Bajo 1</b>.`},
+ alm:{meta:{empresa:"Ejemplo: almacén de cartón y madera",actividad:"Almacenamiento de cartón y madera",tipo:"B",A:"600"},ra:1.5,rows:[{n:"Estanterías de cartón",cat:"11",q:"4200",h:"3",s:"150",ci:"1"},{n:"Pilas de tablas",cat:"12",q:"4200",h:"2",s:"50",ci:"1"}],
+  txt:`Un almacén de <b>600 m²</b> guarda cartón en estanterías de 3 m de alto que ocupan 150 m² del suelo, y tablas de madera en pilas de 2 m que ocupan 50 m². Para los dos, qv = 4.200 MJ/m³ y Ci = 1,0.<br>
+  1) Multiplica cada zona: 4.200 × 1,0 × 3 × 150 = 1.890.000 y 4.200 × 1,0 × 2 × 50 = 420.000.<br>2) Suma: 2.310.000.<br>3) Divide entre la superficie: 2.310.000 / 600 = 3.850.<br>4) Multiplica por Ra. El cartón ocupa el 25 % del almacén y tiene Ra = 1,5: 3.850 × 1,5 = <b>5.775 MJ/m²</b>.<br>5) Está entre 3.400 y 6.800, así que el nivel es <b>Alto 6</b>.`},
+ gen:{meta:{empresa:"Ejemplo: almacén de una fábrica de muebles",actividad:"Almacén de muebles de madera",tipo:"C",A:"200"},ra:1.5,rows:[{n:"Muebles y tableros",cat:"0",G:"3000",q:"16.7",ci:"1"},{n:"Plástico de embalar",cat:"5",G:"500",q:"42",ci:"1"},{n:"Alcohol para barnices",cat:"11",G:"100",q:"25.1",ci:"1.6"}],
+  txt:`Un almacén de <b>200 m²</b> guarda 3.000 kg de madera (q = 16,7 MJ/kg), 500 kg de plástico de embalar (polietileno, q = 42 MJ/kg) y 100 kg de alcohol (q = 25,1 MJ/kg). El alcohol es un líquido muy inflamable, así que su Ci = 1,6; los demás tienen Ci = 1,0.<br>
+  1) Multiplica cada material: 3.000 × 16,7 × 1,0 = 50.100; 500 × 42 × 1,0 = 21.000; 100 × 25,1 × 1,6 = 4.016.<br>2) Suma: 75.116.<br>3) Divide entre la superficie: 75.116 / 200 = 375,6.<br>4) Multiplica por Ra (almacén de muebles de madera, Ra = 1,5): 375,6 × 1,5 = <b>563 MJ/m²</b>.<br>5) Está entre 425 y 850, así que el nivel es <b>Bajo 2</b>.`}};
+const RUBF=[
+ {id:"dat",t:"Datos del establecimiento",ce:"RA2·CE a · RA4·CE c",max:1.5,d:["Sin datos del establecimiento.","Datos incompletos.","Datos, configuración y superficie indicados.","Datos completos, configuración y superficie indicadas y descripción detallada."]},
+ {id:"met",t:"Elección del método",ce:"RA2·CE a",max:1,d:["Sin método elegido.","Método elegido sin justificar.","Método elegido con una justificación breve.","Método adecuado y bien justificado."]},
+ {id:"dc",t:"Datos de cálculo",ce:"RA2·CE a, c",max:3,d:["Sin datos de zonas o materiales.","Datos incompletos o una sola zona.","Datos completos de varias zonas o materiales.","Datos completos, coherentes con la superficie y con cada zona identificada."]},
+ {id:"coef",t:"Coeficientes Ci y Ra",ce:"RA2·CE a, c",max:1.5,d:["Coeficientes sin asignar.","Coeficientes asignados sin justificar.","Coeficientes asignados con justificación breve.","Ci y Ra asignados, coherentes con la Tabla 1.2 y justificados."]},
+ {id:"res",t:"Resultado y nivel de riesgo",ce:"RA2·CE c",max:1,d:["Sin resultado.","Resultado incompleto.","Resultado calculado.","Resultado calculado e interpretado con el nivel de riesgo intrínseco."]},
+ {id:"con",t:"Conclusiones",ce:"RA4·CE a, b, c",max:2,d:["Sin conclusiones.","Conclusiones breves.","Conclusiones con el nivel de riesgo o con medidas.","Conclusiones desarrolladas con el nivel de riesgo y medidas para reducir la carga de fuego."]}];
+function evalF(){const m=SF.meta,c=calcF(),outs=[];
+ {const i=[nz(m.empresa),nz(m.actividad),nz(m.tipo),num(m.A)>0].map(b=>b?1:0).concat([Math.min(palabras(m.desc)/40,1)]),mj=[];
+  if(!nz(m.tipo))mj.push("indica la configuración del establecimiento (tipo A a E)");if(!(num(m.A)>0))mj.push("indica la superficie del sector");if(palabras(m.desc)<40)mj.push("describe el establecimiento con más detalle (al menos 40 palabras)");outs.push({r:avg(i),mj})}
+ {const mj=[];const r=!SF.met?0:avg([1,Math.min(palabras(SF.metJust)/15,1)]);if(!SF.met)mj.push("elige el método de cálculo");else if(palabras(SF.metJust)<15)mj.push("justifica por qué eliges ese método");outs.push({r,mj})}
+ {const mj=[];let r=0;if(SF.met&&SF.rows.length){const ok=SF.rows.filter(x=>rowOk(x,SF.met)).length/SF.rows.length,nom=SF.rows.filter(x=>nz(x.n)).length/SF.rows.length,var2=SF.rows.length>=2?1:.5;
+   const A=num(m.A);let coh=1;if(SF.met!=="gen"&&A>0){const ss=SF.rows.reduce((a,x)=>a+(num(x.s)||0),0);if(ss>A*1.001)coh=0}
+   r=avg([ok,nom,var2,coh]);if(ok<1)r=Math.min(r,.59);if(ok<1)mj.push("completa todos los datos de cada zona o material");if(nom<1)mj.push("pon nombre a cada zona o material");if(SF.rows.length<2)mj.push("incluye al menos dos zonas o materiales");if(!coh)mj.push("la suma de superficies de las zonas no puede superar la superficie del sector")}
+  else mj.push("añade las zonas o materiales del sector");outs.push({r,mj})}
+ {const mj=[];const ciOk=SF.rows.length&&SF.rows.every(x=>num(x.ci)!=null)?1:0,raOk=SF.ra!=null?1:0,sug=raSug(),coh=sug==null||SF.ra===sug?1:0;let r=avg([ciOk,raOk,Math.min(palabras(SF.raJust)/15,1),coh]);if(!ciOk||!raOk)r=Math.min(r,.59);
+  if(!ciOk)mj.push("asigna el coeficiente Ci de cada zona o material");if(!raOk)mj.push("elige el coeficiente Ra");if(palabras(SF.raJust)<15)mj.push("justifica el coeficiente Ra");if(!coh)mj.push(`revisa Ra: según la Tabla 1.2 correspondería ${String(sug).replace(".",",")}`);outs.push({r,mj})}
+ {const mj=[];const r=c.Qs==null?0:/nivel|riesgo intr|bajo|medio|alto/i.test(SF.conclu)?1:.75;if(c.Qs==null)mj.push("completa los datos para obtener el resultado");else if(r<1)mj.push("interpreta en las conclusiones el nivel de riesgo intrínseco");outs.push({r,mj})}
+ {const t=SF.conclu,kw=[/nivel|riesgo intr|bajo|medio|alto/i,/medida|reduc|propon|separ|sector|almacen/i].map(x=>x.test(t)?1:0),mj=[];const r=nz(t)?avg([Math.min(palabras(t)/80,1),avg(kw)]):0;
+  if(palabras(t)<80)mj.push("desarrolla las conclusiones (al menos 80 palabras)");if(!kw[1])mj.push("propón medidas para reducir la carga de fuego o su efecto");outs.push({r,mj})}
+ return evalRub(RUBF,outs)}
+function introF(){const c=calcF();return c.Qs==null?"No se ha podido calcular la carga de fuego porque faltan datos.":`Carga de fuego ponderada y corregida Qs = ${fmt0(c.Qs)} MJ/m² (${fmt0(c.Qs/4.184)} Mcal/m²): nivel de riesgo intrínseco ${c.nri.txt}.`}
+
+function renderCF(){const b=$("#cfBody"),m=SF.meta;
+ b.innerHTML=`<div class="panel"><div class="intro"><p class="eyebrow">Reglamento de Seguridad contra Incendios en los Establecimientos Industriales (RD 2267/2004)</p><h2>Carga de Fuego Ponderada</h2>
+  <p class="muted">La <b>carga de fuego</b> es la cantidad de calor que soltaría todo lo que puede arder en un lugar, repartida entre sus metros cuadrados. Se mide en MJ/m². El reglamento la «pondera» según lo fácil que arde cada material (Ci) y la «corrige» según lo probable que es que empiece un fuego (Ra). Con el resultado se obtiene el <b>nivel de riesgo intrínseco</b>, de Bajo 1 a Alto 8.</p>
+  <div class="ra"><span>RA2·CE a</span><span>RA2·CE c</span><span>RA4·CE c</span></div></div>
+  <details><summary>Ejemplos resueltos paso a paso</summary>${Object.entries(EJ).map(([k,e])=>`<div class="ej"><h4>${MET[k].t}</h4><p class="mono small">${MET[k].f}</p><p>${e.txt}</p><button type="button" class="btn ghost sm" data-ej="${k}">Cargar este ejemplo en la calculadora</button></div>`).join("")}</details></div>
+ <section class="panel"><h3>Paso 1 · Datos del establecimiento</h3><div class="grid2">
+  <label class="f" for="fm-alumno">Alumno/a o grupo<input type="text" id="fm-alumno" data-fm="alumno" value="${esc(m.alumno)}"></label>
+  <label class="f" for="fm-empresa">Establecimiento<input type="text" id="fm-empresa" data-fm="empresa" value="${esc(m.empresa)}"></label>
+  <label class="f" for="fm-actividad">Actividad<input type="text" id="fm-actividad" data-fm="actividad" value="${esc(m.actividad)}"></label>
+  <label class="f" for="fm-direccion">Dirección<input type="text" id="fm-direccion" data-fm="direccion" value="${esc(m.direccion)}"></label>
+  <div class="f"><div class="crit-h"><label for="fm-tipo">Configuración del establecimiento</label>${infoBtn("f-tipo")}</div>
+   <div class="help" id="help-f-tipo" hidden><dl>${TIPOS_CONF.map(t=>`<dt>${t[1]}</dt><dd>${t[2]}</dd>`).join("")}</dl></div>
+   <select id="fm-tipo" data-fm="tipo" class="${m.tipo?"":"pend"}"><option value="">— Sin selección —</option>${TIPOS_CONF.map(t=>`<option value="${t[0]}" ${m.tipo===t[0]?"selected":""}>${t[1]}</option>`).join("")}</select></div>
+  <div class="f"><div class="crit-h"><label for="fm-A">Superficie del sector (A, en m²)</label>${infoBtn("f-A")}</div>
+   <div class="help" id="help-f-A" hidden>Es la superficie construida de la zona que estudias (el sector de incendio): la parte del edificio separada del resto por paredes y puertas que resisten el fuego. Si toda la nave es una sola zona, es la superficie de toda la nave.</div>
+   <input type="text" inputmode="decimal" id="fm-A" data-fm="A" value="${esc(m.A)}"></div></div>
+  <label class="f" for="fm-desc">Descripción del establecimiento <small>Qué se hace, qué se guarda, cómo es el edificio. Mínimo recomendado: 40 palabras.</small><textarea id="fm-desc" data-fm="desc">${esc(m.desc)}</textarea></label></section>
+ <section class="panel"><h3>Paso 2 · Elige el método de cálculo</h3>
+  <div class="mets">${Object.entries(MET).map(([k,x])=>`<label class="metc ${SF.met===k?"on":""}"><input type="radio" name="fmet" value="${k}" ${SF.met===k?"checked":""}><b>${x.t}</b><span class="mono small">${x.f}</span><span class="small muted">${x.d}</span></label>`).join("")}</div>
+  <label class="f" for="f-metJust">¿Por qué eliges este método? <small>Mínimo recomendado: 15 palabras.</small><textarea id="f-metJust" rows="2">${esc(SF.metJust)}</textarea></label></section>
+ <section class="panel"><h3>Paso 3 · Zonas o materiales del sector</h3><div id="fRows"></div></section>
+ <section class="panel"><h3>Paso 4 · Coeficiente de riesgo de activación (Ra)</h3>
+  <div class="f"><div class="crit-h"><label for="f-ra">Ra</label>${infoBtn("f-ra")}</div>
+   <div class="help" id="help-f-ra" hidden>Ra indica lo fácil que es que empiece un fuego por la actividad que se hace (máquinas calientes, chispas, productos inflamables…). Se copia de la Tabla 1.2 del reglamento, según la actividad. En esa tabla aparecen sobre todo los valores 1,0, 1,5 y 2,0. <b>Si hay varias actividades</b> en el sector, se toma el Ra de la de mayor riesgo, siempre que ocupe al menos el 10 % de la superficie.</div>
+   <select id="f-ra" class="${SF.ra==null?"pend":""}" style="max-width:16rem"><option value="">— Sin selección —</option>${[1,1.5,2,3].map(v=>`<option value="${v}" ${SF.ra===v?"selected":""}>${String(v.toFixed(1)).replace(".",",")}</option>`).join("")}</select></div>
+  <p class="small" id="fRaSug"></p>
+  <label class="f" for="f-raJust">Justifica el valor de Ra <small>Mínimo recomendado: 15 palabras.</small><textarea id="f-raJust" rows="2">${esc(SF.raJust)}</textarea></label></section>
+ <section class="panel"><h3>Paso 5 · Resultado</h3><div id="fRes"></div></section>
+ <section class="panel"><h3>Paso 6 · Conclusiones</h3><label class="f" for="f-conclu">Conclusiones <small>Nivel de riesgo intrínseco obtenido y medidas para reducir la carga de fuego o su efecto. Mínimo recomendado: 80 palabras.</small><textarea id="f-conclu" style="min-height:7rem">${esc(SF.conclu)}</textarea></label></section>
+ <section class="panel"><div class="intro"><p class="eyebrow">Autoevaluación</p><h3>Valoración según la rúbrica</h3><p class="muted small">Se recalcula mientras trabajas. Es una propuesta orientativa; la nota final la pone tu profesor.</p></div><div id="fRub" aria-live="polite"></div></section>`;
+ bindHelp(b);
+ b.querySelectorAll("[data-fm]").forEach(el=>el.addEventListener(el.tagName==="SELECT"?"change":"input",()=>{SF.meta[el.dataset.fm]=el.value;if(el.tagName==="SELECT")el.classList.toggle("pend",!el.value);saveF();if(el.dataset.fm==="A")renderRowsF();updF()}));
+ b.querySelectorAll("[name=fmet]").forEach(el=>el.onchange=()=>{SF.met=el.value;b.querySelectorAll(".metc").forEach(x=>x.classList.toggle("on",x.querySelector("input").checked));if(!SF.rows.length)SF.rows=[newRow(),newRow()];saveF();renderRowsF();updF()});
+ $("#f-metJust").oninput=e=>{SF.metJust=e.target.value;saveF();updF()};
+ $("#f-ra").onchange=e=>{SF.ra=e.target.value===""?null:+e.target.value;e.target.classList.toggle("pend",SF.ra==null);saveF();updF()};
+ $("#f-raJust").oninput=e=>{SF.raJust=e.target.value;saveF();updF()};
+ $("#f-conclu").oninput=e=>{SF.conclu=e.target.value;saveF();updF()};
+ b.querySelectorAll("[data-ej]").forEach(x=>x.onclick=()=>{const e=EJ[x.dataset.ej];const alumno=SF.meta.alumno;SF=Object.assign(blankF(),{met:x.dataset.ej,ra:e.ra,rows:e.rows.map(r=>Object.assign(newRow(),r))});Object.assign(SF.meta,e.meta,{alumno});saveF();renderCF();toast("Ejemplo cargado: cámbialo por los datos de tu establecimiento")});
+ renderRowsF();updF()}
+function renderRowsF(){const box=$("#fRows");if(!box)return;const met=SF.met;
+ if(!met){box.innerHTML=`<p class="muted">Elige primero el método de cálculo en el paso 2.</p>`;return}
+ const M=MET[met],cat=met==="gen"?MATS:ACTS.filter(a=>met==="prod"?a[1]!=null:a[2]!=null);
+ const catIdx=met==="gen"?MATS.map((x,i)=>i):ACTS.map((a,i)=>i).filter(i=>met==="prod"?ACTS[i][1]!=null:ACTS[i][2]!=null);
+ box.innerHTML=`<p class="muted small">${met==="gen"?"Una fila por cada material. Puedes elegirlo de la lista (Tabla 1.4) para rellenar su poder calorífico, o escribir el valor tú.":"Una fila por cada zona con actividad o producto diferente. Puedes elegir la actividad de la lista (valores de ejemplo de la Tabla 1.2) o escribir el valor tú."}</p>
+  <div class="tbl"><table class="rows"><thead><tr><th>${met==="gen"?"Material":"Zona"}</th><th>${met==="gen"?"De la Tabla 1.4":"Actividad (Tabla 1.2)"} ${infoBtn("f-cat")}</th>${M.cols.map(([k,l])=>`<th>${l} ${infoBtn("f-"+k)}</th>`).join("")}<th>Ci ${infoBtn("f-ci")}</th><th style="text-align:right">Resultado</th><th></th></tr></thead><tbody>
+  ${SF.rows.map((r,i)=>`<tr data-i="${i}"><td><input type="text" data-r="n" value="${esc(r.n)}" aria-label="Nombre de la fila ${i+1}" placeholder="${met==="gen"?"Material":"Zona"} ${i+1}"></td>
+   <td><select data-r="cat" aria-label="Catálogo fila ${i+1}"><option value="">Otro (escribe el valor)</option>${catIdx.map(ci=>{const a=met==="gen"?MATS[ci]:ACTS[ci];return `<option value="${ci}" ${String(r.cat)===String(ci)?"selected":""}>${esc(a[0])}</option>`}).join("")}</select></td>
+   ${M.cols.map(([k,l])=>`<td><input type="text" inputmode="decimal" data-r="${k}" value="${esc(r[k])}" aria-label="${l} fila ${i+1}"></td>`).join("")}
+   <td><select data-r="ci" aria-label="Ci fila ${i+1}" class="${num(r.ci)==null?"pend":""}"><option value="">—</option>${[["1","1,00 baja"],["1.3","1,30 media"],["1.6","1,60 alta"]].map(([v,t])=>`<option value="${v}" ${num(r.ci)===num(v)?"selected":""}>${t}</option>`).join("")}</select></td>
+   <td class="num" data-t></td><td><button type="button" class="btn ghost sm" data-del aria-label="Borrar fila ${i+1}">✕</button></td></tr>`).join("")}</tbody></table></div>
+  <div class="help" id="help-f-cat" hidden>${met==="gen"?"La Tabla 1.4 del reglamento da el poder calorífico de cada material: el calor que suelta 1 kg al arder. Al elegir un material se rellena q y se propone un Ci orientativo, que puedes cambiar.":"Los valores de la lista son ejemplos de la Tabla 1.2 del reglamento. Al elegir una actividad se rellena la carga de fuego y se usa su Ra para proponerte el coeficiente del paso 4. Comprueba siempre los valores en la tabla oficial."}</div>
+  <div class="help" id="help-f-q" hidden>${met==="prod"?"<b>qsi:</b> carga de fuego de la zona por cada metro cuadrado, en MJ/m². Sale de la Tabla 1.2 según la actividad.":met==="alm"?"<b>qvi:</b> carga de fuego del producto almacenado por cada metro cúbico, en MJ/m³. Sale de la Tabla 1.2.":"<b>qi:</b> poder calorífico, el calor que suelta 1 kg del material al arder, en MJ/kg. Sale de la Tabla 1.4."}</div>
+  <div class="help" id="help-f-s" hidden><b>${met==="prod"?"Si":"si"}:</b> metros cuadrados que ocupa esa zona${met==="alm"?" en el suelo (la base de las estanterías o pilas)":""}. La suma de todas las zonas no puede ser mayor que A.</div>
+  <div class="help" id="help-f-h" hidden><b>hi:</b> altura en metros de las pilas o estanterías con producto.</div>
+  <div class="help" id="help-f-G" hidden><b>Gi:</b> kilos de cada material que hay en el sector, incluidos los materiales del propio edificio que puedan arder.</div>
+  <div class="help" id="help-f-ci" hidden><b>Ci</b> indica lo fácil que arde el material (Tabla 1.1 del reglamento):<dl>
+   <dt>1,60 · alta</dt><dd>Líquidos que arden muy fácilmente (clase A y subclase B1, como la gasolina o el alcohol), sólidos que se encienden por debajo de 100 °C, productos que forman mezclas explosivas con el aire o que arden solos.</dd>
+   <dt>1,30 · media</dt><dd>Líquidos de subclase B2 y de clase C (como el gasóleo), sólidos que se encienden entre 100 y 200 °C y sólidos que sueltan gases inflamables.</dd>
+   <dt>1,00 · baja</dt><dd>Líquidos de clase D (como los aceites) y sólidos que se encienden por encima de 200 °C (madera, papel, cartón, la mayoría de plásticos).</dd></dl></div>
+  <div class="btns"><button type="button" class="btn ghost sm" id="fAdd">＋ Añadir ${met==="gen"?"material":"zona"}</button></div>`;
+ bindHelp(box);
+ box.querySelectorAll("tr[data-i]").forEach(tr=>{const i=+tr.dataset.i;
+  tr.querySelectorAll("[data-r]").forEach(el=>el.addEventListener(el.tagName==="SELECT"?"change":"input",()=>{const r=SF.rows[i],k=el.dataset.r;r[k]=el.value;
+   if(k==="cat"&&el.value!==""){if(met==="gen"){const x=MATS[+el.value];r.q=String(x[1]);r.ci=String(x[2]);if(!nz(r.n))r.n=x[0]}else{const a=ACTS[+el.value];r.q=String(met==="prod"?a[1]:a[2]);if(!nz(r.n))r.n=a[0]}saveF();renderRowsF();updF();return}
+   if(k==="ci")el.classList.toggle("pend",!el.value);saveF();updRowsF();updF()}));
+  tr.querySelector("[data-del]").onclick=()=>{SF.rows.splice(i,1);saveF();renderRowsF();updF()}});
+ $("#fAdd").onclick=()=>{SF.rows.push(newRow());saveF();renderRowsF();updF()};
+ updRowsF()}
+function updRowsF(){const box=$("#fRows");if(!box||!SF.met)return;box.querySelectorAll("tr[data-i]").forEach(tr=>{const t=termF(SF.rows[+tr.dataset.i],SF.met);tr.querySelector("[data-t]").textContent=t==null?"—":fmt0(t)})}
+function updF(){if(!$("#fRes"))return;const c=calcF(),sug=raSug(),A=num(SF.meta.A);
+ $("#fRaSug").innerHTML=sug==null?(SF.met==="gen"?`<span class="muted">Con el método general, elige Ra según la actividad del establecimiento en la Tabla 1.2.</span>`:`<span class="muted">Si eliges actividades de la lista, aquí verás el Ra que corresponde.</span>`):SF.ra===sug?`<span class="okc">✓ Coincide con la actividad de mayor riesgo que ocupa al menos el 10 % del sector.</span>`:`Según las actividades elegidas, corresponde Ra = <b>${String(sug.toFixed(1)).replace(".",",")}</b>. <button type="button" class="btn ghost sm" id="fRaApl">Aplicar</button>`;
+ const ap=$("#fRaApl");if(ap)ap.onclick=()=>{SF.ra=sug;$("#f-ra").value=String(sug);$("#f-ra").classList.remove("pend");saveF();updF()};
+ if(c.Qs==null){const falta=[];if(!SF.met)falta.push("el método");if(!(A>0))falta.push("la superficie A");if(!SF.rows.length||(c.terms&&c.terms.some(t=>t==null)))falta.push("datos de alguna zona o material");if(SF.ra==null)falta.push("el coeficiente Ra");
+  $("#fRes").innerHTML=`<p class="muted">Falta: ${falta.join(", ")||"completar los datos"}.</p>`}
+ else{const M=MET[SF.met],pos=Math.min(100,c.nri.i*12.5+6);
+  $("#fRes").innerHTML=`<div class="resgrid"><div class="big"><span class="small muted">Carga de fuego ponderada y corregida</span><b class="mono">${fmt0(c.Qs)} MJ/m²</b><span class="small">${fmt0(c.Qs/4.184)} Mcal/m²</span><span class="lvl b${c.nri.lv}">Riesgo ${c.nri.txt}</span></div>
+   <div><p class="mono">${M.f}</p><p class="mono">Σ = ${c.terms.map(t=>fmt0(t)).join(" + ")} = ${fmt0(c.sum)}</p><p class="mono">Qs = ( ${fmt0(c.sum)} / ${fmt(c.A,0)} ) × ${String(c.ra.toFixed(1)).replace(".",",")} = <b>${fmt0(c.Qs)} MJ/m²</b></p>
+   <div class="nri" role="img" aria-label="Nivel de riesgo intrínseco ${c.nri.txt}">${NRI.map((r,i)=>`<span class="n${i<2?1:i<4?2:i<5?3:4} ${i===c.nri.i?"on":""}">${r[1]} ${r[2]}</span>`).join("")}</div>
+   <p class="small">${c.nri.lv===1?"Hay poco material que pueda arder para el tamaño del local.":c.nri.lv<=3?"Hay una cantidad moderada de material que puede arder: el reglamento pide más medidas de protección que en riesgo bajo.":"Hay mucho material que puede arder: el reglamento exige las medidas de protección más exigentes y limita el tamaño de los sectores."} Este nivel, junto con la configuración (tipo ${esc(SF.meta.tipo||"—")}), determina las medidas que exige el reglamento.</p></div></div>`}
+ $("#fRub").innerHTML=rubHTML(evalF(),introF());
+ if($("#mRes"))updM()}
+async function pdfCF(){const c=calcF();if(c.Qs==null){toast("Antes de descargar: completa los datos para calcular la carga de fuego");return}
+ const k=await pdfKit("Carga de Fuego Ponderada"),m=SF.meta,v=evalF(),M=MET[SF.met];
+ k.table({theme:"plain",styles:{fontSize:10,cellPadding:1.2,textColor:C.ink},columnStyles:{0:{fontStyle:"bold",cellWidth:46,textColor:C.muted}},
+  body:[["Alumno/a o grupo",m.alumno||"[sin indicar]"],["Establecimiento",m.empresa||"[sin indicar]"],["Actividad",m.actividad||"[sin indicar]"],["Dirección",m.direccion||"[sin indicar]"],["Configuración",m.tipo?"Tipo "+m.tipo:"[sin indicar]"],["Superficie del sector (A)",fmt(num(m.A),0)+" m²"],["Fecha",new Date().toLocaleDateString("es-ES")]].map(r=>r.map(pdfTxt))});
+ k.nota("Nota propuesta según rúbrica (pendiente de revisión docente)",v.total.toFixed(1).replace(".",",")+" / 10");
+ k.h2(1,"Descripción del establecimiento");k.para(m.desc||"[Pendiente de completar]");
+ k.h2(2,"Método de cálculo");k.para(M.t+": "+M.f,{bold:true});if(nz(SF.metJust))k.para(SF.metJust);
+ k.h2(3,"Datos de cálculo");
+ k.table({head:[[SF.met==="gen"?"Material":"Zona",...M.cols.map(x=>x[1]),"Ci","Resultado"]],body:SF.rows.map((r,i)=>[pdfTxt(r.n||"Fila "+(i+1)),...M.cols.map(([kk])=>fmt(num(r[kk]),num(r[kk])%1?1:0)),String(num(r.ci).toFixed(2)).replace(".",","),{content:fmt0(c.terms[i]),styles:{halign:"right"}}]).concat([[{content:"Suma",colSpan:M.cols.length+2,styles:{fontStyle:"bold",halign:"right"}},{content:fmt0(c.sum),styles:{fontStyle:"bold",halign:"right"}}]])});
+ k.para(`Coeficiente de riesgo de activación Ra = ${String(c.ra.toFixed(1)).replace(".",",")}.`,{bold:true});if(nz(SF.raJust))k.para(SF.raJust);
+ k.h2(4,"Resultado");k.need(30);k.para(`Qs = ( ${fmt0(c.sum)} / ${fmt(c.A,0)} ) × ${String(c.ra.toFixed(1)).replace(".",",")} = ${fmt0(c.Qs)} MJ/m² (${fmt0(c.Qs/4.184)} Mcal/m²)`,{bold:true});
+ k.table({head:[["Qs (MJ/m²)","Qs (Mcal/m²)","Nivel de riesgo intrínseco"]],body:[[fmt0(c.Qs),fmt0(c.Qs/4.184),k.cell(C.lv[c.nri.lv-1],c.nri.txt)]]});
+ k.para("Tabla 1.3 del RSCIEI (MJ/m²): Bajo 1 hasta 425; Bajo 2 hasta 850; Medio 3 hasta 1.275; Medio 4 hasta 1.700; Medio 5 hasta 3.400; Alto 6 hasta 6.800; Alto 7 hasta 13.600; Alto 8 más de 13.600.",{size:8.5,color:C.muted});
+ k.h2(5,"Conclusiones");k.para(SF.conclu||"[Pendiente de completar]");
+ k.rubrica(6,v,introF());k.save(m.alumno,"carga-fuego")}
+
 /* ---------- rúbrica ---------- */
 function renderDoc(){const b=$("#docBody");
- b.innerHTML=`<div class="tbl"><table><thead><tr><th>Criterio (RA·CE)</th><th>Pts</th>${NIV.map((n,i)=>`<th>${n} (${NIVF[i]*100} %)</th>`).join("")}</tr></thead><tbody>${RUB.map(c=>`<tr><td><b>${c.t}</b><div class="ra"><span>${c.ce}</span></div></td><td class="num">${String(c.max).replace(".",",")}</td>${c.d.map(t=>`<td class="small">${t}</td>`).join("")}</tr>`).join("")}<tr><td><b>Total</b></td><td class="num">10</td><td colspan="4" class="small">Nota = suma de los puntos de cada criterio (puntos máximos × porcentaje del nivel alcanzado).</td></tr></tbody></table></div>
+ b.innerHTML=`<h3>Análisis de Riesgos</h3><div class="tbl"><table><thead><tr><th>Criterio (RA·CE)</th><th>Pts</th>${NIV.map((n,i)=>`<th>${n} (${NIVF[i]*100} %)</th>`).join("")}</tr></thead><tbody>${RUB.map(c=>`<tr><td><b>${c.t}</b><div class="ra"><span>${c.ce}</span></div></td><td class="num">${String(c.max).replace(".",",")}</td>${c.d.map(t=>`<td class="small">${t}</td>`).join("")}</tr>`).join("")}<tr><td><b>Total</b></td><td class="num">10</td><td colspan="4" class="small">Nota = suma de los puntos de cada criterio (puntos máximos × porcentaje del nivel alcanzado).</td></tr></tbody></table></div>
  <p class="small muted">La app propone el nivel de cada criterio a partir de indicadores: extensión de la descripción y de las justificaciones, enlaces a fuentes, riesgos de cada origen, acierto al elegir las medidas y coherencia entre vulnerabilidad y daños. Tu profesor revisa después el contenido técnico y pone la nota final.</p>
- <p class="small muted">Los casos prácticos son opcionales. Si los haces, su nota media aparece en el informe como nota aparte y no cambia esta nota.</p>`}
+ <p class="small muted">Los casos prácticos son opcionales. Si los haces, su nota media aparece en el informe como nota aparte y no cambia esta nota.</p>
+ <h3>Método MESERI</h3>${rubTable(RUBM)}
+ <h3>Carga de Fuego Ponderada</h3>${rubTable(RUBF)}`}
+
+/* ---------- botones de MESERI y carga de fuego ---------- */
+$("#mesPdf").onclick=e=>conBoton(e.currentTarget,pdfMeseri);
+$("#cfPdf").onclick=e=>conBoton(e.currentTarget,pdfCF);
+bindIO("mes",()=>SM,o=>{SM=Object.assign(blankM(),o);saveM();renderMeseri()},"meseri","meseri.json");
+bindIO("cf",()=>SF,o=>{SF=Object.assign(blankF(),o);saveF();renderCF()},"cargafuego","carga-fuego.json");
+armReset($("#mesReset"),()=>{SM=blankM();saveM();renderMeseri();toast("MESERI vacío creado")});
+armReset($("#cfReset"),()=>{SF=blankF();saveF();renderCF();toast("Cálculo vacío creado")});
 
 /* ---------- arranque ---------- */
 renderRef();renderAsis();
