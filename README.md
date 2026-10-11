@@ -15,3 +15,7 @@ La web es una aplicación instalable (PWA): `public/manifest.webmanifest`, icono
 ## Generar la versión publicada
 
 Tras editar `app.html`, ejecutar `python3 tools/build.py`. Genera `public/index.html` y `public/sw.js` (con una versión nueva de caché para que los equipos instalados se actualicen).
+
+## Normativa de carga de fuego
+
+La pestaña «Carga de Fuego Ponderada» sigue el Anexo I del Reglamento de seguridad contra incendios en los establecimientos industriales aprobado por el Real Decreto 164/2025 (tablas 1.1.1 y 1.3.1 a 1.3.5) y resume las exigencias de los anexos II y III (tablas 2.1.1, 2.1.2, 3.3.1 a 3.5.1 y apartados de detección, rociadores y control de humos).

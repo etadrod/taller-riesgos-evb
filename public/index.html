@@ -165,6 +165,17 @@ td.num{white-space:nowrap;font-family:var(--f-mono);font-variant-numeric:tabular
 .sv-t{fill:var(--muted);font:600 7.5px var(--f-body)}
 .sv-te{fill:var(--signal);font:700 7.5px var(--f-body)}
 #fTipoFig{max-width:16rem}
+.grid2c{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+@media (max-width:600px){.grid2c{grid-template-columns:1fr}}
+.unit{font-size:.78rem;color:var(--muted);margin-left:.25rem;white-space:nowrap}
+table.rows td{white-space:nowrap}
+table.rows input{width:6.5rem}
+table.rows input[data-r="n"]{width:11rem}
+table.rows select.catsel{max-width:16rem}
+tr.rnote td{font-size:.8rem;color:var(--muted);border-bottom:1px solid var(--line);padding-top:0;white-space:normal}
+.rq{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:.8rem}
+.tscroll{max-height:26rem;overflow:auto}
+.tscroll thead th{position:sticky;top:0;background:var(--surface)}
 .help dl{gap:.3rem}.help dd{margin:0}
 .crits{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:.9rem 1.2rem;margin-bottom:.8rem}
 .crit{display:grid;gap:.35rem;align-content:start;min-width:0}
@@ -1282,175 +1293,634 @@ async function pdfMeseri(){const c=calcM();if(c.P==null){toast("Antes de descarg
  k.rubrica(7,v,introM());k.save(m.alumno,"meseri")}
 
 /* ======================================================================
-   CARGA DE FUEGO PONDERADA Y CORREGIDA (RSCIEI, RD 2267/2004, Anexo I)
+   CARGA DE FUEGO PONDERADA Y CORREGIDA (RSCIEI, RD 164/2025, Anexo I)
    ====================================================================== */
-/* Valores orientativos de la Tabla 1.2 (qs en MJ/m² para producción o venta; qv en MJ/m³ para almacenamiento) */
-const ACTS=[["Talleres mecánicos",200,null,1.0],["Reparación de automóviles",300,null,1.0],["Imprentas, taller tipográfico",300,null,1.5],["Textiles, confección",300,null,1.0],
- ["Muebles de madera",500,800,1.5],["Oficinas técnicas",600,null,1.0],["Laboratorios químicos",500,null,1.5],["Panaderías industriales",1000,null,1.5],["Bodegas de vino",80,null,1.0],
- ["Carnicerías (venta)",40,null,1.0],["Aparatos electrónicos",400,400,1.0],["Cartón",300,4200,1.5],["Madera en vigas y tablas",null,4200,1.5],["Materiales sintéticos",null,5900,2.0],["Papel viejo o a granel",null,8400,2.0]];
-/* Tabla 1.4: poder calorífico qi (MJ/kg) y Ci orientativo */
-const MATS=[["Madera",16.7,1.0],["Papel",16.7,1.0],["Cartón",16.7,1.0],["Azúcar",16.7,1.0],["Harina de trigo",16.7,1.0],["Polietileno",42,1.0],["Poliestireno",42,1.0],["Caucho",42,1.0],
- ["Aceite mineral",42,1.0],["Gasóleo",42,1.3],["Bencina (gasolina)",42,1.6],["Alcohol etílico",25.1,1.6],["PVC (cloruro de polivinilo)",21,1.0],["Lana",21,1.0],["Cuero",21,1.0]];
+/* Tabla 1.3.5 (RD 164/2025): [grupo, actividad, qs MJ/m², qv bruto MJ/m³, qv neto MJ/m³, Ci, Rmin, observación]
+   null = sin valor en la tabla. Cuando la tabla da un intervalo con valor propuesto, se usa el propuesto y se indica en la observación. */
+const ACT=[
+["A","Oficinas",700,null,null,1.44,1],
+["A","Salas de reuniones, salas de conferencias",300,null,null,1.44,1],
+["A","Archivos",null,1600,2100,1.20,null],
+["B","Fábrica de cartón: almacenamiento de materias primas",null,1700,2200,1.20,null],
+["B","Fábrica de cartón: almacenamiento en bobinas",null,3700,14700,1.20,null],
+["B","Fábrica de cartón: producción, transformación",1500,null,null,1.20,1],
+["B","Fábrica de papel: almacenamiento de materias primas (celulosa)",null,20000,22000,1.00,null],
+["B","Fábrica de papel: almacenamiento a granel (papel viejo, prensado)",null,6900,8600,1.20,null],
+["B","Fábrica de papel: almacenamiento a granel (papel viejo, suelto)",null,2800,4000,1.40,null],
+["B","Fábrica de papel: producción, transformación",700,null,null,1.20,1,"qs entre 200 y 1.200 MJ/m²; valor propuesto 700. Si usas otro, justifícalo."],
+["B","Fábrica de papel: almacenamiento de producto acabado",null,2800,5100,1.20,null],
+["B","Imprenta: almacenamiento de papel en bobinas",null,4200,6200,1.20,null],
+["B","Imprenta: producción",500,null,null,1.68,1.4],
+["B","Imprenta: producción con local para desenrollado del papel",2100,null,null,1.68,1.4],
+["B","Imprenta: expedición, embalaje",null,1800,2500,1.20,1,"qv bruto entre 200 y 2.400 (propuesto 1.800) y neto entre 300 y 3.000 (propuesto 2.500). Si usas otro, justifícalo."],
+["B","Imprenta: encuadernación",2400,null,null,1.20,1],
+["C","Bebidas sin alcohol: relleno",350,null,null,1.20,1],
+["C","Bebidas sin alcohol: almacenamiento",null,600,900,1.20,null],
+["C","Bodegas (vinos)",80,null,null,1.00,1],
+["C","Bebidas alcohólicas (licores)",700,null,null,null,1,"Ci entre 1,20 y 1,40 según la graduación: elige y justifica."],
+["C","Bebidas alcohólicas: almacenamiento",null,800,null,null,null,"Ci entre 1,00 y 1,40 según la graduación: elige y justifica."],
+["C","Chocolate: almacenamiento de materias primas (incluido embalaje)",null,5200,8200,1.44,null],
+["C","Chocolate: producción, conchado",1200,null,null,1.20,1],
+["C","Chocolate: almacenamiento de producto acabado, expedición",null,1800,2900,1.44,null],
+["C","Comercio alimentario: almacenamiento de productos frescos, expedición",null,900,1800,1.20,null],
+["C","Comercio alimentario: almacenamiento de envases",null,1800,2400,1.20,null],
+["C","Comercio alimentario: envasado, despiece de carnes",1900,null,null,1.20,1],
+["C","Productos lácteos: producción de queso",300,null,null,1.00,1],
+["C","Productos lácteos: almacenamiento de queso",null,1100,1600,1.00,null],
+["C","Harinera: almacenamiento de harina",null,3900,5300,1.20,null],
+["C","Harinera: producción de harina",1100,null,null,1.20,1.4],
+["C","Grasas y aceites: producción",8500,null,null,1.68,1.4],
+["C","Grasas, aceites, mantequilla: almacenamiento",null,5300,7900,1.68,null],
+["C","Pastas alimenticias: producción",700,null,null,1.20,1.4],
+["C","Pastas alimenticias: almacenamiento",null,1800,2700,1.20,null],
+["C","Panadería y pastelería: almacenamiento de materias primas",null,1500,2800,1.20,null],
+["C","Panadería y pastelería: producción",500,null,null,1.44,1.4],
+["C","Panadería y pastelería: almacenamiento de producto acabado, expedición",null,2000,2200,1.44,null],
+["C","Azúcar: producción, embalaje",200,null,null,1.20,1],
+["C","Azúcar: almacenamiento",null,4600,6300,1.20,null],
+["C","Congelados: producción",800,null,null,1.00,1.4],
+["C","Congelados: almacén",null,375,null,1.00,null],
+["D","Industria química general: producción",null,null,null,1.68,1.4,"qs entre 500 y 7.800 MJ/m²: estudia el caso concreto y justifica el valor (nota 5)."],
+["D","Industria química general: almacenamiento de disolventes",null,null,null,1.92,1,"qv bruto entre 1.800 y 6.800 MJ/m³: estudia el caso concreto y justifica el valor (nota 5)."],
+["D","Industria química general: almacenamiento de resina epoxi",null,3800,5000,1.44,null],
+["D","Productos farmacéuticos: producción",900,null,null,1.68,1.4],
+["D","Productos farmacéuticos: almacenamiento",null,1800,2500,1.68,null],
+["E","Centros de distribución: almacenamiento multiproducto (genérico)",null,null,null,1.44,null,"qv bruto entre 300 y 8.100 y neto entre 400 y 16.200 MJ/m³. Valores por debajo de 700 (bruto) o 1.300 (neto) son poco frecuentes y deben justificarse (nota 7)."],
+["E","Centros de distribución: productos de jardín",null,1500,3100,1.44,null],
+["E","Centros de distribución: aparatos eléctricos",null,1000,1600,1.44,null],
+["E","Centros de distribución: muebles (excepto metálicos)",null,1800,2800,1.44,null],
+["F","Accesorios de automóviles: almacén de recambios",null,800,1300,1.44,null],
+["F","Accesorios de automóviles: almacenamiento de líquidos (aceites, limpiadores, disolventes)",null,1200,3000,1.68,1],
+["F","Accesorios de automóviles: almacén de neumáticos",null,1000,1500,1.44,null],
+["F","Forraje: producción de alimentos compuestos",1400,null,null,1.20,1.4],
+["F","Forraje: almacenamiento de alimentos compuestos",null,1300,2000,1.20,null],
+["F","Electrodomésticos: producción y embalaje",150,null,null,1.44,1],
+["F","Electrodomésticos: almacenamiento",null,1000,1600,1.44,null],
+["F","Reciclaje: residuos especiales (pinturas, disolventes)",null,2500,6100,1.68,1],
+["F","Reciclaje: residuos especiales (ácidos)",null,1300,2800,1.20,null],
+["F","Reciclaje de plásticos: almacén",null,3800,6000,1.44,null],
+["F","Reciclaje de plásticos: producción",1200,null,null,1.44,1],
+["F","Reciclaje: astillas y recortes de madera",null,1500,2100,1.20,null],
+["F","Materiales de construcción: ladrillos silicocalcáreos",350,null,null,1.00,1],
+["F","Materiales de construcción: hormigón",300,null,null,1.00,1],
+["F","Materiales de construcción: madera",null,1600,3200,1.20,null],
+["F","Materiales de construcción: aislamiento de poliestireno espumado (EPS y XPS)",null,600,700,1.44,null],
+["F","Venta de artículos de construcción",null,900,1500,1.44,1],
+["F","Producción de vidrio: embalaje",350,null,null,1.20,1],
+["F","Producción de vidrio: almacenamiento",null,150,200,1.20,null],
+["F","Productos de tabaco: producción",500,null,null,1.44,1],
+["F","Productos de tabaco: almacenamiento (tabaco, fábrica de cigarrillos)",null,1400,1900,1.44,null],
+["G","Telas para confección y tapizado, prendas de vestir: almacenamiento",null,400,800,1.44,null],
+["G","Fábrica de alfombras: producción",2500,null,null,1.44,1],
+["G","Fábrica de alfombras: producción, teñido",300,null,null,1.20,1],
+["G","Fábrica de alfombras: almacenamiento",null,1100,1800,1.44,null],
+["G","Hilado: producción",600,null,null,1.44,1],
+["G","Hilado: almacenamiento",null,3200,4300,1.44,null],
+["G","Tejidos: producción",250,null,null,1.20,1],
+["G","Tejidos: almacenamiento",null,1100,1400,1.20,null],
+["H","Automóviles: producción, guarnición",700,null,null,1.44,1],
+["H","Automóviles: producción, montaje",300,null,null,1.44,1],
+["H","Automóviles: producción, pintura",500,null,null,1.44,1],
+["H","Producción de vehículos especiales (limpieza, blindados…)",400,null,null,1.44,1],
+["H","Automóviles: almacenamiento",null,600,900,1.44,null],
+["H","Construcción metálica: almacenamiento de pinturas, recubrimientos en polvo",null,1800,3300,1.68,1],
+["H","Construcción metálica: pintura con pistola",100,null,null,1.92,1.4],
+["H","Construcción metálica: producción, galvanizado",250,null,null,1.00,1],
+["H","Construcción metálica: almacenamiento",null,150,200,1.00,null],
+["H","Fabricación de máquinas: trabajo en metal",250,null,null,1.00,1],
+["H","Fabricación de máquinas: almacenamiento, expedición",null,100,150,1.20,null],
+["H","Relojes: producción",300,null,null,1.00,1],
+["I","Fábrica de cables: producción",1000,null,null,1.44,1],
+["I","Fábrica de cables: almacenamiento de producto acabado",null,3000,6200,1.44,null],
+["I","Láminas y lonas: producción",1300,null,null,1.44,1],
+["I","Láminas y lonas: almacenamiento de producto acabado",null,1600,2400,1.44,null],
+["I","Materias sintéticas: almacenamiento de materias primas (gránulos)",null,4700,8000,1.44,null],
+["I","Botellas de PET: moldeo por inyección",800,null,null,1.44,1],
+["I","Botellas de PET: almacenamiento",null,700,1300,1.44,null],
+["I","Poliestireno: corte",300,null,null,1.44,1],
+["I","Poliestireno: almacenamiento",null,300,450,1.44,null],
+["I","Almacenamiento de espumas (acolchado, colchones)",null,400,700,1.44,null],
+["I","Moldeo por inyección: producción",1000,null,null,1.44,1],
+["I","Moldeo por inyección: almacenamiento de producto acabado",null,1700,2100,1.44,null],
+["I","Paneles rígidos de espuma: producción",1600,null,null,1.44,1],
+["I","Paneles rígidos de espuma: almacenamiento de producto acabado",null,1700,3100,1.44,null],
+["I","Tuberías, conductos: producción",1000,null,null,1.44,1],
+["I","Tuberías, conductos: almacenamiento de producto acabado",null,2200,3500,1.44,null],
+["J","Carpintería: producción pura (sin acopios)",900,null,null,1.20,1],
+["J","Carpintería: sala de producción con depósito intermedio",1700,null,null,1.20,1],
+["J","Carpintería: almacenamiento",null,2200,3200,1.20,null],
+["J","Venta de artículos de madera: desechos",5000,null,null,1.20,1],
+["J","Venta de artículos de madera: almacenamiento",null,1900,5300,1.20,null],
+["J","Briquetas (pellet): almacenamiento",null,11600,16600,1.20,null],
+["J","Tableros de partículas: producción",1200,null,null,1.20,1],
+["J","Tableros de partículas: almacenamiento",null,5600,9000,1.20,null],
+["J","Carpintería de construcción e interior: producción pura",900,null,null,1.20,1],
+["J","Carpintería de construcción e interior: producción con depósito intermedio",1800,null,null,1.20,1],
+["J","Carpintería de construcción e interior: almacenamiento",null,1800,2800,1.20,null],
+["J","Fabricación de muebles tapizados",550,null,null,1.44,1.4],
+["J","Lacado de muebles",550,null,null,1.92,1.4],
+["J","Aserradero",1500,null,null,1.20,1],
+["J","Aserradero: almacén de madera aserrada",null,2400,4900,1.20,null],
+["K","Talleres de reparación",400,null,null,1.44,1],
+["K","Cine",300,null,null,1.00,1],
+["K","Farmacia (incluso almacén)",800,null,null,1.40,1],
+["K","Joyería (venta)",300,null,null,1.20,1],
+["K","Juguetería (venta)",500,null,null,1.44,1],
+["K","Lavandería",200,null,null,1.20,1],
+["K","Librería (venta)",1000,null,null,1.20,1],
+["K","Panadería (venta)",300,null,null,1.20,1],
+["K","Papelería (venta)",700,null,null,1.20,1],
+["K","Perfumería (venta)",400,null,null,1.20,1],
+["K","Restaurante",300,null,null,1.20,1],
+["K","Tintorería",500,null,null,1.44,1],
+["K","Aparatos eléctricos o electrónicos (venta)",400,null,null,1.20,1],
+["K","Artículos deportivos (venta)",800,null,null,1.44,1],
+["K","Cochecitos de bebé (venta)",300,null,null,1.20,1],
+["K","Caramelos y dulces (venta)",400,null,null,1.00,1],
+["K","Electrodomésticos (venta)",300,null,null,1.44,1],
+["K","Muebles (exposición y venta)",null,null,null,1.44,1,"qs entre 400 y 600 MJ/m²: elige y justifica el valor."],
+["K","Prendas de vestir (venta)",600,null,null,1.20,1],
+["K","Zapatería (venta)",500,null,null,1.44,1],
+["K","Artículos de papelería (almacén)",null,1100,null,1.20,null],
+["K","Artículos de perfumería (almacén)",null,500,null,1.20,null],
+["K","Artículos de caucho (almacén)",null,5000,null,1.44,null],
+["K","Biblioteca (depósito de libros)",null,2000,null,1.00,null],
+["K","Calzado (almacén)",null,400,null,1.44,null],
+["K","Caramelos y dulces (almacén)",null,1500,null,1.20,null],
+["K","Cartonaje (almacén)",null,2500,null,1.20,null],
+["K","Conservas (almacén)",null,375,null,1.00,null],
+["K","Cosméticos (almacén)",null,500,null,1.20,null],
+["K","Discos compactos y similares (almacén)",null,3400,null,1.20,null],
+["K","Flores artificiales (almacén)",null,200,null,1.44,null],
+["K","Juguetes (almacén)",null,800,null,1.44,null],
+["K","Material de oficina (almacén)",null,1300,null,1.44,null]];
+/* Tabla 1.3.3 (RD 164/2025): [material, q, unidad (kg, m² o ud), Ci, nota] · nota 4 = fumígeno · 5/6 = Ci puede ser 1,00 si se justifica */
+const MAT=[
+["Aceite de creosota",37.62,"kg",1.44,"4"],
+["Aceite de granos de algodón (semillas)",37.62,"kg",1.00],
+["Aceite de linaza",39.3,"kg",1.00],
+["Aceite de lino",37.62,"kg",1.00],
+["Aceite de oliva",39.6,"kg",1.00],
+["Aceite de parafina",41.8,"kg",1.00],
+["Aceite lubricante",42.0,"kg",1.20,"4"],
+["Aceite mineral",45.9,"kg",1.44,"4"],
+["Aceite vegetal",41.8,"kg",1.00],
+["Acetaldehido",27.07,"kg",1.60],
+["Acetamida",8.36,"kg",1.00],
+["Acetato de amilo",33.4,"kg",1.40],
+["Acetato de etilo",20.8,"kg",1.60],
+["Acetato de polivinilo (PVAC)",23.04,"kg",1.20,"4"],
+["Acetileno",49.91,"kg",1.92,"4"],
+["Acetileno disuelto",16.72,"kg",1.92,"4"],
+["Acetona (0,8 kg/litro)",28.8,"kg",1.60],
+["Ácido acético",14.56,"kg",1.40],
+["Ácido benzóico",26.43,"kg",1.00],
+["Ácido cianacético",16.92,"kg",1.00],
+["Acroleína",29.08,"kg",1.60],
+["Aguarrás (esencia o aceite de trementina)",41.8,"kg",1.40],
+["Alcanfor",38.75,"kg",1.68,"4"],
+["Alcohol alílico o 2-propen-1-ol",33.44,"kg",1.60],
+["Alcohol amílico o 1-pentanol",41.8,"kg",1.40],
+["Alcohol butílico o 1-butanol",33.44,"kg",1.40],
+["Alcohol etílico (≥ 0,7 kg/litro) o etanol",27.0,"kg",1.60],
+["Alcohol metílico o metanol",22.68,"kg",1.60],
+["Algodón en fardos",15.48,"kg",1.20],
+["Algodón (fibra textil)",17.4,"kg",1.20],
+["Almidón",17.6,"kg",1.00],
+["Aluminio (polvo)",31.04,"kg",1.60],
+["Anhídrido acético",16.72,"kg",1.40],
+["Anilina",36.44,"kg",1.44,"4"],
+["Antraceno",41.8,"kg",1.20,"4"],
+["Antracita",32.75,"kg",1.00],
+["Azúcar",17.1,"kg",1.00],
+["Azúcar de caña",16.8,"kg",1.00],
+["Azufre",9.28,"kg",1.20],
+["Bencina (éter de petróleo)",41.8,"kg",1.92,"4"],
+["Benzaldehído",33.25,"kg",1.44,"4"],
+["Benzol o Fenol",32.45,"kg",1.44,"4"],
+["Berilio (polvo)",66.43,"kg",1.00],
+["Betún asfáltico",35.28,"kg",1.20,"4"],
+["Butano (n-butano)",49.5,"kg",1.60],
+["Café",16.72,"kg",1.20],
+["Carbón vegetal",34.2,"kg",1.00],
+["Carbono",32.8,"kg",1.20],
+["Cartón",16.5,"kg",1.20,"6"],
+["Caucho",39.06,"kg",1.20,"4"],
+["Caucho nitrilo (NBR) o buna N",35.15,"kg",1.20,"4"],
+["Caucho butílico (IIR)",45.8,"kg",1.20,"4"],
+["Celuloide (nitrato de celulosa y alcanfor)",19.05,"kg",1.40],
+["Celulosa",16.3,"kg",1.20],
+["Celulosa (derivados)",29.3,"kg",1.20],
+["Cereales",16.72,"kg",1.20],
+["Cicloheptano",45.98,"kg",1.60],
+["Ciclohexano o hexametileno",46.58,"kg",1.92,"4"],
+["Ciclopentano",46.93,"kg",1.92,"4"],
+["Ciclopropano",49.7,"kg",1.60],
+["Coque de hulla",29.5,"kg",1.00],
+["Corcho",26.1,"kg",1.20,"5"],
+["Cuero",19.8,"kg",1.00],
+["Dietilamina",41.8,"kg",1.60],
+["Dietilcetona o 3-pentanona",33.4,"kg",1.60],
+["Dietiléter o éter etílico o etoxietano",36.75,"kg",1.60],
+["Difenilo o bifenilo o fenilbenceno",41.8,"kg",1.20,"4"],
+["Dinamita (75 %) o nitrogelatina dinamita",5.4,"kg",1.60],
+["Dipenteno",44.31,"kg",1.40],
+["Ebonita",33.44,"kg",1.00],
+["Estireno",42.41,"kg",1.68,"4"],
+["Etano",51.87,"kg",1.60],
+["Éter amílico (éter d-n-amílico)",41.8,"kg",1.20],
+["Etilenglicol o etanodiol",19.17,"kg",1.00],
+["Fibra de coco",25.08,"kg",1.20],
+["Fósforo",25.08,"kg",1.60],
+["Furano",30.61,"kg",1.60],
+["Gasoil",41.8,"kg",1.44,"4"],
+["Gasolina",46.8,"kg",1.92,"4"],
+["Glicerina o glicerol",17.95,"kg",1.00],
+["Grasas alimenticias",40.0,"kg",1.00],
+["Gutapercha",45.98,"kg",1.00],
+["Harina de arroz",15.5,"kg",1.20],
+["Harina de centeno",16.56,"kg",1.20],
+["Harina de maíz",15.7,"kg",1.40],
+["Harina de trigo",15.9,"kg",1.20],
+["Heno",16.72,"kg",1.20],
+["Heptano (n-heptano)",48.07,"kg",1.60],
+["Hexano (n-hexano)",48.31,"kg",1.60],
+["Hidrógeno",141.79,"kg",1.60],
+["Hidruro de sodio",8.36,"kg",1.60],
+["Lana (fibras textiles)",23.2,"kg",1.00],
+["Leche desnatada en polvo",15.5,"kg",1.00],
+["Leche entera en polvo",21.0,"kg",1.00],
+["Lino",16.72,"kg",1.20],
+["Linóleo",20.9,"kg",1.20],
+["Madera aserrada",12.6,"kg",1.20,"5"],
+["Madera contrachapada de 5 mm de grosor",53.0,"m²",1.20],
+["Madera de abedul",18.7,"kg",1.20,"5"],
+["Madera de abeto",20.4,"kg",1.20,"5"],
+["Madera de arce",17.8,"kg",1.20,"5"],
+["Madera de haya",18.7,"kg",1.20,"5"],
+["Madera de pino",17.8,"kg",1.20,"5"],
+["Madera de pino Oregón",19.6,"kg",1.20,"5"],
+["Madera de roble",18.7,"kg",1.20,"5"],
+["Magnesio (polvo)",25.08,"kg",1.60],
+["Malta",16.72,"kg",1.20],
+["Manteca de cerdo",40.1,"kg",1.00],
+["Mantequilla",38.2,"kg",1.00],
+["Margarina",32.4,"kg",1.00],
+["Metacrilato de metilo",27.37,"kg",1.60],
+["Metano",55.5,"kg",1.60],
+["Monóxido de carbono",10.1,"kg",1.60],
+["Naftaleno",40.21,"kg",1.44,"4"],
+["Neumáticos",27.7,"kg",1.20,"4"],
+["Nilon o nylon (de tipo promedio 6, 6.6 y 11)",29.88,"kg",1.00],
+["Nitrocelulosa",8.36,"kg",1.60],
+["Octano (n-octano)",47.9,"kg",1.60],
+["Óxido de etileno o epoxietano",29.65,"kg",1.60],
+["Paja",15.6,"kg",1.20],
+["Palets de madera (800 x 1200 mm)",369.6,"ud",1.00],
+["Papel",16.5,"kg",1.20,"6"],
+["Papel apilado sin compactar",17.6,"kg",1.20],
+["Papel higiénico",17.6,"kg",1.20],
+["Papel viejo",13.4,"kg",1.20],
+["Papel viejo en fardos",15.12,"kg",1.00],
+["Parafina",46.2,"kg",1.00],
+["Pentano (n-pentano)",48.64,"kg",1.60],
+["Petróleo (crudo)",43.5,"kg",1.92,"4"],
+["PET (tereftalato de polietileno)",22.18,"kg",1.00],
+["PMMA (polimetilmetacrilato)",24.84,"kg",1.00],
+["Poliamida (PA)",28.44,"kg",1.00],
+["Policarbonato (PC)",29.88,"kg",1.20,"4"],
+["Poliéster insaturado (UP)",27.36,"kg",1.20,"4"],
+["Poliestireno moldeable (PS)",39.6,"kg",1.20,"4"],
+["Poliestireno espumado (EPS y XPS)",38.0,"kg",1.44,"4"],
+["Polietileno (PE), recipientes o piezas",43.92,"kg",1.00],
+["Polietileno (PE) en láminas",44.5,"kg",1.00],
+["Poliisobutileno (PIB) o poli-1-buteno",46.48,"kg",1.20,"4"],
+["Polioximetileno (POM), poliacetal",15.48,"kg",1.00],
+["Polipropileno (PP)",45.36,"kg",1.00],
+["Poliuretano (PU, PUR)",28.85,"kg",1.20,"4"],
+["Poliuretano moldeable",23.9,"kg",1.00],
+["Propano",45.6,"kg",1.60],
+["PTFE (politetrafluoroetileno, teflón)",5.0,"kg",1.00],
+["PVC (Cloruro de polivinilo rígido)",18.0,"kg",1.00],
+["Queroseno (Jet Fuel A)",46.4,"kg",1.68,"4"],
+["Rayón, fibras",16.55,"kg",1.00],
+["Resina de pino",41.8,"kg",1.20],
+["Resina de poliéster",19.08,"kg",1.68,"4"],
+["Resina epoxi (EP)",29.16,"kg",1.44,"4"],
+["Resina fenólica (PF)",33.4,"kg",1.20,"4"],
+["Seda",20.9,"kg",1.00],
+["Sisal",15.9,"kg",1.00],
+["Sodio",4.18,"kg",1.60],
+["Sulfuro de carbono o disulfuro de carbono",6.34,"kg",1.60],
+["Tabaco",16.5,"kg",1.00],
+["Tablero de partículas de madera",19.2,"kg",1.20],
+["Tablero de partículas de madera de 19 mm de grosor",295.2,"m²",1.20],
+["Té",16.72,"kg",1.00],
+["Tetralina (tetrahidronaftaleno)",42.6,"kg",1.20],
+["Textiles",22.32,"kg",1.20],
+["TNT (trinitrotolueno)",15.12,"kg",1.60],
+["Tolueno o toluol",42.43,"kg",1.92,"4"],
+["Turba",19.15,"kg",1.00],
+["Urea-formaldehido (UF), espuma",14.8,"kg",1.00],
+["Vaselina o petrolato blanco",45.9,"kg",1.00],
+["Viscosa (artículos)",17.6,"kg",1.20],
+["Viscosa (fibras)",15.6,"kg",1.20],
+["Whitespirit",43.5,"kg",1.68,"4"],
+["Xileno",40.0,"kg",1.68,"4"]];
+
+const CATS={A:"Oficinas",B:"Cartón, papel",C:"Industria alimentaria",D:"Industria química",E:"Logística",F:"Materias y mercancías diversas",G:"Textiles",H:"Transformación de metales",I:"Transformación de plásticos",J:"Artículos de madera",K:"Otros"};
+const actFab=a=>a[2]!=null||/qs /.test(a[7]||""),actAlm=a=>a[3]!=null||a[4]!=null||/qv /.test(a[7]||"");
+const MATNOTA={"4":"Material fumígeno: su Ci ya incluye el aumento del 20 %.","5":"Ci puede tomarse 1,00 si se justifica que son trozos compactos de grandes dimensiones.","6":"Ci puede tomarse 1,00 si se justifica que es papel o cartón compactado (libros, bobinas, apilamientos)."};
 const NRI=[[425,"Bajo",1],[850,"Bajo",2],[1275,"Medio",3],[1700,"Medio",4],[3400,"Medio",5],[6800,"Alto",6],[13600,"Alto",7],[Infinity,"Alto",8]];
-const nriDe=q=>{const i=NRI.findIndex(r=>q<=r[0]);return {i,txt:`${NRI[i][1]} ${NRI[i][2]}`,lv:i<2?1:i<4?2:i<5?3:4}};
-const TIPOS_CONF=[["A","Tipo A","Ocupa una parte de un edificio en el que hay otros establecimientos (por ejemplo, un local en un edificio con otras empresas)."],
- ["B","Tipo B","Ocupa todo un edificio que está pegado a otro o a 3 m o menos de otro edificio."],
- ["C","Tipo C","Ocupa uno o varios edificios separados más de 3 m de cualquier otro, sin nada que pueda arder en medio."],
- ["D","Tipo D","Ocupa un espacio abierto, que puede estar cubierto del todo, con alguna fachada sin pared."],
- ["E","Tipo E","Ocupa un espacio abierto cubierto como máximo en la mitad de su superficie, con alguna fachada sin pared en la parte cubierta."]];
+const nriDe=q=>{const i=NRI.findIndex(r=>q<=r[0]);return {i,n:i+1,cat:i<2?"bajo":i<5?"medio":"alto",txt:`${NRI[i][1]} ${NRI[i][2]}`,lv:i<2?1:i<4?2:i<5?3:4}};
+const TIPOS_CONF=[
+ ["AV","Tipo AV","Ocupa una parte de un edificio que comparte con otros establecimientos, separados en vertical: por ejemplo, una planta con otras empresas encima o debajo. Si mezcla separaciones verticales y horizontales, se considera AV."],
+ ["AH","Tipo AH","Ocupa una parte de un edificio que comparte estructura con otros establecimientos, separados en horizontal: por ejemplo, una nave dentro de una fila de naves unidas."],
+ ["B","Tipo B","Ocupa todo un edificio con estructura y cerramiento propios, pegado a edificios de otros establecimientos o a 3 m o menos de ellos."],
+ ["C","Tipo C","Ocupa uno o varios edificios completos a más de 3 m de los edificios de otros establecimientos, sin mercancías ni nada que pueda propagar el fuego en esa separación."],
+ ["D","Tipo D","Ocupa un espacio abierto: descubierto, o cubierto con estructuras sin paredes laterales o con paredes solo en parte. Si tiene zonas cubiertas, debe cumplir la tabla 1.1.1; si no la cumple, esa zona se considera A, B o C."]];
 const sv=(b)=>`<svg viewBox="0 0 160 100" role="img" aria-hidden="true">${b}<line class="sv-ln" x1="6" y1="88" x2="154" y2="88"/></svg>`;
 const FIG={
- A:sv(`<rect class="sv-oth" x="45" y="20" width="70" height="68"/><rect class="sv-est" x="45" y="54" width="70" height="17"/><line class="sv-ln" x1="45" y1="37" x2="115" y2="37"/><line class="sv-ln" x1="45" y1="71" x2="115" y2="71"/><text class="sv-te" x="80" y="65" text-anchor="middle">Establecimiento</text><text class="sv-t" x="80" y="31" text-anchor="middle">Otros usos</text><text class="sv-t" x="80" y="82" text-anchor="middle">Otros usos</text>`),
- B:sv(`<rect class="sv-est" x="28" y="34" width="56" height="54"/><rect class="sv-oth" x="90" y="46" width="44" height="42"/><text class="sv-te" x="56" y="64" text-anchor="middle">Establec.</text><text class="sv-t" x="112" y="70" text-anchor="middle">Otro</text><line class="sv-ln" x1="84" y1="24" x2="90" y2="24"/><line class="sv-ln" x1="84" y1="20" x2="84" y2="28"/><line class="sv-ln" x1="90" y1="20" x2="90" y2="28"/><text class="sv-t" x="87" y="16" text-anchor="middle">≤ 3 m</text>`),
- C:sv(`<rect class="sv-est" x="16" y="38" width="54" height="50"/><rect class="sv-oth" x="104" y="46" width="40" height="42"/><text class="sv-te" x="43" y="66" text-anchor="middle">Establec.</text><text class="sv-t" x="124" y="70" text-anchor="middle">Otro</text><line class="sv-ln" x1="70" y1="28" x2="104" y2="28"/><line class="sv-ln" x1="70" y1="24" x2="70" y2="32"/><line class="sv-ln" x1="104" y1="24" x2="104" y2="32"/><text class="sv-t" x="87" y="22" text-anchor="middle">&gt; 3 m</text>`),
- D:sv(`<rect class="sv-est" x="22" y="40" width="116" height="48" opacity=".55"/><rect class="sv-roof" x="16" y="34" width="128" height="5"/><rect class="sv-oth" x="16" y="39" width="6" height="49"/><line class="sv-ln" x1="80" y1="39" x2="80" y2="88"/><line class="sv-ln" x1="140" y1="39" x2="140" y2="88"/><text class="sv-te" x="80" y="28" text-anchor="middle">Cubierto 100 %</text><text class="sv-t" x="112" y="68" text-anchor="middle">Sin pared</text>`),
- E:sv(`<rect class="sv-est" x="22" y="40" width="58" height="48" opacity=".55"/><rect class="sv-roof" x="16" y="34" width="66" height="5"/><rect class="sv-oth" x="16" y="39" width="6" height="49"/><line class="sv-ln" x1="80" y1="39" x2="80" y2="88"/><rect class="sv-dash" x="84" y="58" width="56" height="30"/><rect class="sv-oth" x="92" y="74" width="12" height="14"/><rect class="sv-oth" x="110" y="70" width="12" height="18"/><text class="sv-te" x="50" y="28" text-anchor="middle">Cubierto ≤ 50 %</text><text class="sv-t" x="112" y="52" text-anchor="middle">Al aire libre</text>`)};
+ AV:sv(`<rect class="sv-oth" x="50" y="18" width="60" height="70"/><rect class="sv-est" x="50" y="41" width="60" height="23"/><line class="sv-ln" x1="50" y1="41" x2="110" y2="41"/><line class="sv-ln" x1="50" y1="64" x2="110" y2="64"/><text class="sv-te" x="80" y="55" text-anchor="middle">Establec.</text><text class="sv-t" x="80" y="32" text-anchor="middle">Otro</text><text class="sv-t" x="80" y="79" text-anchor="middle">Otro</text>`),
+ AH:sv(`<rect class="sv-oth" x="14" y="44" width="33" height="44"/><rect class="sv-oth" x="47" y="44" width="33" height="44"/><rect class="sv-est" x="80" y="44" width="33" height="44"/><rect class="sv-oth" x="113" y="44" width="33" height="44"/><text class="sv-te" x="96.5" y="69" text-anchor="middle">Est.</text><text class="sv-t" x="80" y="36" text-anchor="middle">Estructura común</text>`),
+ B:sv(`<rect class="sv-oth" x="12" y="40" width="44" height="48"/><rect class="sv-est" x="58" y="48" width="40" height="40"/><rect class="sv-oth" x="104" y="54" width="42" height="34"/><text class="sv-te" x="78" y="71" text-anchor="middle">Establec.</text><line class="sv-ln" x1="98" y1="40" x2="104" y2="40"/><text class="sv-t" x="101" y="34" text-anchor="middle">≤ 3 m</text>`),
+ C:sv(`<rect class="sv-oth" x="8" y="46" width="34" height="42"/><rect class="sv-est" x="62" y="40" width="36" height="48"/><rect class="sv-oth" x="118" y="50" width="34" height="38"/><text class="sv-te" x="80" y="67" text-anchor="middle">Establec.</text><line class="sv-ln" x1="42" y1="30" x2="62" y2="30"/><line class="sv-ln" x1="98" y1="30" x2="118" y2="30"/><text class="sv-t" x="52" y="25" text-anchor="middle">&gt; 3 m</text><text class="sv-t" x="108" y="25" text-anchor="middle">&gt; 3 m</text>`),
+ D:sv(`<rect class="sv-est" x="30" y="72" width="100" height="16" opacity=".75"/><rect class="sv-dash" x="30" y="40" width="100" height="48"/><line class="sv-dash" x1="55" y1="40" x2="55" y2="88"/><line class="sv-dash" x1="80" y1="40" x2="80" y2="88"/><line class="sv-dash" x1="105" y1="40" x2="105" y2="88"/><text class="sv-te" x="80" y="83" text-anchor="middle">Espacio abierto</text><text class="sv-t" x="80" y="33" text-anchor="middle">Sin cerramientos o solo en parte</text>`)};
 const MET={
- prod:{t:"Producción, transformación o venta",f:"Qs = ( Σ qsi · Si · Ci / A ) · Ra",d:"Para talleres, fábricas, tiendas u oficinas. Usas la carga de fuego por metro cuadrado (qs) de cada zona, que viene en la Tabla 1.2 del reglamento según la actividad.",cols:[["q","qsi (MJ/m²)"],["s","Si (m²)"]]},
- alm:{t:"Almacenamiento",f:"Qs = ( Σ qvi · Ci · hi · si / A ) · Ra",d:"Para almacenes. Usas la carga de fuego por metro cúbico (qv) de cada producto almacenado, la altura de las pilas o estanterías (h) y la superficie que ocupan en el suelo (s).",cols:[["q","qvi (MJ/m³)"],["h","hi (m)"],["s","si (m²)"]]},
- gen:{t:"Método general (por masas)",f:"Qs = ( Σ Gi · qi · Ci / A ) · Ra",d:"Cuando sabes cuántos kilos hay de cada material. Multiplicas los kilos (G) por el calor que da cada kilo al arder (q, Tabla 1.4).",cols:[["G","Gi (kg)"],["q","qi (MJ/kg)"]]}};
-const FKEY="evb_cf_v1";
-function blankF(){return {app:"cargafuego",v:1,meta:{alumno:"",empresa:"",actividad:"",direccion:"",tipo:"",A:"",desc:""},met:"",metJust:"",rows:[],ra:null,raJust:"",conclu:""}}
-let SF=store.get(FKEY,null);if(!SF||SF.app!=="cargafuego")SF=blankF();
+ masa:{t:"Por masas de materiales (3.2.1)",f:"Qs = Σ(qi · Gi · Ci) / A · R",d:"Cuando sabes cuántos kilos (o unidades) hay de cada material. Multiplicas la cantidad (G) por el calor que da cada kilo al arder (q, tabla 1.3.3).",cols:["n","cat","q","G"]},
+ fab:{t:"Fabricación y otros procesos (3.2.2)",f:"Qs = Σ(qsi · Si · Ci) / A · R",d:"Para talleres, fábricas, tiendas u oficinas. Usas la carga de fuego por metro cuadrado (qs) de cada zona, de la tabla 1.3.5.",cols:["n","cat","q","S"]},
+ alm:{t:"Almacenamiento (3.2.3)",f:"Qs = Σ(qvi · hi · Si · Ci) / A · R",d:"Para almacenes. Usas la carga de fuego por metro cúbico (qv) de la tabla 1.3.5, la altura del almacenamiento (h) y su superficie (S).",cols:["n","cat","vt","q","h","S"]},
+ comb:{t:"Combinado (3.2.4)",f:"Qs = [Σ(qsi·Si·Ci) + Σ(qvi·hi·Si·Ci) + Σ(qi·Gi·Ci)] / A · R",d:"Cuando en el mismo sector hay zonas de fabricación y de almacenamiento, y si hace falta materiales sueltos (por ejemplo, los combustibles del propio edificio).",cols:["t","n","cat","vt","q","h","S","G"]}};
+const TT={fab:"Fabricación",alm:"Almacenamiento",mat:"Material"};
+const rowT=(r,met=SF.met)=>met==="comb"?r.t:({masa:"mat",fab:"fab",alm:"alm"})[met];
+const COLS={t:"Tipo",n:"Zona o material",cat:"De la tabla",vt:"Superficie S",q:"q",h:"hi (m)",S:"Si (m²)",G:"Gi (cantidad)"};
+const QLAB={fab:"qsi (MJ/m²)",alm:"qvi (MJ/m³)",mat:"qi (MJ/ud.)"};
+const CIS=[["1","1,00 · grado 4 o 5"],["1.2","1,20 · grado 3, o 4-5 fumígeno"],["1.4","1,40 · grado 2"],["1.44","1,44 · grado 3 fumígeno"],["1.6","1,60 · grado 1"],["1.68","1,68 · grado 2 fumígeno"],["1.92","1,92 · grado 1 fumígeno"]];
+const FKEY="evb_cf_v2";
+function blankF(){return {app:"cargafuego",v:2,meta:{alumno:"",empresa:"",actividad:"",direccion:"",tipo:"",A:"",desc:"",sotano:false,alt15:false},met:"",uso:"",metJust:"",rows:[],R:null,rq:{a:null,b:null,c:null},rJust:"",conclu:""}}
+let SF=store.get(FKEY,null);if(!SF||SF.app!=="cargafuego"||SF.v!==2)SF=blankF();
 const saveF=()=>store.set(FKEY,SF);
-const newRow=()=>({n:"",cat:"",q:"",s:"",h:"",G:"",ci:""});
-function rowOk(r,met){return num(r.ci)!=null&&MET[met].cols.every(([k])=>num(r[k])!=null&&num(r[k])>0)}
-function termF(r,met){const ci=num(r.ci);if(!rowOk(r,met))return null;return met==="prod"?num(r.q)*num(r.s)*ci:met==="alm"?num(r.q)*ci*num(r.h)*num(r.s):num(r.G)*num(r.q)*ci}
-function raSug(st=SF){if(st.met==="gen")return null;const A=num(st.meta.A);if(!A)return null;const c=st.rows.filter(r=>r.cat!==""&&num(r.s)!=null&&num(r.s)>=.1*A).map(r=>ACTS[+r.cat][3]);return c.length?Math.max(...c):null}
+const newRow=t=>({t:t||"fab",n:"",cat:"",q:"",S:"",h:"",G:"",u:"kg",vt:"b",ci:""});
+function rowOk(r,met){const t=rowT(r,met),q=num(r.q),ci=num(r.ci);if(ci==null||q==null||q<0)return false;
+ if(t==="fab")return num(r.S)>0;if(t==="alm")return num(r.S)>0&&(q===0||num(r.h)>0);return q>0&&num(r.G)>0}
+function termF(r,met){if(!rowOk(r,met))return null;const t=rowT(r,met),q=num(r.q),ci=num(r.ci);return t==="fab"?q*num(r.S)*ci:t==="alm"?(q===0?0:q*num(r.h)*num(r.S)*ci):q*num(r.G)*ci}
+function sumS(st=SF){return st.rows.filter(r=>["fab","alm"].includes(rowT(r,st.met))).reduce((a,r)=>a+(num(r.S)||0),0)}
+function rminMax(st=SF){const v=st.rows.filter(r=>r.cat!==""&&["fab","alm"].includes(rowT(r,st.met))).map(r=>ACT[+r.cat]&&ACT[+r.cat][6]).filter(x=>x!=null);return v.length?Math.max(...v):null}
+function rSug(st=SF){const q=st.rq,rm=rminMax(st);if(q.a==null||q.b==null||q.c==null)return null;const a=q.a||(rm!=null&&rm>=1.4),b=q.b;
+ let r=a&&b?1.8:a||b?1.4:q.c&&rm==null?0.8:1;return Math.max(r,rm??0)}
 function calcF(st=SF){const A=num(st.meta.A),met=st.met;if(!met||!(A>0)||!st.rows.length)return {Qs:null};
- const terms=st.rows.map(r=>termF(r,met));if(terms.some(t=>t==null)||st.ra==null)return {Qs:null,terms};
- const sum=terms.reduce((a,b)=>a+b,0);const Qs=sum/A*st.ra;return {Qs,sum,A,ra:st.ra,terms,nri:nriDe(Qs)}}
+ const terms=st.rows.map(r=>termF(r,met));if(terms.some(t=>t==null)||st.R==null)return {Qs:null,terms};
+ const sum=terms.reduce((a,b)=>a+b,0);const Qs=sum/A*st.R;return {Qs,sum,A,R:st.R,terms,QT:sum*st.R,nri:nriDe(Qs)}}
+const fmtR=v=>String(v==null?"—":(+v).toFixed(v%1&&String(v).length>3?2:1)).replace(".",",");
+/* ---------- medidas que exige el reglamento (anexos II y III) ---------- */
+const SMAX={AV:[2000,1000,500,400,300,null,null,null],AH:[6000,4000,3500,3000,2500,2000,1500,null],B:[12000,8000,7000,6000,5000,4000,3000,null],C:[Infinity,12000,10000,8000,7000,6000,5000,4000]};
+const EIS={AV:{bajo:["EI 120","EI 90"],medio:[null,"EI 120"],alto:[null,null]},AH:{bajo:["EI 120","EI 90"],medio:["EI 180","EI 120"],alto:[null,"EI 180"]},B:{bajo:["EI 90","EI 60"],medio:["EI 120","EI 90"],alto:["EI 180","EI 120"]},C:{bajo:["EI 60","EI 30"],medio:["EI 90","EI 60"],alto:["EI 120","EI 90"]}};
+const DET={fab:{AV:{bajo:300,medio:300,alto:300},AH:{bajo:300,medio:300,alto:300},B:{bajo:3000,medio:2000,alto:1000},C:{bajo:4000,medio:3000,alto:2000}},alm:{AV:{bajo:150,medio:150,alto:150},AH:{bajo:150,medio:150,alto:150},B:{bajo:1500,medio:1000,alto:500},C:{bajo:3000,medio:1500,alto:800}}};
+const ROC={fab:{AV:{medio:500},AH:{medio:1500,alto:750},B:{medio:2500,alto:1000},C:{medio:3500,alto:2000}},alm:{AV:{medio:300},AH:{medio:1000,alto:600},B:{medio:1500,alto:800},C:{medio:2000,alto:1000}}};
+const HUM={fab:{medio:2000,alto:1000},alm:{medio:1000,alto:800}};
+const HLL={AV:{bajo:1000,medio:300},AH:{bajo:1000,medio:600,alto:600},B:{bajo:3500,medio:2500,alto:1000},C:{bajo:5000,medio:3500,alto:2500},D:{bajo:5000,medio:5000,alto:5000}};
+function usosF(st=SF){const A=num(st.meta.A)||0;if(st.met==="fab")return {fab:A,alm:0};if(st.met==="alm")return {fab:0,alm:A};
+ if(st.met==="masa")return st.uso==="alm"?{fab:0,alm:A}:{fab:A,alm:0};
+ let fab=0,alm=0;st.rows.forEach(r=>{const t=rowT(r,st.met);if(t==="fab")fab+=num(r.S)||0;if(t==="alm")alm+=num(r.S)||0});return {fab,alm}}
+function porCociente(tab,cat,T,u,nri1){const f=(k)=>{const v=tab[k]&&tab[k][T]?tab[k][T][cat]:tab[k]&&tab[k][cat];if(v==null)return null;if(cat==="bajo"&&nri1&&tab===DET&&(T==="B"||T==="C"))return null;return v};
+ const tf=f("fab"),ta=f("alm");const s=(tf&&u.fab?u.fab/tf:0)+(ta&&u.alm?u.alm/ta:0);return {req:s>=1-1e-9,tf,ta,s}}
+function medidasF(){const c=calcF(),T=SF.meta.tipo,A=num(SF.meta.A);if(c.Qs==null||!T||!(A>0))return null;
+ const n=c.nri.n,cat=c.nri.cat,sot=!!SF.meta.sotano,u=usosF(),M=[],uso=u.fab&&u.alm?"fabricación y almacenamiento":u.alm?"almacenamiento":"fabricación";
+ const add=(t,est,txt,ref)=>M.push({t,est,txt,ref});
+ if(T==="D"){add("Configuración","info","Espacio abierto (tipo D): el reglamento trata la zona como área de incendio. Las tablas de superficie máxima de sector y de resistencia al fuego no se aplican igual que a los edificios.","Anexo I, 1.2")}
+ else{
+  /* ubicación */
+  let noPerm=[];if(T==="AV"&&cat==="alto")noPerm.push("riesgo alto en tipo AV");if((T==="AH"||T==="B")&&n===8)noPerm.push("riesgo alto 8 en tipo "+T);
+  if(sot&&T==="AV"&&cat==="medio")noPerm.push("riesgo medio bajo rasante en tipo AV");if(sot&&T==="AH"&&cat==="alto")noPerm.push("riesgo alto bajo rasante en tipo AH");
+  add("Ubicación del sector",noPerm.length?"no":"ok",noPerm.length?`No permitida: ${noPerm.join("; ")}, salvo las excepciones de la nota 5 de la tabla 2.1.1 (solo almacenamiento, superficie limitada y medidas adicionales).`:"Permitida para esta configuración y nivel de riesgo.","Anexo II, apartado III");
+  /* superficie máxima */
+  let smax=SMAX[T]?SMAX[T][n-1]:null;if(smax!=null&&sot)smax=T==="AV"?(cat==="bajo"?400:smax):smax/2;
+  if(smax==null)add("Superficie máxima del sector","no","Esta combinación de configuración y nivel de riesgo no está admitida en la tabla 2.1.1 (ver nota 5).","Tabla 2.1.1");
+  else add("Superficie máxima del sector",smax===Infinity||A<=smax?"ok":"no",smax===Infinity?"Sin límite.":`Máximo ${fmt0(smax)} m²${sot?" (bajo rasante)":""}. Tu sector tiene ${fmt0(A)} m²${A>smax?": supera el máximo, habría que dividirlo en más sectores":""}. Se puede multiplicar por 1,25 si la fachada accesible es al menos el 50 % del perímetro y por 2 con rociadores en todo el sector.`,"Tabla 2.1.1");
+  const ei=EIS[T]&&EIS[T][cat]?EIS[T][cat][sot?0:1]:null;
+  add("Resistencia al fuego de paredes y techos que delimitan el sector",ei?"si":"no",ei?`${ei} (aguanta ${ei.replace("EI ","")} minutos el fuego sin dejarlo pasar).`:"No admitido para esta configuración y nivel.","Tabla 2.1.2")}
+ /* detección */
+ if(T!=="D"){const d=porCociente(DET,cat,T,u,n===1);
+  if(d.req)add("Detección automática y pulsadores de alarma","si",`Obligatoria: detectores y pulsadores manuales, por ser un sector de ${uso} de ${fmt0(A)} m².`,"Anexo III, 1.2");
+  else if(A>=400)add("Pulsadores manuales de alarma","si",`No se exige detección automática, pero sí pulsadores manuales por tener 400 m² o más.`,"Anexo III, 1.3");
+  else add("Detección y alarma","noreq","No se exige por la superficie y el nivel de riesgo.","Anexo III, 1.2 y 1.3")}
+ /* extintores */
+ if(T==="D"&&n===1)add("Extintores portátiles","noreq","No se exigen en áreas tipo D de riesgo bajo 1.","Anexo III, 4.5");
+ else{const base=cat==="bajo"?600:cat==="medio"?400:300,ef=cat==="alto"?"34A":"21A",ne=1+Math.ceil(Math.max(0,A-base)/200);
+  add("Extintores portátiles","si",`Al menos ${ne} extintor(es) de eficacia ${ef} (uno hasta ${base} m² y uno más por cada 200 m² o fracción). Recorrido máximo hasta un extintor: ${T==="D"?25:15} m. Si hay líquidos inflamables, añade los de clase B de la tabla 3.4.2.`,"Tablas 3.4.1 y 3.4.2")}
+ /* BIE */
+ {let lim=null;if(T==="AV")lim=300;else if(T==="AH"||T==="B")lim=cat==="medio"?500:cat==="alto"?200:null;else if(T==="C")lim=cat==="medio"?1000:cat==="alto"?500:null;else if(T==="D")lim=cat==="alto"?5000:null;
+  const tipo=cat==="alto"?"45 mm":"25 mm";
+  add("Bocas de incendio equipadas (BIE)",lim!=null&&A>=lim?"si":"noreq",lim!=null&&A>=lim?`Obligatorias (desde ${fmt0(lim)} m² en este caso). Tipo: ${tipo}.`:`No se exigen${lim!=null?` hasta ${fmt0(lim)} m²`:" para este nivel de riesgo y configuración"}.`,"Anexo III, 5.1 y tabla 3.5.1")}
+ /* hidrantes */
+ {const h=HLL[T]&&HLL[T][cat];const ok=h!=null&&A>=h&&!(cat==="bajo"&&n===1);
+  add("Hidrante para llenado de camiones",ok?"si":"noreq",ok?`Al menos uno, a menos de 100 m de la entrada o fachada accesible (desde ${fmt0(h)} m² en este caso). También se exige si todo el establecimiento suma 5.000 m² o más.`:`No se exige por este sector${h!=null?` (desde ${fmt0(h)} m²)`:""}. Se exige igualmente si el establecimiento completo suma 5.000 m² o más, salvo que todo sea riesgo bajo 1.`,"Tabla 3.3.1");
+  let hi=null;if(["AH","B","C"].includes(T))hi=cat==="medio"?3500:cat==="alto"?2500:null;if(T==="D")hi=cat==="bajo"?null:10000;
+  if(hi!=null&&A>=hi){const cq=T==="D"?(cat==="alto"?"3.000 l/min durante 90 min":"2.000 l/min durante 60 min"):(cat==="alto"?"2.000 l/min durante 90 min":"1.500 l/min durante 60 min");add("Hidrantes de impulsión directa","si",`Obligatorios alrededor del edificio o área. Caudal ${cq}, presión mínima 500 kPa.`,"Tablas 3.3.2 y 3.3.3")}
+  else add("Hidrantes de impulsión directa","noreq",hi!=null?`No se exigen hasta ${fmt0(hi)} m².`:"No se exigen para este nivel de riesgo y configuración.","Tabla 3.3.2")}
+ /* rociadores */
+ if(T!=="D"&&cat!=="bajo"){const r=porCociente(ROC,cat,T,u,false);add("Rociadores automáticos (extinción automática)",r.req?"si":"noreq",r.req?`Obligatorios en todo el sector (${uso}).`:`No se exigen por la superficie (${r.tf?`fabricación desde ${fmt0(r.tf)} m²`:""}${r.tf&&r.ta?", ":""}${r.ta?`almacenamiento desde ${fmt0(r.ta)} m²`:""}).`,"Anexo III, 7.1.1")}
+ else if(T!=="D")add("Rociadores automáticos (extinción automática)","noreq","No se exigen en sectores de riesgo bajo (salvo el caso del apartado 7.1.2 con zonas de almacenamiento de mayor riesgo).","Anexo III, 7.1")
+ /* humos */
+ if(T!=="D"&&cat!=="bajo"){const hu=porCociente({fab:{x:HUM.fab},alm:{x:HUM.alm}},cat,"x",u,false);
+  if(hu.req)add("Control de humos y de calor","si","Obligatorio un sistema de control de humos y calor según el RIPCI.","Anexo III, 8.2");
+  else if(A>=100){const den=(u.alm>0)?(sot?100:150):(sot?150:200);add("Control de humos o huecos de ventilación","si",`Sistema de control de humos, o como alternativa huecos de ventilación: mínimo ${fmt(Math.ceil(A/den)*0.5,1)} m² de superficie aerodinámica (0,5 m² por cada ${den} m²), más la misma superficie de entrada de aire abajo.`,"Anexo III, 8.4")}
+  else add("Control de humos y de calor","noreq","No se exige en sectores de menos de 100 m².","Anexo III, 8.4")}
+ else if(T!=="D")add("Control de humos y de calor","noreq","No se exige en sectores de riesgo bajo.","Anexo III, 8.2")
+ /* columna seca, alumbrado, señalización */
+ add("Columna seca",SF.meta.alt15?"si":"noreq",SF.meta.alt15?"Obligatoria, con bocas de salida en todas las plantas.":"Solo se exige si la altura de evacuación es de 15 m o más.","Anexo III, 6");
+ add("Alumbrado de emergencia y señalización","si","Alumbrado de emergencia según el CTE DB-SUA 4 y señalización de extintores, pulsadores, BIE e hidrantes según el RIPCI.","Anexo III, 9 y 10");
+ return M}
+const ESTX={si:"Exigido",no:"No cumple / no admitido",ok:"Cumple",noreq:"No exigido",info:"Información"};
+const ESTC={si:"b2",no:"b4",ok:"b1",noreq:"",info:""};
 const EJ={
- prod:{meta:{empresa:"Ejemplo: taller de reparación de coches",actividad:"Reparación de automóviles con oficina",tipo:"C",A:"400"},ra:1,rows:[{n:"Zona de taller",cat:"1",q:"300",s:"300",ci:"1"},{n:"Oficina",cat:"5",q:"600",s:"100",ci:"1"}],
-  txt:`Un taller de coches de <b>400 m²</b> tiene dos zonas: el taller (300 m², qs = 300 MJ/m²) y una oficina (100 m², qs = 600 MJ/m²). Todo son sólidos que arden por encima de 200 °C, así que Ci = 1,0.<br>
-  1) Multiplica cada zona: 300 × 300 × 1,0 = 90.000 y 600 × 100 × 1,0 = 60.000.<br>2) Suma: 90.000 + 60.000 = 150.000.<br>3) Divide entre la superficie: 150.000 / 400 = 375.<br>4) Multiplica por Ra. Las dos zonas ocupan más del 10 % y las dos tienen Ra = 1,0: 375 × 1,0 = <b>375 MJ/m²</b>.<br>5) 375 es menor que 425, así que el nivel de riesgo intrínseco es <b>Bajo 1</b>.`},
- alm:{meta:{empresa:"Ejemplo: almacén de cartón y madera",actividad:"Almacenamiento de cartón y madera",tipo:"B",A:"600"},ra:1.5,rows:[{n:"Estanterías de cartón",cat:"11",q:"4200",h:"3",s:"150",ci:"1"},{n:"Pilas de tablas",cat:"12",q:"4200",h:"2",s:"50",ci:"1"}],
-  txt:`Un almacén de <b>600 m²</b> guarda cartón en estanterías de 3 m de alto que ocupan 150 m² del suelo, y tablas de madera en pilas de 2 m que ocupan 50 m². Para los dos, qv = 4.200 MJ/m³ y Ci = 1,0.<br>
-  1) Multiplica cada zona: 4.200 × 1,0 × 3 × 150 = 1.890.000 y 4.200 × 1,0 × 2 × 50 = 420.000.<br>2) Suma: 2.310.000.<br>3) Divide entre la superficie: 2.310.000 / 600 = 3.850.<br>4) Multiplica por Ra. El cartón ocupa el 25 % del almacén y tiene Ra = 1,5: 3.850 × 1,5 = <b>5.775 MJ/m²</b>.<br>5) Está entre 3.400 y 6.800, así que el nivel es <b>Alto 6</b>.`},
- gen:{meta:{empresa:"Ejemplo: almacén de una fábrica de muebles",actividad:"Almacén de muebles de madera",tipo:"C",A:"200"},ra:1.5,rows:[{n:"Muebles y tableros",cat:"0",G:"3000",q:"16.7",ci:"1"},{n:"Plástico de embalar",cat:"5",G:"500",q:"42",ci:"1"},{n:"Alcohol para barnices",cat:"11",G:"100",q:"25.1",ci:"1.6"}],
-  txt:`Un almacén de <b>200 m²</b> guarda 3.000 kg de madera (q = 16,7 MJ/kg), 500 kg de plástico de embalar (polietileno, q = 42 MJ/kg) y 100 kg de alcohol (q = 25,1 MJ/kg). El alcohol es un líquido muy inflamable, así que su Ci = 1,6; los demás tienen Ci = 1,0.<br>
-  1) Multiplica cada material: 3.000 × 16,7 × 1,0 = 50.100; 500 × 42 × 1,0 = 21.000; 100 × 25,1 × 1,6 = 4.016.<br>2) Suma: 75.116.<br>3) Divide entre la superficie: 75.116 / 200 = 375,6.<br>4) Multiplica por Ra (almacén de muebles de madera, Ra = 1,5): 375,6 × 1,5 = <b>563 MJ/m²</b>.<br>5) Está entre 425 y 850, así que el nivel es <b>Bajo 2</b>.`}};
+ fab:{meta:{empresa:"Ejemplo: taller de reparación de coches",actividad:"Reparación de vehículos con oficina",tipo:"C",A:"400"},R:1,rq:{a:false,b:false,c:false},rows:[{t:"fab",n:"Zona de taller",an:"Talleres de reparación",S:"300"},{t:"fab",n:"Oficina",an:"Oficinas",S:"100"}],
+  txt:`Un taller de coches de <b>400 m²</b> tiene dos zonas: el taller (300 m²) y una oficina (100 m²). En la tabla 1.3.5, «Talleres de reparación» tiene qs = 400 MJ/m² y Ci = 1,44, y «Oficinas» qs = 700 MJ/m² y Ci = 1,44. Las dos zonas suman 400 m², igual que A.<br>
+  1) Multiplica cada zona: 400 × 300 × 1,44 = 172.800 y 700 × 100 × 1,44 = 100.800.<br>2) Suma: 273.600.<br>3) Divide entre la superficie: 273.600 / 400 = 684.<br>4) Multiplica por R. En este taller no se suelda ni hay llamas, no hay almacenes de más de 5 m y las dos actividades tienen Rmin = 1, así que R = 1: 684 × 1 = <b>684 MJ/m²</b>.<br>5) Está entre 425 y 850: nivel de riesgo intrínseco <b>Bajo 2</b>.`},
+ alm:{meta:{empresa:"Ejemplo: almacén de cartón y madera",actividad:"Almacenamiento de cartonaje y madera",tipo:"B",A:"600"},R:1,rq:{a:false,b:false,c:false},rows:[{t:"alm",n:"Estanterías de cartonaje",an:"Cartonaje (almacén)",vt:"b",h:"3",S:"300"},{t:"alm",n:"Pilas de madera",an:"Materiales de construcción: madera",vt:"b",h:"2",S:"200"},{t:"alm",n:"Zona vacía (muelle sin mercancía)",q:"0",S:"100",ci:"1"}],
+  txt:`Un almacén de <b>600 m²</b> tiene estanterías de cartonaje de 3 m de alto en 300 m² (con sus pasillos, por eso se usa el valor «bruto» qv = 2.500 MJ/m³, Ci = 1,20), pilas de madera de 2 m en 200 m² (qv bruto = 1.600 MJ/m³, Ci = 1,20) y una zona vacía de 100 m² que cuenta con q = 0. Todas suman 600 m², igual que A.<br>
+  1) Multiplica cada zona: 2.500 × 3 × 300 × 1,20 = 2.700.000; 1.600 × 2 × 200 × 1,20 = 768.000; la zona vacía da 0.<br>2) Suma: 3.468.000.<br>3) Divide entre la superficie: 3.468.000 / 600 = 5.780.<br>4) Nada se apila a más de 5 m y no hay trabajos con llamas: R = 1. Resultado: <b>5.780 MJ/m²</b>.<br>5) Está entre 3.400 y 6.800: nivel <b>Alto 6</b>.`},
+ masa:{meta:{empresa:"Ejemplo: almacén de una fábrica de muebles",actividad:"Almacén de muebles de madera",tipo:"C",A:"200"},uso:"alm",R:1,rq:{a:false,b:false,c:false},rows:[{t:"mat",n:"Madera de pino",mn:"Madera de pino",G:"3000"},{t:"mat",n:"Plástico de embalar",mn:"Polietileno (PE) en láminas",G:"500"},{t:"mat",n:"Alcohol para limpieza",mn:"Alcohol etílico (≥ 0,7 kg/litro) o etanol",G:"100"},{t:"mat",n:"Palets",mn:"Palets de madera (800 x 1200 mm)",G:"20"}],
+  txt:`Un almacén de <b>200 m²</b> guarda 3.000 kg de madera de pino (q = 17,8 MJ/kg, Ci = 1,20), 500 kg de plástico de embalar (polietileno en láminas, q = 44,5 MJ/kg, Ci = 1,00), 100 kg de alcohol (q = 27,0 MJ/kg, Ci = 1,60, porque es muy inflamable) y 20 palets (la tabla 1.3.3 da 369,6 MJ por cada palet, Ci = 1,00).<br>
+  1) Multiplica cada material: 3.000 × 17,8 × 1,20 = 64.080; 500 × 44,5 × 1,00 = 22.250; 100 × 27,0 × 1,60 = 4.320; 20 × 369,6 × 1,00 = 7.392.<br>2) Suma: 98.042.<br>3) Divide entre la superficie: 98.042 / 200 = 490,2.<br>4) No hay llamas ni almacenes altos: R = 1. Resultado: <b>490 MJ/m²</b>.<br>5) Está entre 425 y 850: nivel <b>Bajo 2</b>.`},
+ comb:{meta:{empresa:"Ejemplo: imprenta",actividad:"Imprenta con almacén de bobinas",tipo:"C",A:"350"},R:1.4,rq:{a:false,b:false,c:false},rows:[{t:"fab",n:"Zona de impresión",an:"Imprenta: producción",S:"200"},{t:"alm",n:"Almacén de bobinas",an:"Imprenta: almacenamiento de papel en bobinas",vt:"b",h:"3",S:"150"}],
+  txt:`Una imprenta de <b>350 m²</b> tiene una zona de impresión de 200 m² (fabricación: qs = 500 MJ/m², Ci = 1,68) y un almacén de bobinas de papel de 3 m de alto en 150 m² (almacenamiento: qv bruto = 4.200 MJ/m³, Ci = 1,20).<br>
+  1) Zona de fabricación: 500 × 200 × 1,68 = 168.000.<br>2) Zona de almacenamiento: 4.200 × 3 × 150 × 1,20 = 2.268.000.<br>3) Suma y divide: (168.000 + 2.268.000) / 350 = 6.960.<br>4) La producción de imprenta tiene Rmin = 1,4 en la tabla 1.3.5, así que R = 1,4: 6.960 × 1,4 = <b>9.744 MJ/m²</b>.<br>5) Está entre 6.800 y 13.600: nivel <b>Alto 7</b>.`}};
 const RUBF=[
  {id:"dat",t:"Datos del establecimiento",ce:"RA2·CE a · RA4·CE c",max:1.5,d:["Sin datos del establecimiento.","Datos incompletos.","Datos, configuración y superficie indicados.","Datos completos, configuración y superficie indicadas y descripción detallada."]},
  {id:"met",t:"Elección del método",ce:"RA2·CE a",max:1,d:["Sin método elegido.","Método elegido sin justificar.","Método elegido con una justificación breve.","Método adecuado y bien justificado."]},
- {id:"dc",t:"Datos de cálculo",ce:"RA2·CE a, c",max:3,d:["Sin datos de zonas o materiales.","Datos incompletos o una sola zona.","Datos completos de varias zonas o materiales.","Datos completos, coherentes con la superficie y con cada zona identificada."]},
- {id:"coef",t:"Coeficientes Ci y Ra",ce:"RA2·CE a, c",max:1.5,d:["Coeficientes sin asignar.","Coeficientes asignados sin justificar.","Coeficientes asignados con justificación breve.","Ci y Ra asignados, coherentes con la Tabla 1.2 y justificados."]},
+ {id:"dc",t:"Datos de cálculo",ce:"RA2·CE a, c",max:3,d:["Sin datos de zonas o materiales.","Datos incompletos o una sola zona.","Datos completos de varias zonas o materiales.","Datos completos, con la suma de superficies igual a A y cada zona identificada."]},
+ {id:"coef",t:"Coeficientes Ci y R",ce:"RA2·CE a, c",max:1.5,d:["Coeficientes sin asignar.","Coeficientes asignados sin justificar.","Coeficientes asignados con justificación breve.","Ci y R asignados según las tablas 1.3.2 a 1.3.5 y justificados."]},
  {id:"res",t:"Resultado y nivel de riesgo",ce:"RA2·CE c",max:1,d:["Sin resultado.","Resultado incompleto.","Resultado calculado.","Resultado calculado e interpretado con el nivel de riesgo intrínseco."]},
- {id:"con",t:"Conclusiones",ce:"RA4·CE a, b, c",max:2,d:["Sin conclusiones.","Conclusiones breves.","Conclusiones con el nivel de riesgo o con medidas.","Conclusiones desarrolladas con el nivel de riesgo y medidas para reducir la carga de fuego."]}];
+ {id:"con",t:"Conclusiones",ce:"RA4·CE a, b, c",max:2,d:["Sin conclusiones.","Conclusiones breves.","Conclusiones con el nivel de riesgo o con medidas.","Conclusiones desarrolladas con el nivel de riesgo y las medidas que exige el reglamento."]}];
 function evalF(){const m=SF.meta,c=calcF(),outs=[];
  {const i=[nz(m.empresa),nz(m.actividad),nz(m.tipo),num(m.A)>0].map(b=>b?1:0).concat([Math.min(palabras(m.desc)/40,1)]),mj=[];
-  if(!nz(m.tipo))mj.push("indica la configuración del establecimiento (tipo A a E)");if(!(num(m.A)>0))mj.push("indica la superficie del sector");if(palabras(m.desc)<40)mj.push("describe el establecimiento con más detalle (al menos 40 palabras)");outs.push({r:avg(i),mj})}
- {const mj=[];const r=!SF.met?0:avg([1,Math.min(palabras(SF.metJust)/15,1)]);if(!SF.met)mj.push("elige el método de cálculo");else if(palabras(SF.metJust)<15)mj.push("justifica por qué eliges ese método");outs.push({r,mj})}
+  if(!nz(m.tipo))mj.push("indica la configuración del establecimiento (AV, AH, B, C o D)");if(!(num(m.A)>0))mj.push("indica la superficie del sector");if(palabras(m.desc)<40)mj.push("describe el establecimiento con más detalle (al menos 40 palabras)");outs.push({r:avg(i),mj})}
+ {const mj=[];const r=!SF.met?0:avg([1,Math.min(palabras(SF.metJust)/15,1),SF.met==="masa"&&!SF.uso?0:1]);if(!SF.met)mj.push("elige el método de cálculo");else if(palabras(SF.metJust)<15)mj.push("justifica por qué eliges ese método");if(SF.met==="masa"&&!SF.uso)mj.push("indica si el sector es de fabricación o de almacenamiento");outs.push({r,mj})}
  {const mj=[];let r=0;if(SF.met&&SF.rows.length){const ok=SF.rows.filter(x=>rowOk(x,SF.met)).length/SF.rows.length,nom=SF.rows.filter(x=>nz(x.n)).length/SF.rows.length,var2=SF.rows.length>=2?1:.5;
-   const A=num(m.A);let coh=1;if(SF.met!=="gen"&&A>0){const ss=SF.rows.reduce((a,x)=>a+(num(x.s)||0),0);if(ss>A*1.001)coh=0}
-   r=avg([ok,nom,var2,coh]);if(ok<1)r=Math.min(r,.59);if(ok<1)mj.push("completa todos los datos de cada zona o material");if(nom<1)mj.push("pon nombre a cada zona o material");if(SF.rows.length<2)mj.push("incluye al menos dos zonas o materiales");if(!coh)mj.push("la suma de superficies de las zonas no puede superar la superficie del sector")}
+   const A=num(m.A);let coh=1;const zonas=SF.rows.some(x=>["fab","alm"].includes(rowT(x)));if(zonas&&A>0&&Math.abs(sumS()-A)>A*0.01)coh=0;
+   r=avg([ok,nom,var2,coh]);if(ok<1)r=Math.min(r,.59);if(ok<1)mj.push("completa todos los datos de cada zona o material");if(nom<1)mj.push("pon nombre a cada zona o material");if(SF.rows.length<2)mj.push("incluye al menos dos zonas o materiales");if(!coh)mj.push("la suma de las superficies Si debe ser igual a A (añade las zonas vacías con q = 0)")}
   else mj.push("añade las zonas o materiales del sector");outs.push({r,mj})}
- {const mj=[];const ciOk=SF.rows.length&&SF.rows.every(x=>num(x.ci)!=null)?1:0,raOk=SF.ra!=null?1:0,sug=raSug(),coh=sug==null||SF.ra===sug?1:0;let r=avg([ciOk,raOk,Math.min(palabras(SF.raJust)/15,1),coh]);if(!ciOk||!raOk)r=Math.min(r,.59);
-  if(!ciOk)mj.push("asigna el coeficiente Ci de cada zona o material");if(!raOk)mj.push("elige el coeficiente Ra");if(palabras(SF.raJust)<15)mj.push("justifica el coeficiente Ra");if(!coh)mj.push(`revisa Ra: según la Tabla 1.2 correspondería ${String(sug).replace(".",",")}`);outs.push({r,mj})}
+ {const mj=[];const ciOk=SF.rows.length&&SF.rows.every(x=>num(x.ci)!=null)?1:0,rOk=SF.R!=null?1:0,rm=rminMax(),sug=rSug(),coh=(rm==null||SF.R==null||SF.R>=rm)&&(sug==null||SF.R===sug)?1:0;let r=avg([ciOk,rOk,Math.min(palabras(SF.rJust)/15,1),coh]);if(!ciOk||!rOk)r=Math.min(r,.59);
+  if(!ciOk)mj.push("asigna el coeficiente Ci de cada zona o material");if(!rOk)mj.push("elige el coeficiente R");if(palabras(SF.rJust)<15)mj.push("justifica el coeficiente R");if(!coh)mj.push(`revisa R: según la tabla 1.3.4 y el Rmin de la tabla 1.3.5 correspondería ${fmtR(sug??rm)}`);outs.push({r,mj})}
  {const mj=[];const r=c.Qs==null?0:/nivel|riesgo intr|bajo|medio|alto/i.test(SF.conclu)?1:.75;if(c.Qs==null)mj.push("completa los datos para obtener el resultado");else if(r<1)mj.push("interpreta en las conclusiones el nivel de riesgo intrínseco");outs.push({r,mj})}
- {const t=SF.conclu,kw=[/nivel|riesgo intr|bajo|medio|alto/i,/medida|reduc|propon|separ|sector|almacen/i].map(x=>x.test(t)?1:0),mj=[];const r=nz(t)?avg([Math.min(palabras(t)/80,1),avg(kw)]):0;
-  if(palabras(t)<80)mj.push("desarrolla las conclusiones (al menos 80 palabras)");if(!kw[1])mj.push("propón medidas para reducir la carga de fuego o su efecto");outs.push({r,mj})}
+ {const t=SF.conclu,kw=[/nivel|riesgo intr|bajo|medio|alto/i,/medida|extintor|bie|detecci|rociador|sector|reduc|propon/i].map(x=>x.test(t)?1:0),mj=[];const r=nz(t)?avg([Math.min(palabras(t)/80,1),avg(kw)]):0;
+  if(palabras(t)<80)mj.push("desarrolla las conclusiones (al menos 80 palabras)");if(!kw[1])mj.push("comenta las medidas de protección que exige el reglamento");outs.push({r,mj})}
  return evalRub(RUBF,outs)}
-function introF(){const c=calcF();return c.Qs==null?"No se ha podido calcular la carga de fuego porque faltan datos.":`Carga de fuego ponderada y corregida Qs = ${fmt0(c.Qs)} MJ/m² (${fmt0(c.Qs/4.184)} Mcal/m²): nivel de riesgo intrínseco ${c.nri.txt}.`}
-
+function introF(){const c=calcF();return c.Qs==null?"No se ha podido calcular la carga de fuego porque faltan datos.":`Densidad de carga de fuego ponderada y corregida Qs = ${fmt0(c.Qs)} MJ/m²: nivel de riesgo intrínseco ${c.nri.txt} (tabla 1.3.1 del RD 164/2025).`}
+const idxAct=name=>String(ACT.findIndex(a=>a[1]===name)),idxMat=name=>String(MAT.findIndex(a=>a[0]===name));
+function fillRow(r){const t=rowT(r);if(r.cat==="")return;
+ if(t==="mat"){const m=MAT[+r.cat];if(!m)return;r.q=String(m[1]);r.u=m[2];r.ci=String(m[3]);if(!nz(r.n))r.n=m[0];return}
+ const a=ACT[+r.cat];if(!a)return;const v=t==="fab"?a[2]:(r.vt==="n"?a[4]:a[3]);r.q=v==null?"":String(v);r.ci=a[5]==null?"":String(a[5]);if(!nz(r.n))r.n=a[1].replace(/^.*?: /,"")}
+function tablaBuscable(id,head,rows){return `<div class="f"><input type="search" id="${id}-q" placeholder="Buscar…" aria-label="Buscar en la tabla"></div><div class="tbl tscroll"><table id="${id}"><thead><tr>${head.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td${i>0?' class="num"':""}>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`}
+function bindBuscar(id){const q=$(`#${id}-q`);if(!q)return;q.oninput=()=>{const s=q.value.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");$(`#${id}`).querySelectorAll("tbody tr").forEach(tr=>tr.hidden=s&&!tr.textContent.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").includes(s))}}
+const vnum=v=>v==null?"—":fmt(v,v%1?2:0);
 function renderCF(){const b=$("#cfBody"),m=SF.meta;
- b.innerHTML=`<div class="panel"><div class="intro"><p class="eyebrow">Reglamento de Seguridad contra Incendios en los Establecimientos Industriales (RD 2267/2004)</p><h2>Carga de Fuego Ponderada</h2>
-  <p class="muted">La <b>carga de fuego</b> es la cantidad de calor que soltaría todo lo que puede arder en un lugar, repartida entre sus metros cuadrados. Se mide en MJ/m². El reglamento la «pondera» según lo fácil que arde cada material (Ci) y la «corrige» según lo probable que es que empiece un fuego (Ra). Con el resultado se obtiene el <b>nivel de riesgo intrínseco</b>, de Bajo 1 a Alto 8.</p>
+ b.innerHTML=`<div class="panel"><div class="intro"><p class="eyebrow">Reglamento de seguridad contra incendios en los establecimientos industriales (RD 164/2025)</p><h2>Carga de Fuego Ponderada</h2>
+  <p class="muted">La <b>carga de fuego</b> es la cantidad de calor que soltaría todo lo que puede arder en un sector, repartida entre sus metros cuadrados (MJ/m²). El reglamento la <b>pondera</b> con el coeficiente Ci (lo fácil que arde cada material) y la <b>corrige</b> con el coeficiente R (lo peligrosa que es la actividad). Con el resultado, Qs, se obtiene el <b>nivel de riesgo intrínseco</b>, de Bajo 1 a Alto 8, y de él dependen las medidas de protección que exige el reglamento.</p>
   <div class="ra"><span>RA2·CE a</span><span>RA2·CE c</span><span>RA4·CE c</span></div></div>
-  <details><summary>Ejemplos resueltos paso a paso</summary>${Object.entries(EJ).map(([k,e])=>`<div class="ej"><h4>${MET[k].t}</h4><p class="mono small">${MET[k].f}</p><p>${e.txt}</p><button type="button" class="btn ghost sm" data-ej="${k}">Cargar este ejemplo en la calculadora</button></div>`).join("")}</details></div>
- <section class="panel"><h3>Paso 1 · Datos del establecimiento</h3><div class="grid2">
+  <details><summary>Ejemplos resueltos paso a paso</summary>${Object.entries(EJ).map(([k,e])=>`<div class="ej"><h4>${MET[k].t}</h4><p class="mono small">${MET[k].f}</p><p>${e.txt}</p><button type="button" class="btn ghost sm" data-ej="${k}">Cargar este ejemplo en la calculadora</button></div>`).join("")}</details>
+  <details id="dT133"><summary>Tabla 1.3.3 · Poder calorífico (q) y Ci de ${MAT.length} sustancias</summary><div id="T133b"></div></details>
+  <details id="dT135"><summary>Tabla 1.3.5 · Carga de fuego de ${ACT.length} actividades (qs, qv, Ci, Rmin)</summary><div id="T135b"></div></details></div>
+ <section class="panel"><h3>Paso 1 · Datos del establecimiento</h3><div class="grid2c">
   <label class="f" for="fm-alumno">Alumno/a o grupo<input type="text" id="fm-alumno" data-fm="alumno" value="${esc(m.alumno)}"></label>
   <label class="f" for="fm-empresa">Establecimiento<input type="text" id="fm-empresa" data-fm="empresa" value="${esc(m.empresa)}"></label>
-  <label class="f" for="fm-actividad">Actividad<input type="text" id="fm-actividad" data-fm="actividad" value="${esc(m.actividad)}"></label>
-  <label class="f" for="fm-direccion">Dirección<input type="text" id="fm-direccion" data-fm="direccion" value="${esc(m.direccion)}"></label>
   <div class="f"><div class="crit-h"><label for="fm-tipo">Configuración del establecimiento</label>${infoBtn("f-tipo")}</div>
-   <div class="help" id="help-f-tipo" hidden><p>Elige cómo está situado el establecimiento respecto a otros edificios. En naranja, el establecimiento.</p><div class="figs">${TIPOS_CONF.map(t=>`<figure class="fig">${FIG[t[0]]}<figcaption><b>${t[1]}.</b> ${t[2]}</figcaption></figure>`).join("")}</div></div>
+   <div class="help" id="help-f-tipo" hidden><p>Elige cómo está situado el establecimiento respecto a otros (anexo I, apartado 1). En naranja, el establecimiento.</p><div class="figs">${TIPOS_CONF.map(t=>`<figure class="fig">${FIG[t[0]]}<figcaption><b>${t[1]}.</b> ${t[2]}</figcaption></figure>`).join("")}</div>
+   <p><b>Tabla 1.1.1 (tipo D con zonas cubiertas):</b> área lateral abierta L mínima según la superficie cubierta A y la altura H. Con H &lt; 5 m: A &lt; 500 m² → L ≥ 25 %; más de 500 m² no se admite. Con H ≥ 5 m: A &lt; 500 m² → L ≥ 25 %; de 500 a 1.500 m² → L ≥ 50 %; más de 1.500 m² → L ≥ 70 %.</p></div>
    <select id="fm-tipo" data-fm="tipo" class="${m.tipo?"":"pend"}"><option value="">— Sin selección —</option>${TIPOS_CONF.map(t=>`<option value="${t[0]}" ${m.tipo===t[0]?"selected":""}>${t[1]}</option>`).join("")}</select>
    <figure class="fig" id="fTipoFig" ${m.tipo?"":"hidden"}>${m.tipo?FIG[m.tipo]+`<figcaption>${esc(TIPOS_CONF.find(t=>t[0]===m.tipo)[2])}</figcaption>`:""}</figure></div>
   <div class="f"><div class="crit-h"><label for="fm-A">Superficie del sector (A, en m²)</label>${infoBtn("f-A")}</div>
-   <div class="help" id="help-f-A" hidden>Es la superficie construida de la zona que estudias (el sector de incendio): la parte del edificio separada del resto por paredes y puertas que resisten el fuego. Si toda la nave es una sola zona, es la superficie de toda la nave.</div>
-   <input type="text" inputmode="decimal" id="fm-A" data-fm="A" value="${esc(m.A)}"></div></div>
+   <div class="help" id="help-f-A" hidden>Es la superficie construida del sector de incendio (la zona separada del resto por paredes y puertas que resisten el fuego), o la superficie del área de incendio si es un espacio abierto. Si el edificio no está dividido en sectores, es la superficie construida de todo el edificio.</div>
+   <input type="text" inputmode="decimal" id="fm-A" data-fm="A" value="${esc(m.A)}"></div>
+  <label class="f" for="fm-actividad">Actividad<input type="text" id="fm-actividad" data-fm="actividad" value="${esc(m.actividad)}"></label>
+  <label class="f" for="fm-direccion">Dirección<input type="text" id="fm-direccion" data-fm="direccion" value="${esc(m.direccion)}"></label>
+  <label class="f" for="fm-sotano">¿El sector está bajo rasante (sótano)?<select id="fm-sotano" data-fb="sotano"><option value="0" ${m.sotano?"":"selected"}>No</option><option value="1" ${m.sotano?"selected":""}>Sí</option></select></label>
+  <label class="f" for="fm-alt15">¿Altura de evacuación de 15 m o más?<select id="fm-alt15" data-fb="alt15"><option value="0" ${m.alt15?"":"selected"}>No</option><option value="1" ${m.alt15?"selected":""}>Sí</option></select></label></div>
   <label class="f" for="fm-desc">Descripción del establecimiento <small>Qué se hace, qué se guarda, cómo es el edificio. Mínimo recomendado: 40 palabras.</small><textarea id="fm-desc" data-fm="desc">${esc(m.desc)}</textarea></label></section>
  <section class="panel"><h3>Paso 2 · Elige el método de cálculo</h3>
   <div class="mets">${Object.entries(MET).map(([k,x])=>`<label class="metc ${SF.met===k?"on":""}"><input type="radio" name="fmet" value="${k}" ${SF.met===k?"checked":""}><b>${x.t}</b><span class="mono small">${x.f}</span><span class="small muted">${x.d}</span></label>`).join("")}</div>
+  <div id="fUso"></div>
   <label class="f" for="f-metJust">¿Por qué eliges este método? <small>Mínimo recomendado: 15 palabras.</small><textarea id="f-metJust" rows="2">${esc(SF.metJust)}</textarea></label></section>
  <section class="panel"><h3>Paso 3 · Zonas o materiales del sector</h3><div id="fRows"></div></section>
- <section class="panel"><h3>Paso 4 · Coeficiente de riesgo de activación (Ra)</h3>
-  <div class="f"><div class="crit-h"><label for="f-ra">Ra</label>${infoBtn("f-ra")}</div>
-   <div class="help" id="help-f-ra" hidden>Ra indica lo fácil que es que empiece un fuego por la actividad que se hace (máquinas calientes, chispas, productos inflamables…). Se copia de la Tabla 1.2 del reglamento, según la actividad. En esa tabla aparecen sobre todo los valores 1,0, 1,5 y 2,0. <b>Si hay varias actividades</b> en el sector, se toma el Ra de la de mayor riesgo, siempre que ocupe al menos el 10 % de la superficie.</div>
-   <select id="f-ra" class="${SF.ra==null?"pend":""}" style="max-width:16rem"><option value="">— Sin selección —</option>${[1,1.5,2,3].map(v=>`<option value="${v}" ${SF.ra===v?"selected":""}>${String(v.toFixed(1)).replace(".",",")}</option>`).join("")}</select></div>
-  <p class="small" id="fRaSug"></p>
-  <label class="f" for="f-raJust">Justifica el valor de Ra <small>Mínimo recomendado: 15 palabras.</small><textarea id="f-raJust" rows="2">${esc(SF.raJust)}</textarea></label></section>
+ <section class="panel"><h3>Paso 4 · Coeficiente R (tabla 1.3.4)</h3>
+  <p class="muted small">R corrige el resultado según lo peligrosa que es la actividad. Responde a las tres preguntas y la app te propone el valor.</p>
+  <div class="rq">${[["a","¿Hay trabajos habituales con chispas, llamas abiertas u otras fuentes de calor o químicas que hagan más fácil que empiece un incendio?"],["b","¿Hay almacenamientos de materiales combustibles de más de 5 m de altura que ocupen 100 m² o más?"],["c","¿El sector se dedica solo a almacenar a poca altura (2,5 m como máximo) en menos de 50 m²?"]].map(([k,t])=>`<label class="f" for="rq-${k}">${t}<select id="rq-${k}" data-rq="${k}" class="${SF.rq[k]==null?"pend":""}"><option value="">— Sin selección —</option><option value="0" ${SF.rq[k]===false?"selected":""}>No</option><option value="1" ${SF.rq[k]===true?"selected":""}>Sí</option></select></label>`).join("")}</div>
+  <div class="f"><div class="crit-h"><label for="f-R">R</label>${infoBtn("f-R")}</div>
+   <div class="help" id="help-f-R" hidden><dl><dt>R = 0,8</dt><dd>Sectores dedicados solo a almacenar a poca altura (máx. 2,5 m) y en menos de 50 m². No se puede usar si alguna actividad de la tabla 1.3.5 tiene un Rmin mayor.</dd><dt>R = 1</dt><dd>Valor por defecto.</dd><dt>R = 1,4</dt><dd>Si se cumple una de estas: a) trabajos habituales con chispas, llamas u otras fuentes de calor o químicas (o alguna actividad con Rmin = 1,4 en la tabla 1.3.5); b) almacenamientos de más de 5 m de altura que ocupan 100 m² o más.</dd><dt>R = 1,8</dt><dd>Si se cumplen a la vez a) y b).</dd></dl><p>El valor de R nunca puede ser menor que el Rmin de las actividades del sector.</p></div>
+   <select id="f-R" class="${SF.R==null?"pend":""}" style="max-width:16rem"><option value="">— Sin selección —</option>${[0.8,1,1.4,1.8].map(v=>`<option value="${v}" ${SF.R===v?"selected":""}>${fmtR(v)}</option>`).join("")}</select></div>
+  <p class="small" id="fRSug"></p>
+  <label class="f" for="f-rJust">Justifica el valor de R <small>Mínimo recomendado: 15 palabras.</small><textarea id="f-rJust" rows="2">${esc(SF.rJust)}</textarea></label></section>
  <section class="panel"><h3>Paso 5 · Resultado</h3><div id="fRes"></div></section>
- <section class="panel"><h3>Paso 6 · Conclusiones</h3><label class="f" for="f-conclu">Conclusiones <small>Nivel de riesgo intrínseco obtenido y medidas para reducir la carga de fuego o su efecto. Mínimo recomendado: 80 palabras.</small><textarea id="f-conclu" style="min-height:7rem">${esc(SF.conclu)}</textarea></label></section>
+ <section class="panel"><h3>Paso 6 · Medidas que exige el reglamento</h3><div id="fMed"></div></section>
+ <section class="panel"><h3>Paso 7 · Conclusiones</h3><label class="f" for="f-conclu">Conclusiones <small>Nivel de riesgo intrínseco, medidas que exige el reglamento y propuestas para reducir la carga de fuego. Mínimo recomendado: 80 palabras.</small><textarea id="f-conclu" style="min-height:7rem">${esc(SF.conclu)}</textarea></label></section>
  <section class="panel"><div class="intro"><p class="eyebrow">Autoevaluación</p><h3>Valoración según la rúbrica</h3><p class="muted small">Se recalcula mientras trabajas. Es una propuesta orientativa; la nota final la pone tu profesor.</p></div><div id="fRub" aria-live="polite"></div></section>`;
  bindHelp(b);
- b.querySelectorAll("[data-fm]").forEach(el=>el.addEventListener(el.tagName==="SELECT"?"change":"input",()=>{SF.meta[el.dataset.fm]=el.value;if(el.tagName==="SELECT")el.classList.toggle("pend",!el.value);saveF();if(el.dataset.fm==="A")renderRowsF();
-  if(el.dataset.fm==="tipo"){const fg=$("#fTipoFig"),t=TIPOS_CONF.find(x=>x[0]===el.value);fg.hidden=!t;fg.innerHTML=t?FIG[t[0]]+`<figcaption>${esc(t[2])}</figcaption>`:""}updF()}));
- b.querySelectorAll("[name=fmet]").forEach(el=>el.onchange=()=>{SF.met=el.value;b.querySelectorAll(".metc").forEach(x=>x.classList.toggle("on",x.querySelector("input").checked));if(!SF.rows.length)SF.rows=[newRow(),newRow()];saveF();renderRowsF();updF()});
+ $("#dT133").addEventListener("toggle",function(){if(this.open&&!$("#T133b").innerHTML){$("#T133b").innerHTML=tablaBuscable("T133",["Material","q","Unidad","Ci"],MAT.map(x=>[esc(x[0])+(x[4]?` <span class="muted small">(${x[4]==="4"?"fumígeno":"ver nota"})</span>`:""),fmt(x[1],2),"MJ/"+x[2],fmt(x[3],2)]))+`<p class="small muted">${MATNOTA["4"]} ${MATNOTA["5"]} ${MATNOTA["6"]}</p>`;bindBuscar("T133")}});
+ $("#dT135").addEventListener("toggle",function(){if(this.open&&!$("#T135b").innerHTML){$("#T135b").innerHTML=tablaBuscable("T135",["Actividad","qs (MJ/m²)","qv bruto (MJ/m³)","qv neto (MJ/m³)","Ci","Rmin"],ACT.map(a=>[`<span class="muted small">${a[0]}.</span> ${esc(a[1])}${a[7]?`<br><span class="small muted">${esc(a[7])}</span>`:""}`,vnum(a[2]),vnum(a[3]),vnum(a[4]),a[5]==null?"—":fmt(a[5],2),a[6]==null?"—":fmtR(a[6])]))+`<p class="small muted">Grupos: ${Object.entries(CATS).map(([k,v])=>`${k} ${v}`).join(" · ")}. Bruto: la superficie incluye los pasillos. Neto: solo la superficie ocupada por el producto.</p>`;bindBuscar("T135")}});
+ b.querySelectorAll("[data-fm]").forEach(el=>el.addEventListener(el.tagName==="SELECT"?"change":"input",()=>{SF.meta[el.dataset.fm]=el.value;if(el.tagName==="SELECT")el.classList.toggle("pend",!el.value);saveF();
+  if(el.dataset.fm==="tipo"){const fg=$("#fTipoFig"),t=TIPOS_CONF.find(x=>x[0]===el.value);fg.hidden=!t;fg.innerHTML=t?FIG[t[0]]+`<figcaption>${esc(t[2])}</figcaption>`:""}
+  if(el.dataset.fm==="A")updRowsF();updF()}));
+ b.querySelectorAll("[data-fb]").forEach(el=>el.onchange=()=>{SF.meta[el.dataset.fb]=el.value==="1";saveF();updF()});
+ b.querySelectorAll("[name=fmet]").forEach(el=>el.onchange=()=>{const old=SF.met;SF.met=el.value;b.querySelectorAll(".metc").forEach(x=>x.classList.toggle("on",x.querySelector("input").checked));
+  if(old!==SF.met){if(old&&SF.rows.length)toast("Has cambiado de método: las filas se han vaciado");SF.rows=SF.met==="comb"?[newRow("fab"),newRow("alm")]:[newRow(rowT({},SF.met)),newRow(rowT({},SF.met))]}
+  saveF();renderUsoF();renderRowsF();updF()});
  $("#f-metJust").oninput=e=>{SF.metJust=e.target.value;saveF();updF()};
- $("#f-ra").onchange=e=>{SF.ra=e.target.value===""?null:+e.target.value;e.target.classList.toggle("pend",SF.ra==null);saveF();updF()};
- $("#f-raJust").oninput=e=>{SF.raJust=e.target.value;saveF();updF()};
+ b.querySelectorAll("[data-rq]").forEach(el=>el.onchange=()=>{SF.rq[el.dataset.rq]=el.value===""?null:el.value==="1";el.classList.toggle("pend",el.value==="");saveF();updF()});
+ $("#f-R").onchange=e=>{SF.R=e.target.value===""?null:+e.target.value;e.target.classList.toggle("pend",SF.R==null);saveF();updF()};
+ $("#f-rJust").oninput=e=>{SF.rJust=e.target.value;saveF();updF()};
  $("#f-conclu").oninput=e=>{SF.conclu=e.target.value;saveF();updF()};
- b.querySelectorAll("[data-ej]").forEach(x=>x.onclick=()=>{const e=EJ[x.dataset.ej];const alumno=SF.meta.alumno;SF=Object.assign(blankF(),{met:x.dataset.ej,ra:e.ra,rows:e.rows.map(r=>Object.assign(newRow(),r))});Object.assign(SF.meta,e.meta,{alumno});saveF();renderCF();toast("Ejemplo cargado: cámbialo por los datos de tu establecimiento")});
- renderRowsF();updF()}
+ b.querySelectorAll("[data-ej]").forEach(x=>x.onclick=()=>{const e=EJ[x.dataset.ej];const alumno=SF.meta.alumno;SF=blankF();SF.met=x.dataset.ej;SF.uso=e.uso||"";SF.R=e.R;SF.rq=Object.assign({},e.rq);
+  SF.rows=e.rows.map(r=>{const o=Object.assign(newRow(r.t),r);if(r.an)o.cat=idxAct(r.an);if(r.mn)o.cat=idxMat(r.mn);delete o.an;delete o.mn;fillRow(o);return o});
+  Object.assign(SF.meta,e.meta,{alumno});saveF();renderCF();toast("Ejemplo cargado: cámbialo por los datos de tu establecimiento")});
+ renderUsoF();renderRowsF();updF()}
+function renderUsoF(){const u=$("#fUso");if(!u)return;u.innerHTML=SF.met==="masa"?`<label class="f" for="f-uso" style="max-width:28rem">Actividad principal del sector <small>Se usa para saber qué medidas exige el reglamento.</small><select id="f-uso" class="${SF.uso?"":"pend"}"><option value="">— Sin selección —</option><option value="fab" ${SF.uso==="fab"?"selected":""}>Fabricación, producción, reparación…</option><option value="alm" ${SF.uso==="alm"?"selected":""}>Almacenamiento</option></select></label>`:"";
+ const s=$("#f-uso");if(s)s.onchange=()=>{SF.uso=s.value;s.classList.toggle("pend",!s.value);saveF();updF()}}
+function catOpts(t,sel){if(t==="mat")return `<option value="">Otro (escribe q)</option>${MAT.map((x,i)=>`<option value="${i}" ${String(sel)===String(i)?"selected":""}>${esc(x[0])}</option>`).join("")}`;
+ const f=t==="fab"?actFab:actAlm;return `<option value="">Otra (escribe q)</option>${Object.entries(CATS).map(([k,v])=>{const it=ACT.map((a,i)=>[a,i]).filter(([a])=>a[0]===k&&f(a));return it.length?`<optgroup label="${k}. ${v}">${it.map(([a,i])=>`<option value="${i}" ${String(sel)===String(i)?"selected":""}>${esc(a[1])}</option>`).join("")}</optgroup>`:""}).join("")}`}
 function renderRowsF(){const box=$("#fRows");if(!box)return;const met=SF.met;
  if(!met){box.innerHTML=`<p class="muted">Elige primero el método de cálculo en el paso 2.</p>`;return}
- const M=MET[met],cat=met==="gen"?MATS:ACTS.filter(a=>met==="prod"?a[1]!=null:a[2]!=null);
- const catIdx=met==="gen"?MATS.map((x,i)=>i):ACTS.map((a,i)=>i).filter(i=>met==="prod"?ACTS[i][1]!=null:ACTS[i][2]!=null);
- box.innerHTML=`<p class="muted small">${met==="gen"?"Una fila por cada material. Puedes elegirlo de la lista (Tabla 1.4) para rellenar su poder calorífico, o escribir el valor tú.":"Una fila por cada zona con actividad o producto diferente. Puedes elegir la actividad de la lista (valores de ejemplo de la Tabla 1.2) o escribir el valor tú."}</p>
-  <div class="tbl"><table class="rows"><thead><tr><th>${met==="gen"?"Material":"Zona"}</th><th>${met==="gen"?"De la Tabla 1.4":"Actividad (Tabla 1.2)"} ${infoBtn("f-cat")}</th>${M.cols.map(([k,l])=>`<th>${l} ${infoBtn("f-"+k)}</th>`).join("")}<th>Ci ${infoBtn("f-ci")}</th><th style="text-align:right">Resultado</th><th></th></tr></thead><tbody>
-  ${SF.rows.map((r,i)=>`<tr data-i="${i}"><td><input type="text" data-r="n" value="${esc(r.n)}" aria-label="Nombre de la fila ${i+1}" placeholder="${met==="gen"?"Material":"Zona"} ${i+1}"></td>
-   <td><select data-r="cat" aria-label="Catálogo fila ${i+1}"><option value="">Otro (escribe el valor)</option>${catIdx.map(ci=>{const a=met==="gen"?MATS[ci]:ACTS[ci];return `<option value="${ci}" ${String(r.cat)===String(ci)?"selected":""}>${esc(a[0])}</option>`}).join("")}</select></td>
-   ${M.cols.map(([k,l])=>`<td><input type="text" inputmode="decimal" data-r="${k}" value="${esc(r[k])}" aria-label="${l} fila ${i+1}"></td>`).join("")}
-   <td><select data-r="ci" aria-label="Ci fila ${i+1}" class="${num(r.ci)==null?"pend":""}"><option value="">—</option>${[["1","1,00 baja"],["1.3","1,30 media"],["1.6","1,60 alta"]].map(([v,t])=>`<option value="${v}" ${num(r.ci)===num(v)?"selected":""}>${t}</option>`).join("")}</select></td>
-   <td class="num" data-t></td><td><button type="button" class="btn ghost sm" data-del aria-label="Borrar fila ${i+1}">✕</button></td></tr>`).join("")}</tbody></table></div>
-  <div class="help" id="help-f-cat" hidden>${met==="gen"?"La Tabla 1.4 del reglamento da el poder calorífico de cada material: el calor que suelta 1 kg al arder. Al elegir un material se rellena q y se propone un Ci orientativo, que puedes cambiar.":"Los valores de la lista son ejemplos de la Tabla 1.2 del reglamento. Al elegir una actividad se rellena la carga de fuego y se usa su Ra para proponerte el coeficiente del paso 4. Comprueba siempre los valores en la tabla oficial."}</div>
-  <div class="help" id="help-f-q" hidden>${met==="prod"?"<b>qsi:</b> carga de fuego de la zona por cada metro cuadrado, en MJ/m². Sale de la Tabla 1.2 según la actividad.":met==="alm"?"<b>qvi:</b> carga de fuego del producto almacenado por cada metro cúbico, en MJ/m³. Sale de la Tabla 1.2.":"<b>qi:</b> poder calorífico, el calor que suelta 1 kg del material al arder, en MJ/kg. Sale de la Tabla 1.4."}</div>
-  <div class="help" id="help-f-s" hidden><b>${met==="prod"?"Si":"si"}:</b> metros cuadrados que ocupa esa zona${met==="alm"?" en el suelo (la base de las estanterías o pilas)":""}. La suma de todas las zonas no puede ser mayor que A.</div>
-  <div class="help" id="help-f-h" hidden><b>hi:</b> altura en metros de las pilas o estanterías con producto.</div>
-  <div class="help" id="help-f-G" hidden><b>Gi:</b> kilos de cada material que hay en el sector, incluidos los materiales del propio edificio que puedan arder.</div>
-  <div class="help" id="help-f-ci" hidden><b>Ci</b> indica lo fácil que arde el material (Tabla 1.1 del reglamento):<dl>
-   <dt>1,60 · alta</dt><dd>Líquidos que arden muy fácilmente (clase A y subclase B1, como la gasolina o el alcohol), sólidos que se encienden por debajo de 100 °C, productos que forman mezclas explosivas con el aire o que arden solos.</dd>
-   <dt>1,30 · media</dt><dd>Líquidos de subclase B2 y de clase C (como el gasóleo), sólidos que se encienden entre 100 y 200 °C y sólidos que sueltan gases inflamables.</dd>
-   <dt>1,00 · baja</dt><dd>Líquidos de clase D (como los aceites) y sólidos que se encienden por encima de 200 °C (madera, papel, cartón, la mayoría de plásticos).</dd></dl></div>
-  <div class="btns"><button type="button" class="btn ghost sm" id="fAdd">＋ Añadir ${met==="gen"?"material":"zona"}</button></div>`;
+ const cols=MET[met].cols,qh=met==="comb"?"q":QLAB[rowT({},met)];
+ const cell=(r,i,k)=>{const t=rowT(r);switch(k){
+  case "t":return `<select data-r="t" aria-label="Tipo fila ${i+1}">${Object.entries(TT).map(([v,l])=>`<option value="${v}" ${r.t===v?"selected":""}>${l}</option>`).join("")}</select>`;
+  case "n":return `<input type="text" data-r="n" value="${esc(r.n)}" aria-label="Nombre fila ${i+1}" placeholder="${t==="mat"?"Material":"Zona"} ${i+1}">`;
+  case "cat":return `<select data-r="cat" aria-label="Tabla fila ${i+1}" class="catsel">${catOpts(t,r.cat)}</select>`;
+  case "vt":return t==="alm"?`<select data-r="vt" aria-label="Bruto o neto fila ${i+1}"><option value="b" ${r.vt!=="n"?"selected":""}>Bruta (con pasillos)</option><option value="n" ${r.vt==="n"?"selected":""}>Neta (sin pasillos)</option></select>`:`<span class="muted">—</span>`;
+  case "q":return `<input type="text" inputmode="decimal" data-r="q" value="${esc(r.q)}" aria-label="q fila ${i+1}">${met==="comb"?`<span class="unit">${t==="fab"?"MJ/m²":t==="alm"?"MJ/m³":"MJ/"+r.u}</span>`:t==="mat"?`<span class="unit">MJ/${r.u}</span>`:""}`;
+  case "h":return t==="alm"?`<input type="text" inputmode="decimal" data-r="h" value="${esc(r.h)}" aria-label="Altura fila ${i+1}">`:`<span class="muted">—</span>`;
+  case "S":return t==="fab"||t==="alm"?`<input type="text" inputmode="decimal" data-r="S" value="${esc(r.S)}" aria-label="Superficie fila ${i+1}">`:`<span class="muted">—</span>`;
+  case "G":return t==="mat"?`<input type="text" inputmode="decimal" data-r="G" value="${esc(r.G)}" aria-label="Cantidad fila ${i+1}"><span class="unit">${r.u}</span>`:`<span class="muted">—</span>`}};
+ const hd={t:"Tipo",n:met==="masa"?"Material":"Zona",cat:met==="masa"?`Tabla 1.3.3 ${infoBtn("f-cat")}`:met==="comb"?`Tablas 1.3.3 / 1.3.5 ${infoBtn("f-cat")}`:`Tabla 1.3.5 ${infoBtn("f-cat")}`,vt:`Superficie S ${infoBtn("f-vt")}`,q:`${qh} ${infoBtn("f-q")}`,h:`hi (m) ${infoBtn("f-h")}`,S:`Si (m²) ${infoBtn("f-S")}`,G:`Gi ${infoBtn("f-G")}`};
+ box.innerHTML=`<p class="muted small">${met==="masa"?"Una fila por cada material. Elígelo en la tabla 1.3.3 para rellenar q y Ci, o escribe los valores tú.":met==="comb"?"Una fila por cada zona de fabricación, zona de almacenamiento o material suelto (por ejemplo, revestimientos combustibles del edificio).":"Una fila por cada zona con actividad diferente. Elige la actividad en la tabla 1.3.5 para rellenar q y Ci. Las zonas vacías se añaden con q = 0."}</p>
+  <div class="tbl"><table class="rows"><thead><tr>${cols.map(k=>`<th>${hd[k]}</th>`).join("")}<th>Ci ${infoBtn("f-ci")}</th><th style="text-align:right">Resultado</th><th></th></tr></thead><tbody>
+  ${SF.rows.map((r,i)=>`<tr data-i="${i}">${cols.map(k=>`<td>${cell(r,i,k)}</td>`).join("")}
+   <td><select data-r="ci" aria-label="Ci fila ${i+1}" class="${num(r.ci)==null?"pend":""}"><option value="">—</option>${CIS.map(([v,t])=>`<option value="${v}" ${num(r.ci)===num(v)?"selected":""}>${t}</option>`).join("")}</select></td>
+   <td class="num" data-t></td><td><button type="button" class="btn ghost sm" data-del aria-label="Borrar fila ${i+1}">✕</button></td></tr>
+   ${(()=>{const t=rowT(r);const note=r.cat===""?"":t==="mat"?(MAT[+r.cat]&&MATNOTA[MAT[+r.cat][4]]):ACT[+r.cat]&&ACT[+r.cat][7];const rm=t!=="mat"&&r.cat!==""&&ACT[+r.cat]?ACT[+r.cat][6]:null;return note||rm?`<tr class="rnote"><td colspan="${cols.length+3}">${note?esc(note)+" ":""}${rm?`Rmin de esta actividad: ${fmtR(rm)}.`:""}</td></tr>`:""})()}`).join("")}</tbody></table></div>
+  <p class="small" id="fSumS"></p>
+  <div class="help" id="help-f-cat" hidden>La tabla 1.3.3 da el poder calorífico (q) y el Ci de ${MAT.length} sustancias. La tabla 1.3.5 da la carga de fuego media de ${ACT.length} actividades: qs para fabricación (MJ/m²) y qv para almacenamiento (MJ/m³), con su Ci y su Rmin. Si tu actividad no aparece, usa la más parecida o calcula el valor con los materiales, y justifícalo.</div>
+  <div class="help" id="help-f-vt" hidden><b>Bruta:</b> la superficie Si incluye los pasillos junto a las estanterías; se usa el qv «almacenamiento bruto». <b>Neta:</b> Si es solo la superficie que ocupan los productos; se usa el qv «almacenamiento neto» y los pasillos se añaden aparte como zona sin carga (q = 0).</div>
+  <div class="help" id="help-f-q" hidden><b>qsi</b> (fabricación): carga de fuego por metro cuadrado de la zona, en MJ/m². <b>qvi</b> (almacenamiento): carga de fuego por metro cúbico, en MJ/m³. <b>qi</b> (materiales): calor que suelta 1 kg al arder, en MJ/kg; algunos materiales de la tabla 1.3.3 vienen por m² o por unidad (palets).</div>
+  <div class="help" id="help-f-S" hidden><b>Si:</b> metros cuadrados de cada zona. <b>La suma de todas las zonas debe ser igual a A.</b> Si hay grandes zonas vacías (sin actividad ni carga de fuego), añádelas como una zona más con q = 0. Los muelles de carga o zonas de preparación de pedidos cuentan como zonas con actividad.</div>
+  <div class="help" id="help-f-h" hidden><b>hi:</b> altura máxima, en metros, de las pilas o estanterías con producto.</div>
+  <div class="help" id="help-f-G" hidden><b>Gi:</b> cantidad de cada material en condiciones de máxima producción o almacenamiento, incluidos embalajes, palets y mobiliario. Normalmente en kg; algunos materiales de la tabla 1.3.3 van por m² o por unidad. También cuentan los materiales combustibles del propio edificio (paredes, techos), salvo que estén protegidos con una capa EI 30 o sean incombustibles como el hormigón o el acero.</div>
+  <div class="help" id="help-f-ci" hidden><b>Ci</b> indica lo fácil que arde el material (tabla 1.3.2). Hay 5 grados de peligro:<dl>
+   <dt>Grado 1 · Ci = 1,60</dt><dd>Arde muy fácil y muy rápido: gasolina, alcohol, butano, propano, explosivos, polvo de aluminio.</dd>
+   <dt>Grado 2 · Ci = 1,40</dt><dd>Arde rápido: líquidos inflamables con punto de inflamación por debajo de 55 °C (aguarrás, xileno), celuloide, alcanfor.</dd>
+   <dt>Grado 3 · Ci = 1,20</dt><dd>Fácilmente combustible: algodón, papel en hojas, cartón sin compactar, madera en trozos pequeños, poliestireno espumado, textiles, gasoil.</dd>
+   <dt>Grado 4 · Ci = 1,00</dt><dd>Medianamente combustible: madera en trozos grandes, papel comprimido, plásticos como PE o PS, cuero, lana, aceites vegetales.</dd>
+   <dt>Grado 5 · Ci = 1,00</dt><dd>Difícilmente combustible, solo arde en contacto con el fuego: PVC, resinas fenólicas.</dd></dl>
+   <p><b>Fumígenos</b> (sueltan mucho humo: neumáticos, plásticos espumados, aceites, gasolina): Ci aumenta un 20 % (1,92 / 1,68 / 1,44 / 1,20).</p></div>
+  <div class="btns">${met==="comb"?`<button type="button" class="btn ghost sm" data-add="fab">＋ Zona de fabricación</button><button type="button" class="btn ghost sm" data-add="alm">＋ Zona de almacenamiento</button><button type="button" class="btn ghost sm" data-add="mat">＋ Material</button>`:`<button type="button" class="btn ghost sm" data-add="${rowT({},met)}">＋ Añadir ${met==="masa"?"material":"zona"}</button>`}</div>`;
  bindHelp(box);
  box.querySelectorAll("tr[data-i]").forEach(tr=>{const i=+tr.dataset.i;
   tr.querySelectorAll("[data-r]").forEach(el=>el.addEventListener(el.tagName==="SELECT"?"change":"input",()=>{const r=SF.rows[i],k=el.dataset.r;r[k]=el.value;
-   if(k==="cat"&&el.value!==""){if(met==="gen"){const x=MATS[+el.value];r.q=String(x[1]);r.ci=String(x[2]);if(!nz(r.n))r.n=x[0]}else{const a=ACTS[+el.value];r.q=String(met==="prod"?a[1]:a[2]);if(!nz(r.n))r.n=a[0]}saveF();renderRowsF();updF();return}
+   if(k==="t"){r.cat="";r.q="";r.ci="";r.u="kg";saveF();renderRowsF();updF();return}
+   if(k==="cat"||(k==="vt"&&r.cat!=="")){if(k==="cat"&&el.value==="")r.u="kg";fillRow(r);const t=rowT(r);if(r.cat!==""&&t!=="mat"&&ACT[+r.cat]&&ACT[+r.cat][7])toast("Valor variable en la tabla: revisa y justifica el valor");saveF();renderRowsF();updF();return}
    if(k==="ci")el.classList.toggle("pend",!el.value);saveF();updRowsF();updF()}));
   tr.querySelector("[data-del]").onclick=()=>{SF.rows.splice(i,1);saveF();renderRowsF();updF()}});
- $("#fAdd").onclick=()=>{SF.rows.push(newRow());saveF();renderRowsF();updF()};
+ box.querySelectorAll("[data-add]").forEach(x=>x.onclick=()=>{SF.rows.push(newRow(x.dataset.add));saveF();renderRowsF();updF()});
  updRowsF()}
-function updRowsF(){const box=$("#fRows");if(!box||!SF.met)return;box.querySelectorAll("tr[data-i]").forEach(tr=>{const t=termF(SF.rows[+tr.dataset.i],SF.met);tr.querySelector("[data-t]").textContent=t==null?"—":fmt0(t)})}
-function updF(){if(!$("#fRes"))return;const c=calcF(),sug=raSug(),A=num(SF.meta.A);
- $("#fRaSug").innerHTML=sug==null?(SF.met==="gen"?`<span class="muted">Con el método general, elige Ra según la actividad del establecimiento en la Tabla 1.2.</span>`:`<span class="muted">Si eliges actividades de la lista, aquí verás el Ra que corresponde.</span>`):SF.ra===sug?`<span class="okc">✓ Coincide con la actividad de mayor riesgo que ocupa al menos el 10 % del sector.</span>`:`Según las actividades elegidas, corresponde Ra = <b>${String(sug.toFixed(1)).replace(".",",")}</b>. <button type="button" class="btn ghost sm" id="fRaApl">Aplicar</button>`;
- const ap=$("#fRaApl");if(ap)ap.onclick=()=>{SF.ra=sug;$("#f-ra").value=String(sug);$("#f-ra").classList.remove("pend");saveF();updF()};
- if(c.Qs==null){const falta=[];if(!SF.met)falta.push("el método");if(!(A>0))falta.push("la superficie A");if(!SF.rows.length||(c.terms&&c.terms.some(t=>t==null)))falta.push("datos de alguna zona o material");if(SF.ra==null)falta.push("el coeficiente Ra");
+function updRowsF(){const box=$("#fRows");if(!box||!SF.met)return;box.querySelectorAll("tr[data-i]").forEach(tr=>{const t=termF(SF.rows[+tr.dataset.i],SF.met);tr.querySelector("[data-t]").textContent=t==null?"—":fmt0(t)});
+ const fs=$("#fSumS");if(!fs)return;const zonas=SF.rows.some(r=>["fab","alm"].includes(rowT(r))),A=num(SF.meta.A),s=sumS();
+ fs.innerHTML=!zonas?"":!(A>0)?`<span class="muted">Indica la superficie A en el paso 1 para comprobar la suma de superficies.</span>`:Math.abs(s-A)<=A*0.01?`<span class="okc">✓ La suma de superficies (${fmt0(s)} m²) es igual a A.</span>`:`<span style="color:var(--signal)">La suma de superficies es ${fmt0(s)} m² y A = ${fmt0(A)} m². Deben ser iguales: añade las zonas vacías con q = 0 o corrige las superficies.</span>`}
+function updF(){if(!$("#fRes"))return;const c=calcF(),sug=rSug(),rm=rminMax(),A=num(SF.meta.A);
+ $("#fRSug").innerHTML=(rm!=null?`Rmin de las actividades elegidas: <b>${fmtR(rm)}</b>. `:"")+(sug==null?`<span class="muted">Responde a las tres preguntas para ver el valor propuesto.</span>`:SF.R===sug?`<span class="okc">✓ Coincide con los criterios de la tabla 1.3.4.</span>`:`Según la tabla 1.3.4 corresponde R = <b>${fmtR(sug)}</b>. <button type="button" class="btn ghost sm" id="fRApl">Aplicar</button>`)+(rm!=null&&SF.R!=null&&SF.R<rm?` <span style="color:var(--signal)">R no puede ser menor que Rmin.</span>`:"");
+ const ap=$("#fRApl");if(ap)ap.onclick=()=>{SF.R=sug;$("#f-R").value=String(sug);$("#f-R").classList.remove("pend");saveF();updF()};
+ if(c.Qs==null){const falta=[];if(!SF.met)falta.push("el método");if(!(A>0))falta.push("la superficie A");if(!SF.rows.length||(c.terms&&c.terms.some(t=>t==null)))falta.push("datos de alguna zona o material");if(SF.R==null)falta.push("el coeficiente R");
   $("#fRes").innerHTML=`<p class="muted">Falta: ${falta.join(", ")||"completar los datos"}.</p>`}
- else{const M=MET[SF.met],pos=Math.min(100,c.nri.i*12.5+6);
-  $("#fRes").innerHTML=`<div class="resgrid"><div class="big"><span class="small muted">Carga de fuego ponderada y corregida</span><b class="mono">${fmt0(c.Qs)} MJ/m²</b><span class="small">${fmt0(c.Qs/4.184)} Mcal/m²</span><span class="lvl b${c.nri.lv}">Riesgo ${c.nri.txt}</span></div>
-   <div><p class="mono">${M.f}</p><p class="mono">Σ = ${c.terms.map(t=>fmt0(t)).join(" + ")} = ${fmt0(c.sum)}</p><p class="mono">Qs = ( ${fmt0(c.sum)} / ${fmt(c.A,0)} ) × ${String(c.ra.toFixed(1)).replace(".",",")} = <b>${fmt0(c.Qs)} MJ/m²</b></p>
+ else{const M=MET[SF.met];
+  $("#fRes").innerHTML=`<div class="resgrid"><div class="big"><span class="small muted">Densidad de carga de fuego ponderada y corregida</span><b class="mono">${fmt0(c.Qs)} MJ/m²</b><span class="lvl b${c.nri.lv}">Riesgo ${c.nri.txt}</span><span class="small muted">Carga total QT = ${fmt0(c.QT)} MJ</span></div>
+   <div><p class="mono">${M.f}</p><p class="mono">Σ = ${c.terms.map(t=>fmt0(t)).join(" + ")} = ${fmt0(c.sum)}</p><p class="mono">Qs = ${fmt0(c.sum)} / ${fmt(c.A,0)} × ${fmtR(c.R)} = <b>${fmt0(c.Qs)} MJ/m²</b></p>
    <div class="nri" role="img" aria-label="Nivel de riesgo intrínseco ${c.nri.txt}">${NRI.map((r,i)=>`<span class="n${i<2?1:i<4?2:i<5?3:4} ${i===c.nri.i?"on":""}">${r[1]} ${r[2]}</span>`).join("")}</div>
-   <p class="small">${c.nri.lv===1?"Hay poco material que pueda arder para el tamaño del local.":c.nri.lv<=3?"Hay una cantidad moderada de material que puede arder: el reglamento pide más medidas de protección que en riesgo bajo.":"Hay mucho material que puede arder: el reglamento exige las medidas de protección más exigentes y limita el tamaño de los sectores."} Este nivel, junto con la configuración (tipo ${esc(SF.meta.tipo||"—")}), determina las medidas que exige el reglamento.</p></div></div>`}
+   <p class="small">${c.nri.cat==="bajo"?"Hay poco material que pueda arder para el tamaño del sector.":c.nri.cat==="medio"?"Hay una cantidad moderada de material que puede arder: el reglamento pide más medidas de protección que en riesgo bajo.":"Hay mucho material que puede arder: el reglamento exige las medidas más estrictas y limita mucho el tamaño de los sectores."} Tabla 1.3.1 del RD 164/2025.</p>
+   ${c.Qs<=42&&A<=120?`<p class="small muted">Con Qs ≤ 42 MJ/m² y 120 m² o menos, los establecimientos existentes quedan exceptuados de las inspecciones periódicas (disposición transitoria primera).</p>`:""}</div></div>`}
+ const md=medidasF(),mb=$("#fMed");
+ if(!md)mb.innerHTML=`<p class="muted">Completa el cálculo y la configuración del establecimiento para ver las medidas.</p>`;
+ else mb.innerHTML=`<p class="small muted">Resumen de los anexos II y III del reglamento para un sector ${esc(SF.meta.tipo)} de ${fmt0(A)} m², riesgo ${c.nri.txt}${SF.meta.sotano?", bajo rasante":""}. Es orientativo: el reglamento tiene más casos y excepciones (varios sectores, notas de las tablas, actividades específicas).</p>
+  <div class="tbl"><table><thead><tr><th>Medida</th><th>Situación</th><th>Detalle</th><th>Referencia</th></tr></thead><tbody>${md.map(x=>`<tr><td><b>${esc(x.t)}</b></td><td>${ESTC[x.est]?`<span class="lvl ${ESTC[x.est]}">${ESTX[x.est]}</span>`:`<span class="pill">${ESTX[x.est]}</span>`}</td><td class="small">${esc(x.txt)}</td><td class="small muted">${esc(x.ref)}</td></tr>`).join("")}</tbody></table></div>`;
  $("#fRub").innerHTML=rubHTML(evalF(),introF());
  if($("#mRes"))updM()}
 async function pdfCF(){const c=calcF();if(c.Qs==null){toast("Antes de descargar: completa los datos para calcular la carga de fuego");return}
- const k=await pdfKit("Carga de Fuego Ponderada"),m=SF.meta,v=evalF(),M=MET[SF.met];
- k.table({theme:"plain",styles:{fontSize:10,cellPadding:1.2,textColor:C.ink},columnStyles:{0:{fontStyle:"bold",cellWidth:46,textColor:C.muted}},
-  body:[["Alumno/a o grupo",m.alumno||"[sin indicar]"],["Establecimiento",m.empresa||"[sin indicar]"],["Actividad",m.actividad||"[sin indicar]"],["Dirección",m.direccion||"[sin indicar]"],["Configuración",m.tipo?"Tipo "+m.tipo:"[sin indicar]"],["Superficie del sector (A)",fmt(num(m.A),0)+" m²"],["Fecha",new Date().toLocaleDateString("es-ES")]].map(r=>r.map(pdfTxt))});
+ const k=await pdfKit("Carga de Fuego Ponderada"),m=SF.meta,v=evalF(),M=MET[SF.met],md=medidasF()||[];
+ k.table({theme:"plain",styles:{fontSize:10,cellPadding:1.2,textColor:C.ink},columnStyles:{0:{fontStyle:"bold",cellWidth:50,textColor:C.muted}},
+  body:[["Alumno/a o grupo",m.alumno||"[sin indicar]"],["Establecimiento",m.empresa||"[sin indicar]"],["Actividad",m.actividad||"[sin indicar]"],["Dirección",m.direccion||"[sin indicar]"],["Configuración",m.tipo?"Tipo "+m.tipo:"[sin indicar]"],["Superficie del sector (A)",fmt(num(m.A),0)+" m²"],["Bajo rasante / evacuación ≥ 15 m",(m.sotano?"Sí":"No")+" / "+(m.alt15?"Sí":"No")],["Normativa","RD 164/2025, Anexo I"],["Fecha",new Date().toLocaleDateString("es-ES")]]});
  k.nota("Nota propuesta según rúbrica (pendiente de revisión docente)",v.total.toFixed(1).replace(".",",")+" / 10");
  k.h2(1,"Descripción del establecimiento");k.para(m.desc||"[Pendiente de completar]");
- k.h2(2,"Método de cálculo");k.para(M.t+": "+M.f,{bold:true});if(nz(SF.metJust))k.para(SF.metJust);
+ k.h2(2,"Método de cálculo");k.para(M.t+": "+M.f,{bold:true});if(SF.met==="masa"&&SF.uso)k.para("Actividad principal del sector: "+(SF.uso==="alm"?"almacenamiento":"fabricación")+".");if(nz(SF.metJust))k.para(SF.metJust);
  k.h2(3,"Datos de cálculo");
- k.table({head:[[SF.met==="gen"?"Material":"Zona",...M.cols.map(x=>x[1]),"Ci","Resultado"]],body:SF.rows.map((r,i)=>[pdfTxt(r.n||"Fila "+(i+1)),...M.cols.map(([kk])=>fmt(num(r[kk]),num(r[kk])%1?1:0)),String(num(r.ci).toFixed(2)).replace(".",","),{content:fmt0(c.terms[i]),styles:{halign:"right"}}]).concat([[{content:"Suma",colSpan:M.cols.length+2,styles:{fontStyle:"bold",halign:"right"}},{content:fmt0(c.sum),styles:{fontStyle:"bold",halign:"right"}}]])});
- k.para(`Coeficiente de riesgo de activación Ra = ${String(c.ra.toFixed(1)).replace(".",",")}.`,{bold:true});if(nz(SF.raJust))k.para(SF.raJust);
- k.h2(4,"Resultado");k.need(30);k.para(`Qs = ( ${fmt0(c.sum)} / ${fmt(c.A,0)} ) × ${String(c.ra.toFixed(1)).replace(".",",")} = ${fmt0(c.Qs)} MJ/m² (${fmt0(c.Qs/4.184)} Mcal/m²)`,{bold:true});
- k.table({head:[["Qs (MJ/m²)","Qs (Mcal/m²)","Nivel de riesgo intrínseco"]],body:[[fmt0(c.Qs),fmt0(c.Qs/4.184),k.cell(C.lv[c.nri.lv-1],c.nri.txt)]]});
- k.para("Tabla 1.3 del RSCIEI (MJ/m²): Bajo 1 hasta 425; Bajo 2 hasta 850; Medio 3 hasta 1.275; Medio 4 hasta 1.700; Medio 5 hasta 3.400; Alto 6 hasta 6.800; Alto 7 hasta 13.600; Alto 8 más de 13.600.",{size:8.5,color:C.muted});
- k.h2(5,"Conclusiones");k.para(SF.conclu||"[Pendiente de completar]");
- k.rubrica(6,v,introF());k.save(m.alumno,"carga-fuego")}
+ const cols=M.cols.filter(x=>!["cat"].includes(x)),lab={t:"Tipo",n:SF.met==="masa"?"Material":"Zona o material",vt:"Sup.",q:"q",h:"h (m)",S:"S (m²)",G:"G"};
+ k.table({head:[[...cols.map(x=>lab[x]),"Ci","Resultado (MJ)"]],body:SF.rows.map((r,i)=>{const t=rowT(r);return [...cols.map(x=>x==="t"?TT[r.t]:x==="n"?(r.n||"Fila "+(i+1)):x==="vt"?(t==="alm"?(r.vt==="n"?"Neta":"Bruta"):"-"):x==="q"?fmt(num(r.q),num(r.q)%1?2:0)+" MJ/"+(t==="fab"?"m²":t==="alm"?"m³":r.u):x==="h"?(t==="alm"&&nz(r.h)?fmt(num(r.h),num(r.h)%1?1:0):"-"):x==="S"?(t!=="mat"?fmt(num(r.S),0):"-"):x==="G"?(t==="mat"?fmt(num(r.G),num(r.G)%1?1:0)+" "+r.u:"-"):""),fmt(num(r.ci),2),{content:fmt0(c.terms[i]),styles:{halign:"right"}}]}).concat([[{content:"Suma",colSpan:cols.length+1,styles:{fontStyle:"bold",halign:"right"}},{content:fmt0(c.sum),styles:{fontStyle:"bold",halign:"right"}}]])});
+ if(SF.rows.some(r=>["fab","alm"].includes(rowT(r))))k.para(`Suma de superficies de las zonas = ${fmt0(sumS())} m² (A = ${fmt0(c.A)} m²).`,{size:9,color:C.muted});
+ k.para(`Coeficiente R = ${fmtR(c.R)} (tabla 1.3.4).`+(rminMax()!=null?` Rmin de las actividades: ${fmtR(rminMax())}.`:""),{bold:true});
+ k.para(`Trabajos con llamas o fuentes de ignición: ${SF.rq.a?"sí":"no"} · Almacenamientos de más de 5 m en 100 m² o más: ${SF.rq.b?"sí":"no"} · Solo almacenamiento bajo (≤ 2,5 m) en menos de 50 m²: ${SF.rq.c?"sí":"no"}.`,{size:9,color:C.muted});if(nz(SF.rJust))k.para(SF.rJust);
+ k.need(45);k.h2(4,"Resultado");k.para(`Qs = ${fmt0(c.sum)} / ${fmt(c.A,0)} × ${fmtR(c.R)} = ${fmt0(c.Qs)} MJ/m²  ·  QT = ${fmt0(c.QT)} MJ`,{bold:true});
+ k.table({head:[["Qs (MJ/m²)","Nivel de riesgo intrínseco"]],body:[[fmt0(c.Qs),k.cell(C.lv[c.nri.lv-1],c.nri.txt)]]});
+ k.para("Tabla 1.3.1 (MJ/m²): Bajo 1 hasta 425; Bajo 2 hasta 850; Medio 3 hasta 1.275; Medio 4 hasta 1.700; Medio 5 hasta 3.400; Alto 6 hasta 6.800; Alto 7 hasta 13.600; Alto 8 más de 13.600.",{size:8.5,color:C.muted});
+ k.h2(5,"Medidas que exige el reglamento");k.para("Resumen orientativo de los anexos II y III del RD 164/2025 para un único sector.",{size:9,color:C.muted});
+ k.table({head:[["Medida","Situación","Detalle","Ref."]],body:md.map(x=>[x.t,x.est==="si"?k.cell(C.lv[1],ESTX.si):x.est==="no"?k.cell(C.lv[3],ESTX.no):x.est==="ok"?k.cell(C.lv[0],ESTX.ok):ESTX[x.est],x.txt,x.ref]),columnStyles:{0:{cellWidth:38,fontStyle:"bold"},1:{cellWidth:24},3:{cellWidth:24,fontSize:8,textColor:C.muted}}});
+ k.h2(6,"Conclusiones");k.para(SF.conclu||"[Pendiente de completar]");
+ k.rubrica(7,v,introF());k.save(m.alumno,"carga-fuego")}
 
 /* ---------- rúbrica ---------- */
 function renderDoc(){const b=$("#docBody");
@@ -1464,7 +1934,7 @@ function renderDoc(){const b=$("#docBody");
 $("#mesPdf").onclick=e=>conBoton(e.currentTarget,pdfMeseri);
 $("#cfPdf").onclick=e=>conBoton(e.currentTarget,pdfCF);
 bindIO("mes",()=>SM,o=>{SM=Object.assign(blankM(),o);saveM();renderMeseri()},"meseri","meseri.json");
-bindIO("cf",()=>SF,o=>{SF=Object.assign(blankF(),o);saveF();renderCF()},"cargafuego","carga-fuego.json");
+bindIO("cf",()=>SF,o=>{if(o.v!==2){toast("Este archivo es de la versión anterior (RD 2267/2004) y no se puede cargar");return}SF=Object.assign(blankF(),o);saveF();renderCF()},"cargafuego","carga-fuego.json");
 armReset($("#mesReset"),()=>{SM=blankM();saveM();renderMeseri();toast("MESERI vacío creado")});
 armReset($("#cfReset"),()=>{SF=blankF();saveF();renderCF();toast("Cálculo vacío creado")});
 
