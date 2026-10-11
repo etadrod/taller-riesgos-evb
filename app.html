@@ -1844,7 +1844,7 @@ function renderRowsF(){const box=$("#fRows");if(!box)return;const met=SF.met;
   <div class="help" id="help-f-S" hidden><b>Si:</b> metros cuadrados de cada zona. <b>La suma de todas las zonas debe ser igual a A.</b> Si hay grandes zonas vacías (sin actividad ni carga de fuego), añádelas como una zona más con q = 0. Los muelles de carga o zonas de preparación de pedidos cuentan como zonas con actividad.</div>
   <div class="help" id="help-f-h" hidden><b>hi:</b> altura máxima, en metros, de las pilas o estanterías con producto.</div>
   <div class="help" id="help-f-G" hidden><b>Gi:</b> cantidad de cada material en condiciones de máxima producción o almacenamiento, incluidos embalajes, palets y mobiliario. Normalmente en kg; algunos materiales de la tabla 1.3.3 van por m² o por unidad. También cuentan los materiales combustibles del propio edificio (paredes, techos), salvo que estén protegidos con una capa EI 30 o sean incombustibles como el hormigón o el acero.</div>
-  <div class="help" id="help-f-ci" hidden><b>Ci</b> (coeficiente de peligrosidad, tabla 1.3.2) indica lo fácil que arde lo que hay en la zona. <b>No tienes que calcularlo:</b> al elegir una actividad (tabla 1.3.5) o un material (tabla 1.3.3) en la columna «De la tabla», Ci se rellena solo con el valor que da el reglamento. Solo lo eliges tú si la actividad o el material no está en la lista, o en las zonas vacías (Ci = 1,00).
+  <div class="help" id="help-f-ci" hidden><b>Ci</b> (coeficiente de peligrosidad, tabla 1.3.2) indica lo fácil que arde lo que hay en la zona. <b>No tienes que calcularlo:</b> al elegir una actividad (tabla 1.3.5) o un material (tabla 1.3.3) en la columna «De la tabla», Ci se rellena solo con el valor que da el reglamento. Solo lo eliges tú si la actividad o el material no está en la lista. En las zonas vacías (q = 0) pon Ci = 1,00: el resultado de la fila es 0 con cualquier Ci, y la app lo pone sola al escribir q = 0.
    <p>Estas son las 7 opciones del desplegable:</p><dl>
    <dt>1,00 · grado 4 o 5</dt><dd>Arde con dificultad o de forma moderada: madera en trozos grandes, papel comprimido, plásticos PE o PS, cuero, lana, PVC. En la tabla 1.3.5: bodegas, quesería, celulosa…</dd>
    <dt>1,20 · grado 3 (o 4-5 con humo)</dt><dd>Arde fácilmente: papel en hojas, cartón, textiles, madera en trozos pequeños, gasoil. Es el valor más frecuente en almacenes (archivos, cartonaje…).</dd>
@@ -1860,7 +1860,9 @@ function renderRowsF(){const box=$("#fRows");if(!box)return;const met=SF.met;
   tr.querySelectorAll("[data-r]").forEach(el=>el.addEventListener(el.tagName==="SELECT"?"change":"input",()=>{const r=SF.rows[i],k=el.dataset.r;r[k]=el.value;
    if(k==="t"){r.cat="";r.q="";r.ci="";r.u="kg";saveF();renderRowsF();updF();return}
    if(k==="cat"||(k==="vt"&&r.cat!=="")){if(k==="cat"&&el.value==="")r.u="kg";fillRow(r);const t=rowT(r);if(r.cat!==""&&t!=="mat"&&ACT[+r.cat]&&ACT[+r.cat][7])toast("Valor variable en la tabla: revisa y justifica el valor");saveF();renderRowsF();updF();return}
-   if(k==="ci")el.classList.toggle("pend",!el.value);saveF();updRowsF();updF()}));
+   if(k==="ci")el.classList.toggle("pend",!el.value);
+   if(k==="q"&&num(el.value)===0&&num(r.ci)==null){r.ci="1";const cs=tr.querySelector('[data-r="ci"]');if(cs){cs.value="1";cs.classList.remove("pend")}toast("Zona sin carga (q = 0): Ci puesto a 1,00")}
+   saveF();updRowsF();updF()}));
   tr.querySelector("[data-del]").onclick=()=>{SF.rows.splice(i,1);saveF();renderRowsF();updF()}});
  box.querySelectorAll("[data-add]").forEach(x=>x.onclick=()=>{SF.rows.push(newRow(x.dataset.add));saveF();renderRowsF();updF()});
  updRowsF()}
