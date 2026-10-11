@@ -3,7 +3,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
-/* Layout: barra de mando superior + pestañas; contenido en una columna de trabajo amplia (máx. 1320px) con tarjetas solo para riesgos y casos. */
+/* Layout: barra de mando superior + pestañas; contenido en una columna de trabajo amplia (máx. 1760px) con tarjetas solo para riesgos y casos. */
 :root{
   --bg:#F2F4F7; --surface:#FFFFFF; --sunk:#E8ECF2; --ink:#142033; --muted:#556275; --line:#D3DAE4;
   --navy:#1F3A68; --navy-ink:#FFFFFF; --signal:#C9561A; --signal-soft:#FBE7DA;
@@ -12,7 +12,7 @@
   --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
   --f-body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
-  --fs:1rem; --radius:6px; --maxw:1320px; --link:#1F5AAA;
+  --fs:1rem; --radius:6px; --maxw:1760px; --link:#1F5AAA;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0E1520; --surface:#162030; --sunk:#1C283A; --ink:#E5EBF3; --muted:#9BA8BA; --line:#2B384C;
@@ -131,7 +131,27 @@ td.num{white-space:nowrap;font-family:var(--f-mono);font-variant-numeric:tabular
 .ib{display:inline-grid;place-items:center;width:1.35rem;height:1.35rem;border-radius:50%;border:1.5px solid var(--navy);background:transparent;color:var(--navy);font:700 .8rem/1 var(--f-display);cursor:pointer;flex:none;padding:0}
 .ib[aria-expanded="true"]{background:var(--navy);color:var(--navy-ink)}
 .ib-inline{display:inline-grid;place-items:center;width:1.2rem;height:1.2rem;border-radius:50%;border:1.5px solid var(--navy);color:var(--navy);font:700 .75rem/1 var(--f-display)}
-.help{background:var(--sunk);border-left:4px solid var(--navy);border-radius:0 4px 4px 0;padding:.6rem .8rem;font-size:.9rem;display:grid;gap:.4rem}
+.help{display:none}
+.pop{position:fixed;z-index:40;width:min(30rem,calc(100vw - 32px));max-height:min(70vh,36rem);overflow:auto;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-top:4px solid var(--navy);border-radius:var(--radius);box-shadow:0 12px 32px rgba(10,20,40,.28);font-size:.92rem;line-height:1.45}
+.pop-h{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.6rem .8rem;background:var(--surface);border-bottom:1px solid var(--line)}
+.pop-h b{font-family:var(--f-display);font-size:1.1rem}
+.pop-x{border:0;background:var(--sunk);color:var(--ink);border-radius:50%;width:1.8rem;height:1.8rem;cursor:pointer;flex:none}
+.pop-b{padding:.7rem .9rem .9rem}
+.pop-b>*+*{margin-top:.5rem}
+.pop-b dl{display:block}.pop-b dt{font-weight:700;margin-top:.45rem}.pop-b dd{margin:0;color:var(--muted)}
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr));gap:.7rem}
+.fig{display:grid;gap:.25rem;margin:0}
+.fig svg{width:100%;height:auto;max-width:100%;background:var(--bg);border:1px solid var(--line);border-radius:4px}
+.fig figcaption{font-size:.82rem;color:var(--muted)}
+.fig figcaption b{color:var(--ink)}
+.sv-est{fill:color-mix(in srgb,var(--signal) 32%,var(--surface));stroke:var(--signal);stroke-width:1.5}
+.sv-oth{fill:var(--sunk);stroke:var(--muted);stroke-width:1.2}
+.sv-ln{stroke:var(--ink);stroke-width:1.2;fill:none}
+.sv-dash{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 2;fill:none}
+.sv-roof{fill:var(--muted);stroke:none}
+.sv-t{fill:var(--muted);font:600 7.5px var(--f-body)}
+.sv-te{fill:var(--signal);font:700 7.5px var(--f-body)}
+#fTipoFig{max-width:16rem}
 .help dl{gap:.3rem}.help dd{margin:0}
 .crits{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:.9rem 1.2rem;margin-bottom:.8rem}
 .crit{display:grid;gap:.35rem;align-content:start;min-width:0}
@@ -228,8 +248,8 @@ dd{margin:0 0 .2rem;color:var(--muted)}
     <button role="tab" id="tab-casos" aria-controls="v-casos" aria-selected="false">Casos prácticos</button>
     <button role="tab" id="tab-doc" aria-controls="v-doc" aria-selected="false">Rúbrica</button>
     <button role="tab" id="tab-asis" aria-controls="v-asis" aria-selected="false">Análisis de Riesgos</button>
-    <button role="tab" id="tab-mes" aria-controls="v-mes" aria-selected="false">Método MESERI</button>
     <button role="tab" id="tab-cf" aria-controls="v-cf" aria-selected="false">Carga de Fuego Ponderada</button>
+    <button role="tab" id="tab-mes" aria-controls="v-mes" aria-selected="false">Método MESERI</button>
   </nav>
 </header>
 
@@ -1006,7 +1026,19 @@ function rubHTML(v,intro){return `<div class="tbl"><table><thead><tr><th>Criteri
  <div class="total"><span>Nota propuesta</span><b>${v.total.toFixed(1).replace(".",",")} / 10</b></div><p class="fb">${esc(valTxt(v,intro))}</p>`}
 function rubTable(R){return `<div class="tbl"><table><thead><tr><th>Criterio (RA·CE)</th><th>Pts</th>${NIV.map((n,i)=>`<th>${n} (${NIVF[i]*100} %)</th>`).join("")}</tr></thead><tbody>${R.map(c=>`<tr><td><b>${c.t}</b><div class="ra"><span>${c.ce}</span></div></td><td class="num">${String(c.max).replace(".",",")}</td>${c.d.map(t=>`<td class="small">${t}</td>`).join("")}</tr>`).join("")}<tr><td><b>Total</b></td><td class="num">10</td><td colspan="4" class="small">Nota = suma de los puntos de cada criterio (puntos máximos × porcentaje del nivel alcanzado).</td></tr></tbody></table></div>`}
 function infoBtn(key){return `<button type="button" class="ib" data-help="${key}" aria-expanded="false" aria-label="Ver ayuda">i</button>`}
-function bindHelp(root){root.querySelectorAll("[data-help]").forEach(b=>b.onclick=()=>{const p=root.querySelector(`#help-${b.dataset.help}`);if(!p)return;p.hidden=!p.hidden;b.setAttribute("aria-expanded",String(!p.hidden))})}
+const pop=document.createElement("div");pop.className="pop";pop.hidden=true;pop.setAttribute("role","dialog");pop.setAttribute("aria-modal","false");document.body.appendChild(pop);
+let popBtn=null;
+function placePop(){if(!popBtn||pop.hidden)return;const r=popBtn.getBoundingClientRect(),pw=pop.offsetWidth,ph=pop.offsetHeight,vw=innerWidth,vh=innerHeight;
+ let left=Math.min(Math.max(8,r.left-12),vw-pw-8),top=r.bottom+8;if(top+ph>vh-8)top=r.top-ph-8>=8?r.top-ph-8:Math.max(8,vh-ph-8);pop.style.left=left+"px";pop.style.top=top+"px"}
+function closePop(focus){if(pop.hidden)return;pop.hidden=true;if(popBtn){popBtn.setAttribute("aria-expanded","false");if(focus)popBtn.focus();popBtn=null}}
+function openPop(btn,html,title){if(popBtn)popBtn.setAttribute("aria-expanded","false");popBtn=btn;btn.setAttribute("aria-expanded","true");
+ pop.innerHTML=`<div class="pop-h"><b>${esc(title)}</b><button type="button" class="pop-x" aria-label="Cerrar ayuda">✕</button></div><div class="pop-b">${html}</div>`;pop.setAttribute("aria-label","Ayuda: "+title);pop.hidden=false;pop.scrollTop=0;placePop();
+ pop.querySelector(".pop-x").onclick=()=>closePop(true)}
+document.addEventListener("click",e=>{if(!pop.hidden&&!pop.contains(e.target)&&!(popBtn&&popBtn.contains(e.target)))closePop()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closePop(true)});
+addEventListener("resize",placePop);addEventListener("scroll",placePop,true);
+function bindHelp(root){root.querySelectorAll("[data-help]").forEach(b=>b.onclick=e=>{e.stopPropagation();if(popBtn===b){closePop();return}const p=root.querySelector(`#help-${b.dataset.help}`)||document.getElementById(`help-${b.dataset.help}`);if(!p)return;
+ const host=(b.closest(".crit-h")||b.closest("th")||b.parentElement).cloneNode(true);host.querySelectorAll(".ib").forEach(x=>x.remove());const t=host.textContent.replace(/\s+/g," ").trim();openPop(b,p.innerHTML,t||"Ayuda")})}
 function armReset(btn,fn){let arm=false;btn.onclick=()=>{if(!arm){arm=true;const t=btn.textContent;btn.textContent="Pulsa otra vez para borrar";setTimeout(()=>{arm=false;btn.textContent=t},3000);return}arm=false;btn.textContent="Empezar de cero";fn()}}
 function bindIO(prefix,getState,setState,appId,fname){
  $(`#${prefix}Export`).onclick=()=>download(fname,JSON.stringify(getState(),null,2),"application/json");
@@ -1052,7 +1084,7 @@ const MXG=[
   {id:"plantas",t:"Nº de plantas o altura del edificio",o:[["1 o 2 plantas · menos de 6 m",3],["3, 4 o 5 plantas · entre 6 y 15 m",2],["6, 7, 8 o 9 plantas · entre 15 y 28 m",1],["10 o más plantas · más de 28 m",0]],
    h:"Cuenta las plantas del edificio o mide su altura. Cuanto más alto, más difícil es evacuar y apagar el fuego desde fuera. Si plantas y altura no coinciden en la misma fila, elige la más desfavorable."},
   {id:"superficie",t:"Superficie del mayor sector de incendios",o:[["De 0 a 500 m²",5],["De 501 a 1.500 m²",4],["De 1.501 a 2.500 m²",3],["De 2.501 a 3.500 m²",2],["De 3.501 a 4.500 m²",1],["Más de 4.500 m²",0]],
-   h:"Un sector de incendios es una zona separada del resto por paredes, techos y puertas que resisten el fuego (puertas cortafuegos). Mide el sector más grande: cuanto mayor es, más superficie puede quemarse de una vez."},
+   h:"Un sector de incendios es una zona separada del resto por paredes, techos y puertas que resisten el fuego (puertas cortafuegos). Mide el sector más grande: cuanto mayor es, más superficie puede quemarse de una vez.<br><b>Si el edificio no está dividido en sectores</b>, toma la superficie construida completa del edificio."},
   {id:"resistencia",t:"Resistencia al fuego de la estructura",o:[["Resistente al fuego (hormigón)",10],["No combustible (metálica)",5],["Combustible (madera)",0]],
    h:"<b>Hormigón:</b> aguanta mucho tiempo el fuego sin caerse. <b>Metálica:</b> no arde, pero con el calor el acero se dobla y puede hundirse. <b>Madera:</b> arde y alimenta el incendio."},
   {id:"techos",t:"Falsos techos",o:[["Sin falsos techos",5],["Con falsos techos incombustibles (M0)",3],["Con falsos techos combustibles (M4 o más)",0]],
@@ -1081,8 +1113,8 @@ const MXG=[
   {id:"corrosion",t:"Por corrosión",o:[["Baja",10],["Media",5],["Alta",0]],h:"Algunos materiales al arder sueltan gases corrosivos (por ejemplo, el PVC). <b>Alta:</b> equipos electrónicos o maquinaria de precisión que se oxidan con esos gases."},
   {id:"agua",t:"Por agua",o:[["Baja",10],["Media",5],["Alta",0]],h:"El agua de los bomberos también hace daño. <b>Alta:</b> papel, electrónica, harinas, tejidos. <b>Baja:</b> materiales que no se estropean al mojarse."}]},
  {g:"Propagabilidad",f:[
-  {id:"vertical",t:"Vertical",o:[["Baja",5],["Media",3],["Alta",0]],h:"Facilidad para que el fuego suba de una planta a otra: escaleras abiertas, huecos, conductos o fachadas combustibles la hacen <b>alta</b>."},
-  {id:"horizontal",t:"Horizontal",o:[["Baja",5],["Media",3],["Alta",0]],h:"Facilidad para que el fuego avance por la misma planta: material almacenado de forma continua y sin separaciones la hace <b>alta</b>; pasillos libres y muros cortafuegos la hacen <b>baja</b>."}]}];
+  {id:"vertical",t:"Vertical",o:[["Baja",5],["Media",3],["Alta",0]],h:"Facilidad para que el fuego suba de una planta a otra.<br><b>Alta:</b> escaleras abiertas, huecos entre plantas, conductos sin sellar o fachadas combustibles. Ejemplo: un edificio de oficinas con escalera abierta y patio interior.<br><b>Media:</b> las escaleras están cerradas, pero quedan algunos huecos o conductos sin proteger entre plantas. Ejemplo: un hotel con escaleras cerradas y patinillos de instalaciones sin sellar.<br><b>Baja:</b> edificio de una sola planta, o plantas separadas por forjados de hormigón con escaleras protegidas y huecos sellados. Ejemplo: una nave industrial de una planta."},
+  {id:"horizontal",t:"Horizontal",o:[["Baja",5],["Media",3],["Alta",0]],h:"Facilidad para que el fuego avance por la misma planta.<br><b>Alta:</b> material almacenado de forma continua y sin separaciones. Ejemplo: un almacén con estanterías de cartón pegadas unas a otras.<br><b>Media:</b> hay pasillos entre el material, pero sin muros que dividan la planta. Ejemplo: una tienda grande con estanterías separadas por pasillos.<br><b>Baja:</b> pasillos libres y muros cortafuegos la hacen baja. Ejemplo: una nave dividida en sectores con puertas cortafuegos."}]}];
 const MXF=MXG.flatMap(g=>g.f);
 const MY=[
  {id:"det",t:"Detección automática",cra:true,v:{sin:[0,2],con:[3,4]},h:"Detectores que notan el humo o el calor y hacen sonar la alarma sin que nadie tenga que verlo."},
@@ -1250,6 +1282,13 @@ const TIPOS_CONF=[["A","Tipo A","Ocupa una parte de un edificio en el que hay ot
  ["C","Tipo C","Ocupa uno o varios edificios separados más de 3 m de cualquier otro, sin nada que pueda arder en medio."],
  ["D","Tipo D","Ocupa un espacio abierto, que puede estar cubierto del todo, con alguna fachada sin pared."],
  ["E","Tipo E","Ocupa un espacio abierto cubierto como máximo en la mitad de su superficie, con alguna fachada sin pared en la parte cubierta."]];
+const sv=(b)=>`<svg viewBox="0 0 160 100" role="img" aria-hidden="true">${b}<line class="sv-ln" x1="6" y1="88" x2="154" y2="88"/></svg>`;
+const FIG={
+ A:sv(`<rect class="sv-oth" x="45" y="20" width="70" height="68"/><rect class="sv-est" x="45" y="54" width="70" height="17"/><line class="sv-ln" x1="45" y1="37" x2="115" y2="37"/><line class="sv-ln" x1="45" y1="71" x2="115" y2="71"/><text class="sv-te" x="80" y="65" text-anchor="middle">Establecimiento</text><text class="sv-t" x="80" y="31" text-anchor="middle">Otros usos</text><text class="sv-t" x="80" y="82" text-anchor="middle">Otros usos</text>`),
+ B:sv(`<rect class="sv-est" x="28" y="34" width="56" height="54"/><rect class="sv-oth" x="90" y="46" width="44" height="42"/><text class="sv-te" x="56" y="64" text-anchor="middle">Establec.</text><text class="sv-t" x="112" y="70" text-anchor="middle">Otro</text><line class="sv-ln" x1="84" y1="24" x2="90" y2="24"/><line class="sv-ln" x1="84" y1="20" x2="84" y2="28"/><line class="sv-ln" x1="90" y1="20" x2="90" y2="28"/><text class="sv-t" x="87" y="16" text-anchor="middle">≤ 3 m</text>`),
+ C:sv(`<rect class="sv-est" x="16" y="38" width="54" height="50"/><rect class="sv-oth" x="104" y="46" width="40" height="42"/><text class="sv-te" x="43" y="66" text-anchor="middle">Establec.</text><text class="sv-t" x="124" y="70" text-anchor="middle">Otro</text><line class="sv-ln" x1="70" y1="28" x2="104" y2="28"/><line class="sv-ln" x1="70" y1="24" x2="70" y2="32"/><line class="sv-ln" x1="104" y1="24" x2="104" y2="32"/><text class="sv-t" x="87" y="22" text-anchor="middle">&gt; 3 m</text>`),
+ D:sv(`<rect class="sv-est" x="22" y="40" width="116" height="48" opacity=".55"/><rect class="sv-roof" x="16" y="34" width="128" height="5"/><rect class="sv-oth" x="16" y="39" width="6" height="49"/><line class="sv-ln" x1="80" y1="39" x2="80" y2="88"/><line class="sv-ln" x1="140" y1="39" x2="140" y2="88"/><text class="sv-te" x="80" y="28" text-anchor="middle">Cubierto 100 %</text><text class="sv-t" x="112" y="68" text-anchor="middle">Sin pared</text>`),
+ E:sv(`<rect class="sv-est" x="22" y="40" width="58" height="48" opacity=".55"/><rect class="sv-roof" x="16" y="34" width="66" height="5"/><rect class="sv-oth" x="16" y="39" width="6" height="49"/><line class="sv-ln" x1="80" y1="39" x2="80" y2="88"/><rect class="sv-dash" x="84" y="58" width="56" height="30"/><rect class="sv-oth" x="92" y="74" width="12" height="14"/><rect class="sv-oth" x="110" y="70" width="12" height="18"/><text class="sv-te" x="50" y="28" text-anchor="middle">Cubierto ≤ 50 %</text><text class="sv-t" x="112" y="52" text-anchor="middle">Al aire libre</text>`)};
 const MET={
  prod:{t:"Producción, transformación o venta",f:"Qs = ( Σ qsi · Si · Ci / A ) · Ra",d:"Para talleres, fábricas, tiendas u oficinas. Usas la carga de fuego por metro cuadrado (qs) de cada zona, que viene en la Tabla 1.2 del reglamento según la actividad.",cols:[["q","qsi (MJ/m²)"],["s","Si (m²)"]]},
  alm:{t:"Almacenamiento",f:"Qs = ( Σ qvi · Ci · hi · si / A ) · Ra",d:"Para almacenes. Usas la carga de fuego por metro cúbico (qv) de cada producto almacenado, la altura de las pilas o estanterías (h) y la superficie que ocupan en el suelo (s).",cols:[["q","qvi (MJ/m³)"],["h","hi (m)"],["s","si (m²)"]]},
@@ -1309,8 +1348,9 @@ function renderCF(){const b=$("#cfBody"),m=SF.meta;
   <label class="f" for="fm-actividad">Actividad<input type="text" id="fm-actividad" data-fm="actividad" value="${esc(m.actividad)}"></label>
   <label class="f" for="fm-direccion">Dirección<input type="text" id="fm-direccion" data-fm="direccion" value="${esc(m.direccion)}"></label>
   <div class="f"><div class="crit-h"><label for="fm-tipo">Configuración del establecimiento</label>${infoBtn("f-tipo")}</div>
-   <div class="help" id="help-f-tipo" hidden><dl>${TIPOS_CONF.map(t=>`<dt>${t[1]}</dt><dd>${t[2]}</dd>`).join("")}</dl></div>
-   <select id="fm-tipo" data-fm="tipo" class="${m.tipo?"":"pend"}"><option value="">— Sin selección —</option>${TIPOS_CONF.map(t=>`<option value="${t[0]}" ${m.tipo===t[0]?"selected":""}>${t[1]}</option>`).join("")}</select></div>
+   <div class="help" id="help-f-tipo" hidden><p>Elige cómo está situado el establecimiento respecto a otros edificios. En naranja, el establecimiento.</p><div class="figs">${TIPOS_CONF.map(t=>`<figure class="fig">${FIG[t[0]]}<figcaption><b>${t[1]}.</b> ${t[2]}</figcaption></figure>`).join("")}</div></div>
+   <select id="fm-tipo" data-fm="tipo" class="${m.tipo?"":"pend"}"><option value="">— Sin selección —</option>${TIPOS_CONF.map(t=>`<option value="${t[0]}" ${m.tipo===t[0]?"selected":""}>${t[1]}</option>`).join("")}</select>
+   <figure class="fig" id="fTipoFig" ${m.tipo?"":"hidden"}>${m.tipo?FIG[m.tipo]+`<figcaption>${esc(TIPOS_CONF.find(t=>t[0]===m.tipo)[2])}</figcaption>`:""}</figure></div>
   <div class="f"><div class="crit-h"><label for="fm-A">Superficie del sector (A, en m²)</label>${infoBtn("f-A")}</div>
    <div class="help" id="help-f-A" hidden>Es la superficie construida de la zona que estudias (el sector de incendio): la parte del edificio separada del resto por paredes y puertas que resisten el fuego. Si toda la nave es una sola zona, es la superficie de toda la nave.</div>
    <input type="text" inputmode="decimal" id="fm-A" data-fm="A" value="${esc(m.A)}"></div></div>
@@ -1329,7 +1369,8 @@ function renderCF(){const b=$("#cfBody"),m=SF.meta;
  <section class="panel"><h3>Paso 6 · Conclusiones</h3><label class="f" for="f-conclu">Conclusiones <small>Nivel de riesgo intrínseco obtenido y medidas para reducir la carga de fuego o su efecto. Mínimo recomendado: 80 palabras.</small><textarea id="f-conclu" style="min-height:7rem">${esc(SF.conclu)}</textarea></label></section>
  <section class="panel"><div class="intro"><p class="eyebrow">Autoevaluación</p><h3>Valoración según la rúbrica</h3><p class="muted small">Se recalcula mientras trabajas. Es una propuesta orientativa; la nota final la pone tu profesor.</p></div><div id="fRub" aria-live="polite"></div></section>`;
  bindHelp(b);
- b.querySelectorAll("[data-fm]").forEach(el=>el.addEventListener(el.tagName==="SELECT"?"change":"input",()=>{SF.meta[el.dataset.fm]=el.value;if(el.tagName==="SELECT")el.classList.toggle("pend",!el.value);saveF();if(el.dataset.fm==="A")renderRowsF();updF()}));
+ b.querySelectorAll("[data-fm]").forEach(el=>el.addEventListener(el.tagName==="SELECT"?"change":"input",()=>{SF.meta[el.dataset.fm]=el.value;if(el.tagName==="SELECT")el.classList.toggle("pend",!el.value);saveF();if(el.dataset.fm==="A")renderRowsF();
+  if(el.dataset.fm==="tipo"){const fg=$("#fTipoFig"),t=TIPOS_CONF.find(x=>x[0]===el.value);fg.hidden=!t;fg.innerHTML=t?FIG[t[0]]+`<figcaption>${esc(t[2])}</figcaption>`:""}updF()}));
  b.querySelectorAll("[name=fmet]").forEach(el=>el.onchange=()=>{SF.met=el.value;b.querySelectorAll(".metc").forEach(x=>x.classList.toggle("on",x.querySelector("input").checked));if(!SF.rows.length)SF.rows=[newRow(),newRow()];saveF();renderRowsF();updF()});
  $("#f-metJust").oninput=e=>{SF.metJust=e.target.value;saveF();updF()};
  $("#f-ra").onchange=e=>{SF.ra=e.target.value===""?null:+e.target.value;e.target.classList.toggle("pend",SF.ra==null);saveF();updF()};
