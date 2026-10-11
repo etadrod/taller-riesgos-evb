@@ -1,5 +1,5 @@
 /* Service worker: guarda la app para usarla sin conexión. Generado por tools/build.py */
-const CACHE="evb-b96c24f27b";
+const CACHE="evb-49880ae9c3";
 const CORE=["./", "./index.html", "./manifest.webmanifest", "./img/logo-centro.jpg", "./vendor/jspdf.umd.min.js", "./vendor/jspdf.plugin.autotable.min.js", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/icon-maskable-512.png", "./icons/apple-touch-icon.png", "./icons/favicon-32.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith("evb-")&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
